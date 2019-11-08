@@ -125,7 +125,7 @@ function init(glslang) {
 			 * 유니폼을 어떻게 바인딩 하나 봐야함
 			 */
 			const MAX = 500
-			const matrixSize = 4 * 16 * (MAX - 1); // 4x4 matrix
+			const matrixSize = 4 * 16; // 4x4 matrix
 			const offset = 256; // uniformBindGroup offset must be 256-byte aligned
 			const uniformBufferSize = offset * (MAX) + matrixSize;
 			const uniformBuffer = device.createBuffer({

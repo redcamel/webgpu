@@ -163,30 +163,32 @@ function init(glslang) {
 			/**
 			 * 유니폼을 어떻게 바인딩 하나 봐야함
 			 */
-			const MAX = 500
-			const matrixSize = 4 * 16 * (MAX - 1); // 4x4 matrix
-			const offset = 256; // uniformBindGroup offset must be 256-byte aligned
-			const uniformBufferSize = offset * (MAX) + matrixSize;
-			const uniformBuffer = device.createBuffer({
-				size: uniformBufferSize,
-				usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-			});
-			console.log(uniformBuffer)
+			const MAX = 1000
+			const matrixSize = 4 * 16; // 4x4 matrix
+			const offset = 0; // uniformBindGroup offset must be 256-byte aligned
+			const uniformBufferSize = offset + matrixSize;
+
+
 
 			let testData = []
 			let i = MAX
 			while (i--) {
+				const uniformBuffer = device.createBuffer({
+					size: uniformBufferSize,
+					usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+				});
 				let tData = {
 					binding: 0,
 					resource: {
 						buffer: uniformBuffer,
-						offset: offset * i,
+						offset: 0,
 						size: matrixSize
 					}
 				}
 				testData.push({
-					position: [Math.random() * 30 - 15, Math.random() * 30 - 15, -15],
+					position: [Math.random() * 30 - 15, Math.random() * 30 - 15, -20],
 					rotations: [(Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2],
+					uniformBuffer : uniformBuffer,
 					uniformBindGroupData: tData,
 					uniformBindGroup: device.createBindGroup({
 						layout: uniformsBindGroupLayout,
@@ -230,7 +232,7 @@ function init(glslang) {
 					mat4.rotateZ(viewMatrix, viewMatrix, testData[i]['rotations'][0] + time / 1000.0)
 					mat4.multiply(viewMatrix, projectionMatrix, viewMatrix);
 					passEncoder.setBindGroup(0, testData[i]['uniformBindGroup']);
-					uniformBuffer.setSubData(testData[i]['uniformBindGroupData']['resource']['offset'], viewMatrix);
+					testData[i]['uniformBuffer'].setSubData(testData[i]['uniformBindGroupData']['resource']['offset'], viewMatrix);
 					passEncoder.draw(3, 1, 0, 0);
 
 				}
