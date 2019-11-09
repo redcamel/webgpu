@@ -111,7 +111,7 @@ async function init(glslang) {
 		 */
 	});
 
-	let render =  function () {
+	let render = async function () {
 		const commandEncoder = device.createCommandEncoder();
 		const textureView = swapChain.getCurrentTexture().createView();
 		// console.log(swapChain.getCurrentTexture())
@@ -128,6 +128,7 @@ async function init(glslang) {
 		passEncoder.endPass();
 		const test = commandEncoder.finish()
 		device.getQueue().submit([test]);
+		requestAnimationFrame(render)
 	}
 	requestAnimationFrame(render)
 

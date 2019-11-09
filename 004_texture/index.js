@@ -300,8 +300,8 @@ async function init(glslang) {
 				}
 			}
 			testData.push({
-				position: [Math.random() * 10 - 5, Math.random() * 10 - 5, -10],
-				rotations: [(Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2],
+				position: new Float32Array([Math.random() * 10 - 5, Math.random() * 10 - 5, -10]),
+				rotations: new Float32Array([(Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2]),
 				uniformBindGroupData: tData,
 				uniformBindGroup: device.createBindGroup({
 					layout: uniformsBindGroupLayout,
