@@ -144,9 +144,13 @@ async function init(glslang) {
 		 * 버텍스 버퍼를 만들어 볼꺼임
 		 */
 		const triangleArray = new Float32Array([
-			-0.5, -0.5, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 0.5, 0.0,
-			0.0, 0.5, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 0.0, 1.0,
-			0.5, -0.5, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 1.0, 1.0
+			-1.0, -1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 0.0, 0.0,
+			1.0, -1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 0.0, 1.0,
+			-1.0, 1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 1.0, 0.0,
+
+			-1.0, 1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 1.0, 0.0,
+			1.0, -1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 0.0, 1.0,
+			1.0, 1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 1.0, 1.0
 		])
 		const verticesBuffer = device.createBuffer({
 			size: triangleArray.byteLength,
@@ -274,7 +278,7 @@ async function init(glslang) {
 		/**
 		 * 유니폼을 어떻게 바인딩 하나 봐야함
 		 */
-		const MAX = 500
+		const MAX = 100
 		const matrixSize = 4 * 16; // 4x4 matrix
 		const offset = 256; // uniformBindGroup offset must be 256-byte aligned
 		const uniformBufferSize = offset * (MAX) + matrixSize;
@@ -333,7 +337,7 @@ async function init(glslang) {
 			const renderPassDescriptor = {
 				colorAttachments: [{
 					attachment: textureView,
-					loadValue: {r: 1, g: 1, b: 0.0, a: 1.0},
+					loadValue: {r: 1, g: 1, b: 0.0, a: 0.0},
 				}]
 			};
 			const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -352,7 +356,7 @@ async function init(glslang) {
 				mat4.multiply(viewMatrix, projectionMatrix, viewMatrix);
 				passEncoder.setBindGroup(0, testData[i]['uniformBindGroup']);
 				uniformBuffer.setSubData(testData[i]['uniformBindGroupData']['resource']['offset'], viewMatrix);
-				passEncoder.draw(3, 1, 0, 0);
+				passEncoder.draw(6, 1, 0, 0);
 
 			}
 			passEncoder.endPass();
