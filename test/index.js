@@ -7,15 +7,19 @@ const vertexShaderGLSL = `
         mat4 modelMatrix;
     } uniforms;
 	layout(location = 0) in vec4 position;
+	layout(location = 1) in vec4 color;
+	layout(location = 0) out vec4 vColor;
 	void main() {
 		gl_Position = uniforms.projectionMatrix * uniforms.modelMatrix * position;
+		vColor = color;
 	}
 	`;
 const fragmentShaderGLSL = `
 	#version 450
+	layout(location = 0) in vec4 vColor;
 	layout(location = 0) out vec4 outColor;
 	void main() {
-		outColor = vec4(1.0, 0.0, 0.0, 1.0);
+		outColor = vColor;
 	}
 `;
 
@@ -53,9 +57,9 @@ async function init(glslang) {
 		device,
 		new Float32Array(
 			[
-				-1.0, -1.0, 0.0, 1.0,
-				0.0, 1.0, 0.0, 1.0,
-				1.0, -1.0, 0.0, 1.0
+				-1.0, -1.0, 0.0, 1.0,  Math.random(),Math.random(),Math.random(),1.0,
+				0.0, 1.0, 0.0, 1.0,    Math.random(),Math.random(),Math.random(),1.0,
+				1.0, -1.0, 0.0, 1.0,   Math.random(),Math.random(),Math.random(),1.0
 			]
 		)
 	);
@@ -72,14 +76,16 @@ async function init(glslang) {
 			}
 		]
 	});
-	const matrixSize = 4 * 16; // 4x4 matrix
-	const offset = 256; // uniformBindGroup offset must be 256-byte aligned
+	console.log('uniformsBindGroupLayout',uniformsBindGroupLayout)
+	const matrixSize = 4 * 4 * 4; // 4x4 matrix
+	const offset = 0; // uniformBindGroup offset must be 256-byte aligned
 	const uniformBufferSize = offset + matrixSize * 2;
 	// 유니폼 버퍼를 생성하고
-	const uniformBuffer = device.createBuffer({
+	const uniformBuffer = await device.createBuffer({
 		size: uniformBufferSize,
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 	});
+	console.log('uniformBuffer',uniformBuffer)
 	const uniformBindGroupDescriptor = {
 		layout: uniformsBindGroupLayout,
 		bindings: [
@@ -93,7 +99,9 @@ async function init(glslang) {
 			}
 		]
 	};
+	console.log('uniformBindGroupDescriptor',uniformBindGroupDescriptor)
 	const uniformBindGroup = device.createBindGroup(uniformBindGroupDescriptor);
+	console.log('uniformBindGroup',uniformBindGroup)
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
@@ -113,12 +121,18 @@ async function init(glslang) {
 			indexFormat: 'uint32',
 			vertexBuffers: [
 				{
-					arrayStride: 4 * 4,
+					arrayStride: 8 * 4,
 					attributes: [
 						{
 							// position
 							shaderLocation: 0,
 							offset: 0,
+							format: "float4"
+						},
+						{
+							// color
+							shaderLocation: 1,
+							offset:  4 * 4,
 							format: "float4"
 						}
 					]

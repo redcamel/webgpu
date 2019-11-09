@@ -80,6 +80,7 @@ async function init(glslang) {
 		size: uniformBufferSize,
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 	});
+	console.log('uniformBuffer',uniformBuffer)
 	const uniformBindGroupDescriptor = {
 		layout: uniformsBindGroupLayout,
 		bindings: [
@@ -93,7 +94,9 @@ async function init(glslang) {
 			}
 		]
 	};
+	console.log('uniformBindGroupDescriptor',uniformBindGroupDescriptor)
 	const uniformBindGroup = device.createBindGroup(uniformBindGroupDescriptor);
+	console.log('uniformBindGroup',uniformBindGroup)
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;

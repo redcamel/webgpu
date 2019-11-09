@@ -1,257 +1,252 @@
-// gpu엔 뭐가 있나...
-// requestAdapter를 가지는 GPU객체를 반환해 주는군...
+const ready = glslang();
+ready.then(init);
+const vertexShaderGLSL = `
+	#version 450
+    layout(set=0,binding = 0) uniform Uniforms {
+        mat4 projectionMatrix;
+        mat4 modelMatrix;
+    } uniforms;
+	layout(location = 0) in vec4 position;
+	layout(location = 1) in vec4 color;
+	layout(location = 0) out vec4 vColor;
+	void main() {
+		gl_Position = uniforms.projectionMatrix * uniforms.modelMatrix * position;
+		vColor = color;
+	}
+	`;
+const fragmentShaderGLSL = `
+	#version 450
+	layout(location = 0) in vec4 vColor;
+	layout(location = 0) out vec4 outColor;
+	void main() {
+		outColor = vColor;
+	}
+`;
 
-let gpu = navigator.gpu;
-console.log(gpu);
+async function init(glslang) {
+	// glslang을 이용하여 GLSL소스를 Uint32Array로 변환합니다.
+	console.log('glslang', glslang);
 
-function init(glslang) {
-	console.log(glslang)
-	gpu.requestAdapter().then(adapter => {
-		console.log('adapter', adapter)
-		adapter.requestDevice().then(device => {
-			console.log('device', device)
-			const canvas = document.querySelector('canvas');
-			const context = canvas.getContext('gpupresent');
-			const swapChainFormat = "bgra8unorm";
-			const swapChainDescriptor = {
-				device: device,
-				format: swapChainFormat
-			};
-			let swapChain;
-			const vertexShaderGLSL = `#version 450
-	          layout(set = 0, binding = 0) uniform Uniforms {
-				mat4 modelViewProjectionMatrix;
-			} uniforms;
-		    layout(location = 0) in vec4 position;
-		    layout(location = 1) in vec4 color;
-		    layout(location = 0) out vec4 fColor;
-			void main() {
-				gl_Position = uniforms.modelViewProjectionMatrix * position;
-				fColor = color;
+	// 초기 GPU 권한을 얻어온다.
+	const gpu = navigator['gpu']; //
+	const adapter = await gpu.requestAdapter();
+	const device = await adapter.requestDevice();
+	console.log('gpu', gpu);
+	console.log('adapter', adapter);
+	console.log('device', device);
+
+	// 화면에 표시하기 위해서 캔버스 컨텍스트를 가져오고
+	// 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
+	const cvs = document.createElement('canvas');
+	cvs.width = 1024;
+	cvs.height = 768
+	document.body.appendChild(cvs);
+	const ctx = cvs.getContext('gpupresent')
+
+	const swapChainFormat = "bgra8unorm";
+	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
+	console.log('ctx', ctx)
+	console.log('swapChain', swapChain)
+
+	// 쉐이더를 이제 만들어야함.
+	let vShaderModule = makeShaderModule_GLSL(glslang, device, 'vertex', vertexShaderGLSL);
+	let fShaderModule = makeShaderModule_GLSL(glslang, device, 'fragment', fragmentShaderGLSL);
+
+	// 쉐이더 모듈을 만들었으니 버텍스 버퍼를 만들어볼꺼임
+	let vertexBuffer = makeVertexBuffer(
+		device,
+		new Float32Array(
+			[
+				-1.0, -1.0, 0.0, 1.0,  Math.random(),Math.random(),Math.random(),1.0,
+				0.0, 1.0, 0.0, 1.0,    Math.random(),Math.random(),Math.random(),1.0,
+				1.0, -1.0, 0.0, 1.0,   Math.random(),Math.random(),Math.random(),1.0
+			]
+		)
+	);
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 프로젝션을 하기위한 유니폼 매트릭스를 넘겨보자
+	// 파이프 라인의 바운딩 레이아웃 리스트에 들어갈 녀석이닷!
+	const uniformsBindGroupLayout = device.createBindGroupLayout({
+		bindings: [
+			{
+				binding: 0,
+				visibility: GPUShaderStage.VERTEX,
+				type: "uniform-buffer"
 			}
-			`;
-
-			const fragmentShaderGLSL = `#version 450
-	          layout(location = 0) out vec4 outColor;
-	          layout(location = 0) in vec4 fColor;
-	          void main() {
-	              outColor = fColor;
-	          }
-	        `;
-			// 캔버스 컨텍스트를 실제로 구성하나봄
-			swapChain = context.configureSwapChain(swapChainDescriptor);
-			console.log(swapChain)
-
-			/**
-			 * 컴파일 과정이군...
-			 **/
-			const shaderModuleDescriptor_vertex = {
-				code: glslang.compileGLSL(vertexShaderGLSL, "vertex"),
-				source: vertexShaderGLSL
-			};
-			console.log(shaderModuleDescriptor_vertex)
-			const shaderModule_vertex = device.createShaderModule(shaderModuleDescriptor_vertex);
-			console.log('shaderModule_vertex', shaderModule_vertex)
-			const shaderModuleDescriptor_fragment = {
-				code: glslang.compileGLSL(fragmentShaderGLSL, "fragment"),
-				source: fragmentShaderGLSL
-			};
-			console.log(shaderModuleDescriptor_fragment)
-			const shaderModule_fragment = device.createShaderModule(shaderModuleDescriptor_fragment);
-			console.log('shaderModule_fragment', shaderModule_fragment)
-
-
-			/**
-			 * 버텍스 버퍼를 만들어 볼꺼임
-			 */
-			const triangleArray = new Float32Array([
-				0.0, 0.5, 0.0, 1.0,  Math.random(),Math.random(),Math.random(),1.0,
-				-0.5, -0.5, 0.0, 1.0,  Math.random(),Math.random(),Math.random(),1.0,
-				0.5, -0.5, 0.0, 1.0,  Math.random(),Math.random(),Math.random(),1.0,
-			])
-			const verticesBuffer =  device.createBuffer({
-				size: triangleArray.byteLength,
-				usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
-			});
-			verticesBuffer.setSubData(0, triangleArray);
-			console.log('verticesBuffer', verticesBuffer)
-
-
-			/**
-			 * 유니폼 바운드 그룹을 정함 뭔가. GLTF 로우데이터 같다 ;;;
-			 * 만들고 파이프라인 바인딩 그룹에 넣어줌
-			 */
-			const uniformsBindGroupLayout = device.createBindGroupLayout({
-				bindings: [{
-					binding: 0,
-					visibility: GPUShaderStage.VERTEX,
-					type: "uniform-buffer"
-				}]
-			});
-			/**
-			 * 파이프 라인이란걸 만드어야 되나봄
-			 * */
-			const pipeline = device.createRenderPipeline({
-				// 레이아웃은 아직 뭔지 모르곘고
-				layout: device.createPipelineLayout({bindGroupLayouts: [uniformsBindGroupLayout]}),
-				// 버텍스와 프레그먼트는 아래와 같이 붙인다..
-				vertexStage: {
-					module: shaderModule_vertex,
-					entryPoint: 'main'
-				},
-				fragmentStage: {
-					module: shaderModule_fragment,
-					entryPoint: 'main'
-				},
-				vertexState :{
-					indexFormat :'uint32',
-					vertexBuffers : [{
-						arrayStride: 8 * 4,
-						attributes: [
-							{
-								// position
-								shaderLocation: 0,
-								offset: 0,
-								format: "float4"
-							},
-							{
-								// color
-								shaderLocation: 1,
-								offset:  4 * 4,
-								format: "float4"
-							}
-						]
-					}]
-				},
-				// 컬러모드 지정하고
-				colorStates: [
-					{
-						format: swapChainFormat,
-						alphaBlend: {
-							srcFactor: "src-alpha",
-							dstFactor: "one-minus-src-alpha",
-							operation: "add"
-						}
-					}
-				],
-
-
-				// 드로잉 방법을 결정함
-				primitiveTopology: 'triangle-list'
-				/*
-				GPUPrimitiveTopology {
-					"point-list",
-					"line-list",
-					"line-strip",
-					"triangle-list",
-					"triangle-strip"
-				};
-				 */
-			});
-			console.log(pipeline)
-
-
-			/**
-			 * 매트릭스를 가져와야겠군..
-			 */
-
-
-			const aspect = Math.abs(canvas.width / canvas.height);
-
-			let projectionMatrix = new Float32Array(16);
-			let viewMatrix = new Float32Array(16);
-
-			/**
-			 * 유니폼을 어떻게 바인딩 하나 봐야함
-			 */
-			const MAX = 1000
-			const matrixSize = 4 * 16; // 4x4 matrix
-			const offset = 0; // uniformBindGroup offset must be 256-byte aligned
-			const uniformBufferSize = offset + matrixSize;
-
-
-
-			let testData = []
-			let i = MAX
-			while (i--) {
-				const uniformBuffer = device.createBuffer({
-					size: uniformBufferSize,
-					usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-				});
-				let tData = {
-					binding: 0,
-					resource: {
-						buffer: uniformBuffer,
-						offset: 0,
-						size: matrixSize
-					}
-				}
-				testData.push({
-					position: [Math.random() * 30 - 15, Math.random() * 30 - 15, -20],
-					rotations: [(Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2],
-					uniformBuffer : uniformBuffer,
-					uniformBindGroupData: tData,
-					uniformBindGroup: device.createBindGroup({
-						layout: uniformsBindGroupLayout,
-						bindings: [tData]
-					})
-				})
-
-			}
-			console.log(testData)
-
-
-			/**
-			 * 이제 실제로 그려야함
-			 */
-
-			function draw(time) {
-				//유니폼설정
-				mat4.identity(projectionMatrix);
-				mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
-				let i = testData.length
-				const commandEncoder = device.createCommandEncoder(); // 이건또뭐야!
-				const textureView = swapChain.getCurrentTexture().createView();
-				const renderPassDescriptor = {
-					colorAttachments: [{
-						attachment: textureView,
-						loadValue: {r: 1, g: 1, b: 0.0, a: 1.0},
-					}]
-				};
-				const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-				passEncoder.setPipeline(pipeline);
-				// passEncoder.setViewport(0,0,500,768,0,1)
-				// passEncoder.setScissorRect(0,0,200+200*Math.abs(Math.sin(time/1000)),768)
-
-				while (i--) {
-					viewMatrix[0] = 1, viewMatrix[1] = 0, viewMatrix[2] = 0, viewMatrix[3] = 0
-					viewMatrix[4] = 0, viewMatrix[5] = 1, viewMatrix[6] = 0, viewMatrix[7] = 0
-					viewMatrix[8] = 0, viewMatrix[9] = 0, viewMatrix[10] = 1, viewMatrix[11] = 0
-					viewMatrix[12] = 0, viewMatrix[13] = 0, viewMatrix[14] = 0, viewMatrix[15] = 1
-					passEncoder.setVertexBuffer(0, verticesBuffer);
-					mat4.translate(viewMatrix, viewMatrix, testData[i]['position']);
-					mat4.rotateZ(viewMatrix, viewMatrix, testData[i]['rotations'][0] + time / 1000.0)
-					mat4.multiply(viewMatrix, projectionMatrix, viewMatrix);
-					passEncoder.setBindGroup(0, testData[i]['uniformBindGroup']);
-					testData[i]['uniformBuffer'].setSubData(testData[i]['uniformBindGroupData']['resource']['offset'], viewMatrix);
-					passEncoder.draw(3, 1, 0, 0);
-
-				}
-				passEncoder.endPass();
-				let test = commandEncoder.finish();
-
-				device.getQueue().submit([test]);
-				requestAnimationFrame(draw)
-
-			}
-
-			requestAnimationFrame(draw)
-		});
-	}).catch(error => {
-		console.log(error)
-		alert('WebGPU is unsupported, or no adapters or devices are available.')
-
+		]
 	});
+	console.log('uniformsBindGroupLayout',uniformsBindGroupLayout)
+	const matrixSize = 4 * 4 * 4; // 4x4 matrix
+	const offset = 0; // uniformBindGroup offset must be 256-byte aligned
+	const uniformBufferSize = offset + matrixSize * 2;
+	// 유니폼 버퍼를 생성하고
+	const uniformBuffer = await device.createBuffer({
+		size: uniformBufferSize,
+		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+	});
+	console.log('uniformBuffer',uniformBuffer)
+	const uniformBindGroupDescriptor = {
+		layout: uniformsBindGroupLayout,
+		bindings: [
+			{
+				binding: 0,
+				resource: {
+					buffer: uniformBuffer,
+					offset: 0,
+					size: matrixSize
+				}
+			}
+		]
+	};
+	console.log('uniformBindGroupDescriptor',uniformBindGroupDescriptor)
+	const uniformBindGroup = device.createBindGroup(uniformBindGroupDescriptor);
+	console.log('uniformBindGroup',uniformBindGroup)
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
+	const pipeline = device.createRenderPipeline({
+		// 레이아웃은 아직 뭔지 모르곘고
+		layout: device.createPipelineLayout({bindGroupLayouts: [uniformsBindGroupLayout]}),
+		// 버텍스와 프레그먼트는 아래와 같이 붙인다..
+		vertexStage: {
+			module: vShaderModule,
+			entryPoint: 'main'
+		},
+		fragmentStage: {
+			module: fShaderModule,
+			entryPoint: 'main'
+		},
+		vertexState: {
+			indexFormat: 'uint32',
+			vertexBuffers: [
+				{
+					arrayStride: 8 * 4,
+					attributes: [
+						{
+							// position
+							shaderLocation: 0,
+							offset: 0,
+							format: "float4"
+						},
+						{
+							// color
+							shaderLocation: 1,
+							offset:  4 * 4,
+							format: "float4"
+						}
+					]
+				}
+			]
+		},
+		// 컬러모드 지정하고
+		colorStates: [
+			{
+				format: swapChainFormat,
+				alphaBlend: {
+					srcFactor: "src-alpha",
+					dstFactor: "one-minus-src-alpha",
+					operation: "add"
+				}
+			}
+		],
+		// 드로잉 방법을 결정함
+		primitiveTopology: 'triangle-list',
+		frontFace: "ccw",
+		cullMode: 'none',
+		/*
+		GPUPrimitiveTopology {
+			"point-list",
+			"line-list",
+			"line-strip",
+			"triangle-list",
+			"triangle-strip"
+		};
+		 */
+	});
+	let projectionMatrix = mat4.create();
+	let modelMatrix = mat4.create();
+	let aspect = Math.abs(cvs.width / cvs.height);
+	mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
+
+	// mat4.multiply(projectionMatrix, projectionMatrix, modelMatrix);
+
+
+	let render = async function (time) {
+		const renderData = {
+			pipeline: pipeline,
+			vertexBuffer: vertexBuffer,
+			uniformBindGroup: uniformBindGroup,
+			uniformBuffer: uniformBuffer
+		}
+
+		const commandEncoder = device.createCommandEncoder();
+		const textureView = swapChain.getCurrentTexture().createView();
+		// console.log(swapChain.getCurrentTexture())
+		const renderPassDescriptor = {
+			colorAttachments: [{
+				attachment: textureView,
+				loadValue: {r: 1, g: 1, b: 0.0, a: 1.0},
+			}]
+		};
+		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+		passEncoder.setVertexBuffer(0, renderData['vertexBuffer']);
+		passEncoder.setPipeline(renderData['pipeline']);
+
+		mat4.identity(modelMatrix);
+		mat4.translate(modelMatrix, modelMatrix, [Math.sin(time / 1000), Math.cos(time / 1000), -5]);
+		mat4.rotateX(modelMatrix, modelMatrix, time / 1000)
+		mat4.rotateY(modelMatrix, modelMatrix, time / 1000)
+		mat4.rotateZ(modelMatrix, modelMatrix, time / 1000)
+		mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
+		passEncoder.setBindGroup(0, renderData['uniformBindGroup']);
+		renderData['uniformBuffer'].setSubData(0, projectionMatrix);
+		renderData['uniformBuffer'].setSubData(4 * 16, modelMatrix);
+
+
+		passEncoder.draw(3, 1, 0, 0);
+		passEncoder.endPass();
+		const test = commandEncoder.finish()
+		device.getQueue().submit([test]);
+		requestAnimationFrame(render)
+	}
+	requestAnimationFrame(render)
+
 }
 
-glslang().then(init)
+function configureSwapChain(device, swapChainFormat, context) {
+	const swapChainDescriptor = {
+		device: device,
+		format: swapChainFormat
+	};
+	console.log('swapChainDescriptor', swapChainDescriptor);
+	return context.configureSwapChain(swapChainDescriptor);
+}
+
+function makeShaderModule_GLSL(glslang, device, type, source) {
+	console.log(`// makeShaderModule_GLSL start : ${type}/////////////////////////////////////////////////////////////`);
+	let shaderModuleDescriptor = {
+		code: glslang.compileGLSL(source, type),
+		source: source
+	};
+	console.log('shaderModuleDescriptor', shaderModuleDescriptor);
+	let shaderModule = device.createShaderModule(shaderModuleDescriptor);
+	console.log(`shaderModule_${type}}`, shaderModule);
+	console.log(`// makeShaderModule_GLSL end : ${type}/////////////////////////////////////////////////////////////`);
+	return shaderModule;
+}
+
+function makeVertexBuffer(device, data) {
+	console.log(`// makeVertexBuffer start /////////////////////////////////////////////////////////////`);
+	let bufferDescriptor = {
+		size: data.byteLength,
+		usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+	};
+	let verticesBuffer = device.createBuffer(bufferDescriptor);
+	console.log('bufferDescriptor', bufferDescriptor);
+	verticesBuffer.setSubData(0, data);
+	console.log('verticesBuffer', verticesBuffer)
+	console.log(`// makeVertexBuffer end /////////////////////////////////////////////////////////////`);
+	return verticesBuffer
+}
+
