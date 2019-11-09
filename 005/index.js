@@ -2,11 +2,15 @@ const ready = glslang();
 ready.then(init);
 const vertexShaderGLSL = `
 	#version 450
+    layout(set=0,binding = 0) uniform Uniforms {
+        mat4 projectionMatrix;
+        mat4 modelMatrix;
+    } uniforms;
 	layout(location = 0) in vec4 position;
 	void main() {
-		gl_Position = position;
+		gl_Position = uniforms.projectionMatrix * uniforms.modelMatrix * position;
 	}
-			`;
+	`;
 const fragmentShaderGLSL = `
 	#version 450
 	layout(location = 0) out vec4 outColor;
@@ -56,10 +60,46 @@ async function init(glslang) {
 		)
 	);
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 프로젝션을 하기위한 유니폼 매트릭스를 넘겨보자
+	// 파이프 라인의 바운딩 레이아웃 리스트에 들어갈 녀석이닷!
+	const uniformsBindGroupLayout = device.createBindGroupLayout({
+		bindings: [
+			{
+				binding: 0,
+				visibility: GPUShaderStage.VERTEX,
+				type: "uniform-buffer"
+			}
+		]
+	});
+	const matrixSize = 4 * 16; // 4x4 matrix
+	const offset = 256; // uniformBindGroup offset must be 256-byte aligned
+	const uniformBufferSize = offset + matrixSize * 2;
+	// 유니폼 버퍼를 생성하고
+	const uniformBuffer = device.createBuffer({
+		size: uniformBufferSize,
+		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+	});
+	const uniformBindGroupDescriptor = {
+		layout: uniformsBindGroupLayout,
+		bindings: [
+			{
+				binding: 0,
+				resource: {
+					buffer: uniformBuffer,
+					offset: 0,
+					size: matrixSize
+				}
+			}
+		]
+	};
+	const uniformBindGroup = device.createBindGroup(uniformBindGroupDescriptor);
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
 	const pipeline = device.createRenderPipeline({
 		// 레이아웃은 아직 뭔지 모르곘고
-		layout: device.createPipelineLayout({bindGroupLayouts: []}),
+		layout: device.createPipelineLayout({bindGroupLayouts: [uniformsBindGroupLayout]}),
 		// 버텍스와 프레그먼트는 아래와 같이 붙인다..
 		vertexStage: {
 			module: vShaderModule,
@@ -98,8 +138,8 @@ async function init(glslang) {
 		],
 		// 드로잉 방법을 결정함
 		primitiveTopology: 'triangle-list',
-		frontFace : "ccw",
-		cullMode : 'none',
+		frontFace: "ccw",
+		cullMode: 'none',
 		/*
 		GPUPrimitiveTopology {
 			"point-list",
@@ -110,20 +150,46 @@ async function init(glslang) {
 		};
 		 */
 	});
+	let projectionMatrix = mat4.create();
+	let modelMatrix = mat4.create();
+	let aspect = Math.abs(cvs.width / cvs.height);
+	mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
 
-	let render = async function () {
+	// mat4.multiply(projectionMatrix, projectionMatrix, modelMatrix);
+
+
+	let render = async function (time) {
+		const renderData = {
+			pipeline: pipeline,
+			vertexBuffer: vertexBuffer,
+			uniformBindGroup: uniformBindGroup,
+			uniformBuffer: uniformBuffer
+		}
+
 		const commandEncoder = device.createCommandEncoder();
 		const textureView = swapChain.getCurrentTexture().createView();
 		// console.log(swapChain.getCurrentTexture())
 		const renderPassDescriptor = {
 			colorAttachments: [{
 				attachment: textureView,
-				loadValue: {r: 1, g: 1, b: 0.0, a: 0.0},
+				loadValue: {r: 1, g: 1, b: 0.0, a: 1.0},
 			}]
 		};
 		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-		passEncoder.setVertexBuffer(0, vertexBuffer);
-		passEncoder.setPipeline(pipeline);
+		passEncoder.setVertexBuffer(0, renderData['vertexBuffer']);
+		passEncoder.setPipeline(renderData['pipeline']);
+
+		mat4.identity(modelMatrix);
+		mat4.translate(modelMatrix, modelMatrix, [Math.sin(time / 1000), Math.cos(time / 1000), -5]);
+		mat4.rotateX(modelMatrix, modelMatrix, time / 1000)
+		mat4.rotateY(modelMatrix, modelMatrix, time / 1000)
+		mat4.rotateZ(modelMatrix, modelMatrix, time / 1000)
+		mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
+		passEncoder.setBindGroup(0, renderData['uniformBindGroup']);
+		renderData['uniformBuffer'].setSubData(0, projectionMatrix);
+		renderData['uniformBuffer'].setSubData(4 * 16, modelMatrix);
+
+
 		passEncoder.draw(3, 1, 0, 0);
 		passEncoder.endPass();
 		const test = commandEncoder.finish()
