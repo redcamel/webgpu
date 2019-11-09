@@ -162,7 +162,7 @@ async function init(glslang) {
 		/**
 		 * 텍스쳐를 만들어보자
 		 */
-		const cubeTexture = await createTextureFromImage(device, 'crate.png', GPUTextureUsage.SAMPLED);
+		const cubeTexture = await createTextureFromImage(device, '../assets/crate.png', GPUTextureUsage.SAMPLED);
 		// 오홍 샘플러도 나눠지넹
 		const sampler = device.createSampler({
 			magFilter: "linear",
