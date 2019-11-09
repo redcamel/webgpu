@@ -144,9 +144,9 @@ async function init(glslang) {
 		 * 버텍스 버퍼를 만들어 볼꺼임
 		 */
 		const triangleArray = new Float32Array([
-			-0.5, -0.5, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0,       0.5,0.0,
-			0.0,  0.5, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0,     0.0,1.0,
-			0.5, -0.5, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0,      1.0,1.0
+			-0.5, -0.5, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 0.5, 0.0,
+			0.0, 0.5, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 0.0, 1.0,
+			0.5, -0.5, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 1.0, 1.0
 		])
 		const verticesBuffer = device.createBuffer({
 			size: triangleArray.byteLength,
@@ -163,7 +163,7 @@ async function init(glslang) {
 		const sampler = device.createSampler({
 			magFilter: "linear",
 			minFilter: "linear",
-			mipmapFilter:"linear"
+			mipmapFilter: "linear"
 		});
 		console.log('cubeTexture', cubeTexture)
 		/**
@@ -204,6 +204,34 @@ async function init(glslang) {
 				module: shaderModule_fragment,
 				entryPoint: 'main'
 			},
+			vertexState: {
+				indexFormat :'uint32',
+				vertexBuffers: [
+					{
+						arrayStride: 10 * 4,
+						attributes: [
+							{
+								// position
+								shaderLocation: 0,
+								offset: 0,
+								format: "float4"
+							},
+							{
+								// color
+								shaderLocation: 1,
+								offset: 4 * 4,
+								format: "float4"
+							},
+							{
+								// uv
+								shaderLocation: 2,
+								offset: 8 * 4,
+								format: "float2"
+							}
+						]
+					}
+				]
+			},
 			// 컬러모드 지정하고
 			colorStates: [
 				{
@@ -215,32 +243,7 @@ async function init(glslang) {
 					}
 				}
 			],
-			// 버텍스 인풋이 어떻게 되는지 입력해야함
-			vertexInput: {
-				vertexBuffers: [{
-					stride: 10 * 4,
-					attributeSet: [
-						{
-							// position
-							shaderLocation: 0,
-							offset: 0,
-							format: "float4"
-						},
-						{
-							// color
-							shaderLocation: 1,
-							offset: 4 * 4,
-							format: "float4"
-						},
-						{
-							// uv
-							shaderLocation: 2,
-							offset: 8 * 4,
-							format: "float2"
-						}
-					]
-				}]
-			},
+
 
 			// 드로잉 방법을 결정함
 			primitiveTopology: 'triangle-list'
@@ -272,7 +275,7 @@ async function init(glslang) {
 		 * 유니폼을 어떻게 바인딩 하나 봐야함
 		 */
 		const MAX = 500
-		const matrixSize = 4 * 16 ; // 4x4 matrix
+		const matrixSize = 4 * 16; // 4x4 matrix
 		const offset = 256; // uniformBindGroup offset must be 256-byte aligned
 		const uniformBufferSize = offset * (MAX) + matrixSize;
 		const uniformBuffer = device.createBuffer({

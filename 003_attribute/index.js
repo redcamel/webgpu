@@ -69,7 +69,7 @@ function init(glslang) {
 				-0.5, -0.5, 0.0, 1.0,  Math.random(),Math.random(),Math.random(),1.0,
 				0.5, -0.5, 0.0, 1.0,  Math.random(),Math.random(),Math.random(),1.0,
 			])
-			const verticesBuffer = device.createBuffer({
+			const verticesBuffer =  device.createBuffer({
 				size: triangleArray.byteLength,
 				usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
 			});
@@ -103,22 +103,11 @@ function init(glslang) {
 					module: shaderModule_fragment,
 					entryPoint: 'main'
 				},
-				// 컬러모드 지정하고
-				colorStates: [
-					{
-						format: swapChainFormat,
-						alphaBlend: {
-							srcFactor: "src-alpha",
-							dstFactor: "one-minus-src-alpha",
-							operation: "add"
-						}
-					}
-				],
-				// 버텍스 인풋이 어떻게 되는지 입력해야함
-				vertexInput: {
-					vertexBuffers: [{
-						stride: 8 * 4,
-						attributeSet: [
+				vertexState :{
+					indexFormat :'uint32',
+					vertexBuffers : [{
+						arrayStride: 8 * 4,
+						attributes: [
 							{
 								// position
 								shaderLocation: 0,
@@ -134,6 +123,18 @@ function init(glslang) {
 						]
 					}]
 				},
+				// 컬러모드 지정하고
+				colorStates: [
+					{
+						format: swapChainFormat,
+						alphaBlend: {
+							srcFactor: "src-alpha",
+							dstFactor: "one-minus-src-alpha",
+							operation: "add"
+						}
+					}
+				],
+
 
 				// 드로잉 방법을 결정함
 				primitiveTopology: 'triangle-list'
