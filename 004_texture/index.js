@@ -250,7 +250,7 @@ async function init(glslang) {
 
 
 			// 드로잉 방법을 결정함
-			primitiveTopology: 'triangle-list'
+			primitiveTopology: 'triangle-list',
 			/*
 			GPUPrimitiveTopology {
 				"point-list",
@@ -260,6 +260,7 @@ async function init(glslang) {
 				"triangle-strip"
 			};
 			 */
+			sampleCount:4,
 		});
 		console.log(pipeline)
 
@@ -278,7 +279,7 @@ async function init(glslang) {
 		/**
 		 * 유니폼을 어떻게 바인딩 하나 봐야함
 		 */
-		const MAX = 100
+		const MAX = 1500
 		const matrixSize = 4 * 16; // 4x4 matrix
 		const offset = 256; // uniformBindGroup offset must be 256-byte aligned
 		const uniformBufferSize = offset * (MAX) + matrixSize;
@@ -300,7 +301,7 @@ async function init(glslang) {
 				}
 			}
 			testData.push({
-				position: new Float32Array([Math.random() * 10 - 5, Math.random() * 10 - 5, -10]),
+				position: new Float32Array([Math.random() * 30 - 15, Math.random() * 30 - 15, -20]),
 				rotations: new Float32Array([(Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2]),
 				uniformBindGroupData: tData,
 				uniformBindGroup: device.createBindGroup({
@@ -326,7 +327,17 @@ async function init(glslang) {
 		/**
 		 * 이제 실제로 그려야함
 		 */
-
+		const texture = device.createTexture({
+			size: {
+				width: canvas.width,
+				height: canvas.height,
+				depth: 1,
+			},
+			sampleCount:4,
+			format: swapChainFormat,
+			usage: GPUTextureUsage.OUTPUT_ATTACHMENT,
+		});
+		const attachment = texture.createView();
 		function draw(time) {
 			//유니폼설정
 			mat4.identity(projectionMatrix);
@@ -336,7 +347,8 @@ async function init(glslang) {
 			const textureView = swapChain.getCurrentTexture().createView();
 			const renderPassDescriptor = {
 				colorAttachments: [{
-					attachment: textureView,
+					attachment: attachment,
+					resolveTarget : textureView,
 					loadValue: {r: 1, g: 1, b: 0.0, a: 0.0},
 				}]
 			};
@@ -352,7 +364,9 @@ async function init(glslang) {
 				viewMatrix[12] = 0, viewMatrix[13] = 0, viewMatrix[14] = 0, viewMatrix[15] = 1
 				passEncoder.setVertexBuffer(0, verticesBuffer);
 				mat4.translate(viewMatrix, viewMatrix, testData[i]['position']);
-				mat4.rotateZ(viewMatrix, viewMatrix, testData[i]['rotations'][0] + time / 1000.0)
+				mat4.rotateX(viewMatrix, viewMatrix, testData[i]['rotations'][0] + time / 1000.0)
+				mat4.rotateY(viewMatrix, viewMatrix, testData[i]['rotations'][0] + time / 1000.0)
+				mat4.rotateZ(viewMatrix, viewMatrix, testData[i]['rotations'][2] + time / 1000.0)
 				mat4.multiply(viewMatrix, projectionMatrix, viewMatrix);
 				passEncoder.setBindGroup(0, testData[i]['uniformBindGroup']);
 				uniformBuffer.setSubData(testData[i]['uniformBindGroupData']['resource']['offset'], viewMatrix);
