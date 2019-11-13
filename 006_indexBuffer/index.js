@@ -199,11 +199,6 @@ async function init(glslang) {
 			"triangle-strip"
 		};
 		 */
-		depthStencilState: {
-			depthWriteEnabled: true,
-			depthCompare: "less",
-			format: "depth24plus-stencil8",
-		},
 	});
 	let projectionMatrix = mat4.create();
 	let modelMatrix = mat4.create();
@@ -240,15 +235,6 @@ async function init(glslang) {
 			})
 		})
 	}
-	const depthTexture = device.createTexture({
-		size: {
-			width: cvs.width,
-			height: cvs.height,
-			depth: 1
-		},
-		format: "depth24plus-stencil8",
-		usage: GPUTextureUsage.OUTPUT_ATTACHMENT
-	});
 
 	let render = async function (time) {
 		const swapChainTexture = swapChain.getCurrentTexture();
@@ -259,14 +245,7 @@ async function init(glslang) {
 			colorAttachments: [{
 				attachment: textureView,
 				loadValue: {r: 1, g: 1, b: 0.0, a: 1.0}
-			}],
-			depthStencilAttachment: {
-				attachment: depthTexture.createView(),
-				depthLoadValue: 1.0,
-				depthStoreOp: "store",
-				stencilLoadValue: 0,
-				stencilStoreOp: "store",
-			}
+			}]
 		};
 		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 		passEncoder.setVertexBuffer(0, vertexBuffer);
@@ -291,7 +270,7 @@ async function init(glslang) {
 				passEncoder.setBindGroup(0, tData['uniformBindGroup']);
 				tData['uniformBuffer'].setSubData(tData['offset'], projectionMatrix);
 				tData['uniformBuffer'].setSubData(tData['offset'] + 4 * 16, modelMatrix);
-				passEncoder.drawIndexed(indexData.length, 1, 0, 0,0);
+				passEncoder.drawIndexed(indexBuffer.pointNum, 1, 0, 0,0);
 			}
 		}
 
