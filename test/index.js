@@ -168,9 +168,7 @@ async function init(glslang) {
 						}
 					]
 				}
-			],
-			sampleCount: 4,
-			alphaToCoverageEnabled: false
+			]
 		},
 		// 컬러모드 지정하고
 		colorStates: [
@@ -245,6 +243,7 @@ async function init(glslang) {
 		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 		passEncoder.setVertexBuffer(0, vertexBuffer);
 		passEncoder.setPipeline(pipeline);
+		passEncoder.setScissorRect(0,0,cvs.width,cvs.height)
 
 		let i = childList.length;
 		let tData;
@@ -255,7 +254,7 @@ async function init(glslang) {
 			mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
 			mat4.rotateY(modelMatrix, modelMatrix, time / 1000);
 			mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
-			mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
+			// mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
 			///////////////////////////////////////////////////////////////////////////
 			// Chrome currently crashes with |setSubData| too large.
 			///////////////////////////////////////////////////////////////////////////
@@ -266,7 +265,7 @@ async function init(glslang) {
 				passEncoder.draw(6, 1, 0, 0);
 			}
 		}
-		console.log(tData['offset']);
+
 
 		passEncoder.endPass();
 

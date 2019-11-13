@@ -97,7 +97,7 @@ async function init(glslang) {
 		]
 	});
 	console.log('uniformsBindGroupLayout', uniformsBindGroupLayout);
-	const MAX = 10000;
+	const MAX = 2000;
 	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
 	const offset = 256; // uniformBindGroup offset must be 256-byte aligned
 	const uniformBufferSize = offset * MAX + matrixSize * 2;
@@ -168,9 +168,7 @@ async function init(glslang) {
 						}
 					]
 				}
-			],
-			sampleCount: 4,
-			alphaToCoverageEnabled: false
+			]
 		},
 		// 컬러모드 지정하고
 		colorStates: [
@@ -266,7 +264,7 @@ async function init(glslang) {
 				passEncoder.draw(6, 1, 0, 0);
 			}
 		}
-		console.log(tData['offset']);
+
 
 		passEncoder.endPass();
 

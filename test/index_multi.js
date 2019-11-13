@@ -260,7 +260,6 @@ async function init(glslang) {
 				"triangle-strip"
 			};
 			 */
-			sampleCount:4,
 		});
 		console.log(pipeline)
 
@@ -333,7 +332,7 @@ async function init(glslang) {
 				height: canvas.height,
 				depth: 1,
 			},
-			sampleCount:4,
+
 			format: swapChainFormat,
 			usage: GPUTextureUsage.OUTPUT_ATTACHMENT,
 		});
