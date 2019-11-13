@@ -109,7 +109,7 @@ async function init(glslang) {
 	/**
 	 * 텍스쳐를 만들어보자
 	 */
-	const testTexture = await createTextureFromImage(device, '../assets/crate.png', GPUTextureUsage.SAMPLED);
+	const testTexture = await createTextureFromImage(device, '../../assets/crate.png', GPUTextureUsage.SAMPLED);
 	const testSampler = device.createSampler({
 		magFilter: "linear",
 		minFilter: "linear",
