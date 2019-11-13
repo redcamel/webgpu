@@ -72,7 +72,7 @@ async function init(glslang) {
 			}
 		]
 	});
-	const matrixSize = 4 * 16; // 4x4 matrix
+	const matrixSize = 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
 	const offset = 256; // uniformBindGroup offset must be 256-byte aligned
 	const uniformBufferSize = offset + matrixSize * 2;
 	// 유니폼 버퍼를 생성하고
@@ -141,8 +141,6 @@ async function init(glslang) {
 		],
 		// 드로잉 방법을 결정함
 		primitiveTopology: 'triangle-list',
-		frontFace: "ccw",
-		cullMode: 'none',
 		/*
 		GPUPrimitiveTopology {
 			"point-list",

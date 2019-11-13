@@ -31,7 +31,7 @@ async function init(glslang) {
 	// 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
 	const cvs = document.createElement('canvas');
 	cvs.width = 1024;
-	cvs.height = 768
+	cvs.height = 768;
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent')
 
@@ -88,18 +88,11 @@ async function init(glslang) {
 		// 컬러모드 지정하고
 		colorStates: [
 			{
-				format: swapChainFormat,
-				alphaBlend: {
-					srcFactor: "src-alpha",
-					dstFactor: "one-minus-src-alpha",
-					operation: "add"
-				}
+				format: swapChainFormat
 			}
 		],
 		// 드로잉 방법을 결정함
 		primitiveTopology: 'triangle-list',
-		frontFace : "ccw",
-		cullMode : 'none',
 		/*
 		GPUPrimitiveTopology {
 			"point-list",
@@ -111,7 +104,7 @@ async function init(glslang) {
 		 */
 	});
 
-	let render =  function () {
+	let render = function () {
 		const commandEncoder = device.createCommandEncoder();
 		const textureView = swapChain.getCurrentTexture().createView();
 		// console.log(swapChain.getCurrentTexture())

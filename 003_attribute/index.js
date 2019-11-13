@@ -152,8 +152,6 @@ async function init(glslang) {
 		],
 		// 드로잉 방법을 결정함
 		primitiveTopology: 'triangle-list',
-		frontFace: "ccw",
-		cullMode: 'none',
 		/*
 		GPUPrimitiveTopology {
 			"point-list",

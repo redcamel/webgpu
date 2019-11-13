@@ -8,18 +8,24 @@ const vertexShaderGLSL = `
     } uniforms;
 	layout(location = 0) in vec4 position;
 	layout(location = 1) in vec4 color;
+	layout(location = 2) in vec2 uv;
 	layout(location = 0) out vec4 vColor;
+	layout(location = 1) out vec2 vUV;
 	void main() {
 		gl_Position = uniforms.projectionMatrix * uniforms.modelMatrix * position;
 		vColor = color;
+		vUV = uv;
 	}
 	`;
 const fragmentShaderGLSL = `
 	#version 450
 	layout(location = 0) in vec4 vColor;
+	layout(location = 1) in vec2 vUV;
+	layout(set = 0, binding = 1) uniform sampler uSampler;
+	layout(set = 0, binding = 2) uniform texture2D uTexture;
 	layout(location = 0) out vec4 outColor;
 	void main() {
-		outColor = vColor;
+		outColor = texture(sampler2D(uTexture, uSampler), vUV) * vColor;
 	}
 `;
 
@@ -57,9 +63,13 @@ async function init(glslang) {
 		device,
 		new Float32Array(
 			[
-				-1.0, -1.0, 0.0, 1.0,  Math.random(),Math.random(),Math.random(),1.0,
-				0.0, 1.0, 0.0, 1.0,    Math.random(),Math.random(),Math.random(),1.0,
-				1.0, -1.0, 0.0, 1.0,   Math.random(),Math.random(),Math.random(),1.0
+				-1.0, -1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 0.0, 0.0,
+				1.0, -1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 0.0, 1.0,
+				-1.0, 1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 1.0, 0.0,
+
+				-1.0, 1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 1.0, 0.0,
+				1.0, -1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 0.0, 1.0,
+				1.0, 1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0, 1.0, 1.0
 			]
 		)
 	);
@@ -73,11 +83,21 @@ async function init(glslang) {
 				binding: 0,
 				visibility: GPUShaderStage.VERTEX,
 				type: "uniform-buffer"
+			},
+			{
+				binding: 1,
+				visibility: GPUShaderStage.FRAGMENT,
+				type: "sampler"
+			},
+			{
+				binding: 2,
+				visibility: GPUShaderStage.FRAGMENT,
+				type: "sampled-texture"
 			}
 		]
 	});
-	console.log('uniformsBindGroupLayout',uniformsBindGroupLayout)
-	const matrixSize = 4 * 4 * 4; // 4x4 matrix
+	console.log('uniformsBindGroupLayout', uniformsBindGroupLayout)
+	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
 	const offset = 0; // uniformBindGroup offset must be 256-byte aligned
 	const uniformBufferSize = offset + matrixSize * 2;
 	// 유니폼 버퍼를 생성하고
@@ -85,7 +105,18 @@ async function init(glslang) {
 		size: uniformBufferSize,
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 	});
-	console.log('uniformBuffer',uniformBuffer)
+	console.log('uniformBuffer', uniformBuffer)
+	/**
+	 * 텍스쳐를 만들어보자
+	 */
+	const testTexture = await createTextureFromImage(device, '../assets/crate.png', GPUTextureUsage.SAMPLED);
+	const testSampler = device.createSampler({
+		magFilter: "linear",
+		minFilter: "linear",
+		mipmapFilter: "linear"
+	});
+	console.log('cubeTexture', testTexture)
+
 	const uniformBindGroupDescriptor = {
 		layout: uniformsBindGroupLayout,
 		bindings: [
@@ -96,12 +127,20 @@ async function init(glslang) {
 					offset: 0,
 					size: matrixSize
 				}
+			},
+			{
+				binding: 1,
+				resource: testSampler,
+			},
+			{
+				binding: 2,
+				resource: testTexture.createView(),
 			}
 		]
 	};
-	console.log('uniformBindGroupDescriptor',uniformBindGroupDescriptor)
+	console.log('uniformBindGroupDescriptor', uniformBindGroupDescriptor)
 	const uniformBindGroup = device.createBindGroup(uniformBindGroupDescriptor);
-	console.log('uniformBindGroup',uniformBindGroup)
+	console.log('uniformBindGroup', uniformBindGroup)
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
@@ -121,7 +160,7 @@ async function init(glslang) {
 			indexFormat: 'uint32',
 			vertexBuffers: [
 				{
-					arrayStride: 8 * 4,
+					arrayStride: 10 * 4,
 					attributes: [
 						{
 							// position
@@ -132,8 +171,14 @@ async function init(glslang) {
 						{
 							// color
 							shaderLocation: 1,
-							offset:  4 * 4,
+							offset: 4 * 4,
 							format: "float4"
+						},
+						{
+							// uv
+							shaderLocation: 2,
+							offset: 8 * 4,
+							format: "float2"
 						}
 					]
 				}
@@ -152,8 +197,6 @@ async function init(glslang) {
 		],
 		// 드로잉 방법을 결정함
 		primitiveTopology: 'triangle-list',
-		frontFace: "ccw",
-		cullMode: 'none',
 		/*
 		GPUPrimitiveTopology {
 			"point-list",
@@ -169,7 +212,6 @@ async function init(glslang) {
 	let aspect = Math.abs(cvs.width / cvs.height);
 	mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
 
-	// mat4.multiply(projectionMatrix, projectionMatrix, modelMatrix);
 
 
 	let render = async function (time) {
@@ -204,7 +246,7 @@ async function init(glslang) {
 		renderData['uniformBuffer'].setSubData(4 * 16, modelMatrix);
 
 
-		passEncoder.draw(3, 1, 0, 0);
+		passEncoder.draw(6, 1, 0, 0);
 		passEncoder.endPass();
 		const test = commandEncoder.finish()
 		device.getQueue().submit([test]);
@@ -250,3 +292,72 @@ function makeVertexBuffer(device, data) {
 	return verticesBuffer
 }
 
+async function createTextureFromImage(device, src, usage) {
+	// 귀찮아서 텍스쳐 맹그는 놈은 들고옴
+	const img = document.createElement('img');
+	console.log('여긴오곘고')
+	img.src = src;
+	await img.decode();
+
+	const imageCanvas = document.createElement('canvas');
+	imageCanvas.width = img.width;
+	imageCanvas.height = img.height;
+
+	const imageCanvasContext = imageCanvas.getContext('2d');
+	imageCanvasContext.translate(0, img.height);
+	imageCanvasContext.scale(1, -1);
+	imageCanvasContext.drawImage(img, 0, 0, img.width, img.height);
+	const imageData = imageCanvasContext.getImageData(0, 0, img.width, img.height);
+
+	let data = null;
+
+	const rowPitch = Math.ceil(img.width * 4 / 256) * 256;
+	if (rowPitch == img.width * 4) {
+		data = imageData.data;
+	} else {
+		data = new Uint8Array(rowPitch * img.height);
+		for (let y = 0; y < img.height; ++y) {
+			for (let x = 0; x < img.width; ++x) {
+				let i = x * 4 + y * rowPitch;
+				data[i] = imageData.data[i];
+				data[i + 1] = imageData.data[i + 1];
+				data[i + 2] = imageData.data[i + 2];
+				data[i + 3] = imageData.data[i + 3];
+			}
+		}
+	}
+
+	const texture = device.createTexture({
+		size: {
+			width: img.width,
+			height: img.height,
+			depth: 1,
+		},
+		format: "rgba8unorm",
+		usage: GPUTextureUsage.COPY_DST | usage,
+	});
+
+	const textureDataBuffer = device.createBuffer({
+		size: data.byteLength,
+		usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+	});
+
+	textureDataBuffer.setSubData(0, data);
+
+	const commandEncoder = device.createCommandEncoder({});
+	commandEncoder.copyBufferToTexture({
+		buffer: textureDataBuffer,
+		rowPitch: rowPitch,
+		imageHeight: 0,
+	}, {
+		texture: texture,
+	}, {
+		width: img.width,
+		height: img.height,
+		depth: 1,
+	});
+
+	device.getQueue().submit([commandEncoder.finish()]);
+
+	return texture;
+}
