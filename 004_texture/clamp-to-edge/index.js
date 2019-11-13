@@ -114,9 +114,9 @@ async function init(glslang) {
 		magFilter: "linear",
 		minFilter: "linear",
 		mipmapFilter: "linear",
-		addressModeU : "mirror-repeat",
-		addressModeV : "mirror-repeat",
-		addressModeW : "mirror-repeat"
+		addressModeU : "clamp-to-edge",
+		addressModeV : "clamp-to-edge",
+		addressModeW : "clamp-to-edge"
 		// 	enum GPUAddressMode {
 		// 	    "clamp-to-edge",
 		// 		"repeat",
