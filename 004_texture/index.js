@@ -115,7 +115,7 @@ async function init(glslang) {
 		minFilter: "linear",
 		mipmapFilter: "linear"
 	});
-	console.log('cubeTexture', testTexture)
+	console.log('testTexture', testTexture)
 
 	const uniformBindGroupDescriptor = {
 		layout: uniformsBindGroupLayout,

@@ -25,7 +25,7 @@ const fragmentShaderGLSL = `
 	layout(set = 0, binding = 2) uniform texture2D uTexture;
 	layout(location = 0) out vec4 outColor;
 	void main() {
-		outColor = texture(sampler2D(uTexture, uSampler), vUV) ;
+		outColor = texture(sampler2D(uTexture, uSampler), vUV) * vColor;
 	}
 `;
 
