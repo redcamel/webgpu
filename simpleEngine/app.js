@@ -1,5 +1,7 @@
 import RedGPU from "./src/RedGPU.js";
 import RedMesh from "./src/RedMesh.js";
+import RedBitmapMaterial from "./src/RedBitmapMaterial.js";
+import RedRender from "./src/RedRender.js";
 
 
 (async function () {
@@ -11,23 +13,31 @@ import RedMesh from "./src/RedMesh.js";
 	console.log(glslang)
 	let redGPU = new RedGPU(cvs, glslang)
 	requestAnimationFrame(function () {
-		let testMesh = new RedMesh(redGPU)
-		testMesh.x = Math.random()
-		testMesh.y = Math.random()
-		testMesh.z = Math.random()
-		redGPU.addChild(testMesh)
-
+		let i = 1000;
+		let tMat = new RedBitmapMaterial(redGPU, '../assets/crate.png')
+		if (i > 2000) i = 2000
+		while (i--) {
+			let testMesh = new RedMesh(redGPU, tMat)
+			testMesh.x = Math.random() * 30 - 15
+			testMesh.y = Math.random() * 20 - 10
+			testMesh.z = -15 - Math.random() * 20
+			redGPU.addChild(testMesh)
+		}
+		const depthTexture = redGPU.device.createTexture({
+			size: {
+				width: cvs.width,
+				height: cvs.height,
+				depth: 1
+			},
+			format: "depth24plus-stencil8",
+			usage: GPUTextureUsage.OUTPUT_ATTACHMENT
+		});
+		let renderer = new RedRender()
 		let render = function (time) {
-			for (const tMesh of redGPU.children) {
-				if (tMesh.isDirty) {
-					tMesh.calculateLocalMatrix()
-					tMesh.isDirty = false
-				}
-				// console.log(tMesh)
-			}
+			renderer.render(time, redGPU, depthTexture)
 			requestAnimationFrame(render)
 		}
 		requestAnimationFrame(render)
-	})
+	}, 1000)
 
 })();

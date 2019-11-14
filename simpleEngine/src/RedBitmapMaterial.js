@@ -1,8 +1,7 @@
 const vertexShaderGLSL = `
 	#version 450
     layout(set=0,binding = 0) uniform Uniforms {
-        mat4 projectionMatrix;
-        mat4 modelMatrix;
+        mat4 mvp;
     } uniforms;
 	layout(location = 0) in vec3 position;
 	layout(location = 1) in vec3 normal;
@@ -10,7 +9,7 @@ const vertexShaderGLSL = `
 	layout(location = 0) out vec3 vNormal;
 	layout(location = 1) out vec2 vUV;
 	void main() {
-		gl_Position = uniforms.projectionMatrix * uniforms.modelMatrix * vec4(position,1.0);
+		gl_Position = uniforms.mvp* vec4(position,1.0);
 		vNormal = normal;
 		vUV = uv;
 	}
@@ -46,14 +45,14 @@ let get_uniformsBindGroupLayout = function (redGPU) {
 				{
 					binding: 2,
 					visibility: GPUShaderStage.FRAGMENT,
-					type: "sampled-texture",
-					textureComponentType: "float"
+					type: "sampled-texture"
 				},
 			]
 		});
 	}
 	return uniformsBindGroupLayout
 }
+let diffuseTexture
 export default class RedBitmapMaterial {
 	constructor(redGPU, src) {
 		if (!vShaderModule) {
@@ -86,9 +85,26 @@ export default class RedBitmapMaterial {
 			// 		"mirror-repeat"
 			//  };
 		});
-		let self = this
-		this.setTexture(redGPU, src).then(function (diffuseTexture) {
-			self.bindings = [
+		const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
+		const uniformBufferSize = matrixSize ;
+		// 유니폼 버퍼를 생성하고
+		this.uniformBufferDescripter = {
+			size: uniformBufferSize,
+			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+		}
+
+		let self = this;
+		(async function(){
+			 if(!diffuseTexture) diffuseTexture = await createTextureFromImage(redGPU.device, src, GPUTextureUsage.SAMPLED);
+			self.bindings =  [
+				{
+					binding: 0,
+					resource: {
+						buffer: null,
+						offset: 0,
+						size: matrixSize
+					}
+				},
 				{
 					binding: 1,
 					resource: testSampler,
@@ -97,18 +113,14 @@ export default class RedBitmapMaterial {
 					binding: 2,
 					resource: diffuseTexture.createView(),
 				}
-			];
-			self.diffuseTexture = diffuseTexture
-			console.log(diffuseTexture)
-		});
+			]
+
+		})()
 
 
 	}
 
-	async setTexture(redGPU, src) {
-		const tTexture = await createTextureFromImage(redGPU.device, src, GPUTextureUsage.SAMPLED);
-		return tTexture
-	}
+
 }
 
 async function createTextureFromImage(device, src, usage) {
