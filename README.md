@@ -15,6 +15,7 @@ These study samples run in Chrome Canary() behind the flag --enable-unsafe-webgp
         - [repeat](https://redcamel.github.io/webgpu/004_texture/repeat)
  - ## multiple draw     
     - [draw multiple object](https://redcamel.github.io/webgpu/005_multiObject)
+    - [instancing](https://redcamel.github.io/webgpu/008_instancing)
  - ## IndexBuffer
     - [indexBuffer - use drawIndexed](https://redcamel.github.io/webgpu/006_indexBuffer)
  - ## Lighting
