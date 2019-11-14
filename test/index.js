@@ -205,11 +205,11 @@ async function init(glslang) {
 		const uniformBuffer = await device.createBuffer({
 			size: uniformBufferSize,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+
 		});
 		// console.log('uniformBuffer', uniformBuffer);
 		childList.push({
 			position: [Math.random() * 40 - 20, Math.random() * 24 - 12, -20],
-			offset: i * offset,
 			uniformBuffer: uniformBuffer,
 			uniformsBindGroup: device.createBindGroup({
 				layout: uniformsBindGroupLayout,
@@ -244,32 +244,50 @@ async function init(glslang) {
 		format: "depth24plus-stencil8",
 		usage: GPUTextureUsage.OUTPUT_ATTACHMENT
 	});
+	const renderPassDescriptor = {
+		colorAttachments: [{
+			attachment: null,
+			loadValue: {r: 1, g: 1, b: 0.0, a: 1.0}
+		}],
+		depthStencilAttachment: {
+			attachment: depthTexture.createView(),
+			depthLoadValue: 1.0,
+			depthStoreOp: "clear",
+			stencilLoadValue: 0,
+			stencilStoreOp: "clear",
+		}
+	};
 
-	let render = async function (time) {
-		const swapChainTexture = swapChain.getCurrentTexture();
-		const commandEncoder = device.createCommandEncoder();
-		const textureView = swapChainTexture.createView();
-		// console.log(swapChain.getCurrentTexture())
-		const renderPassDescriptor = {
-			colorAttachments: [{
-				attachment: textureView,
-				loadValue: {r: 1, g: 1, b: 0.0, a: 1.0}
-			}],
-			depthStencilAttachment: {
-				attachment: depthTexture.createView(),
-				depthLoadValue: 1.0,
-				depthStoreOp: "store",
-				stencilLoadValue: 0,
-				stencilStoreOp: "store",
-			}
-		};
-		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+	const renderBundleEncoder = device.createRenderBundleEncoder({
+		colorFormats: [swapChainFormat],
+		depthStencilFormat : depthTexture.format
+	});
+	let currentTime
+	function recordRenderPass(passEncoder){
 		passEncoder.setVertexBuffer(0, vertexBuffer);
 		passEncoder.setIndexBuffer(indexBuffer);
 		passEncoder.setPipeline(pipeline);
 		// passEncoder.setViewport(0, 0, cvs.width, cvs.height,0,1)
 		// passEncoder.setScissorRect(0, 0, cvs.width, cvs.height)
 
+		let i = childList.length;
+		let tData;
+		while (i--) {
+			tData = childList[i];
+
+			///////////////////////////////////////////////////////////////////////////
+			// Chrome currently crashes with |setSubData| too large.
+			///////////////////////////////////////////////////////////////////////////
+			if (i < 2048) {
+				passEncoder.setBindGroup(0, tData['uniformsBindGroup']);
+				passEncoder.drawIndexed(indexBuffer.pointNum, 1, 0, 0, 0);
+			}
+		}
+	}
+	recordRenderPass(renderBundleEncoder);
+	const renderBundle = renderBundleEncoder.finish();
+	let render = async function (time) {
+		currentTime = time
 		let i = childList.length;
 		let tData;
 		while (i--) {
@@ -285,14 +303,26 @@ async function init(glslang) {
 			// Chrome currently crashes with |setSubData| too large.
 			///////////////////////////////////////////////////////////////////////////
 			if (i < 2048) {
-				 passEncoder.setBindGroup(0, tData['uniformsBindGroup']);
 				tData['uniformBuffer'].setSubData(0, modelMatrix);
-				passEncoder.drawIndexed(indexBuffer.pointNum, 1, 0, 0, 0);
 			}
 		}
 
+		const swapChainTexture = swapChain.getCurrentTexture();
+		const commandEncoder = device.createCommandEncoder();
+		const textureView = swapChainTexture.createView();
+		// console.log(swapChain.getCurrentTexture())
+		renderPassDescriptor['colorAttachments'][0]['attachment'] = textureView
+		// renderPassDescriptor['depthStencilAttachment']['attachment'] = depthTexture.createView()
 
+		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+
+		// passEncoder.setViewport(0, 0, cvs.width, cvs.height,0,1)
+		// passEncoder.setScissorRect(0, 0, cvs.width, cvs.height)
+		passEncoder.executeBundles([renderBundle]);
 		passEncoder.endPass();
+
+
+
 
 
 		const test = commandEncoder.finish();
