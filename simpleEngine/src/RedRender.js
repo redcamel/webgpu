@@ -2,7 +2,12 @@ export default class RedRender {
 	render(time, redGPU, depthTexture) {
 		let projectionMatrix = mat4.create();
 		let aspect = Math.abs(redGPU.canvas.width / redGPU.canvas.height);
-		mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
+		mat4.perspective(projectionMatrix, ( Math.PI/180) *60, aspect, 0.01, 10000.0);
+
+		let cameraMatrix = mat4.create()
+		var up = new Float32Array([0, 1, 0]);
+		var tPosition = [0,0,0];
+		mat4.lookAt(cameraMatrix, [Math.sin(time/5000)*15,Math.cos(time/3000)*15,Math.sin(time/2500)*15], tPosition, up);
 
 		const swapChainTexture = redGPU.swapChain.getCurrentTexture();
 		const commandEncoder = redGPU.device.createCommandEncoder();
@@ -22,7 +27,10 @@ export default class RedRender {
 			}
 		};
 		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+		passEncoder.setViewport(0, 0, redGPU.canvas.width, redGPU.canvas.height,0,1)
+		passEncoder.setScissorRect(0, 0, redGPU.canvas.width, redGPU.canvas.height)
 		let i = redGPU.children.length
+		let tempMTX = mat4.create()
 		while (i--) {
 			let tMesh = redGPU.children[i]
 			if (tMesh.isDirty) {
@@ -37,14 +45,17 @@ export default class RedRender {
 			passEncoder.setIndexBuffer(tMesh.geometry.indexBuffer);
 
 
-			let modelMatrix = tMesh.localMatrix
-			mat4.identity(modelMatrix);
-			mat4.translate(modelMatrix, modelMatrix, [tMesh.x, tMesh.y, tMesh.z]);
-			mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
-			mat4.rotateY(modelMatrix, modelMatrix, time / 1000);
-			mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
-			mat4.multiply(modelMatrix, projectionMatrix, modelMatrix)
-			// mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
+
+			mat4.identity(tempMTX);
+			mat4.translate(tempMTX, tempMTX, [tMesh.x, tMesh.y, tMesh.z]);
+			mat4.rotateX(tempMTX, tempMTX, time / 1000);
+			mat4.rotateY(tempMTX, tempMTX, time / 1000);
+			mat4.rotateZ(tempMTX, tempMTX, time / 1000);
+			mat4.scale(tempMTX, tempMTX, [tMesh.scaleX, tMesh.scaleY, tMesh.scaleZ]);
+			mat4.multiply(tempMTX, cameraMatrix, tempMTX)
+			mat4.multiply(tempMTX, projectionMatrix, tempMTX)
+
+			// mat4.scale(tempMTX, tempMTX, [1, 1, 1]);
 			///////////////////////////////////////////////////////////////////////////
 			// Chrome currently crashes with |setSubData| too large.
 			///////////////////////////////////////////////////////////////////////////
@@ -60,7 +71,7 @@ export default class RedRender {
 					)
 				}
 				passEncoder.setBindGroup(0, tMesh.uniformBindBuffer);
-				tMesh.uniformBuffer.setSubData(0, modelMatrix);
+				tMesh.uniformBuffer.setSubData(0, tempMTX);
 				passEncoder.drawIndexed(tMesh.geometry.indexBuffer.pointNum, 1, 0, 0, 0);
 
 			}

@@ -19,8 +19,9 @@ import RedRender from "./src/RedRender.js";
 		while (i--) {
 			let testMesh = new RedMesh(redGPU, tMat)
 			testMesh.x = Math.random() * 30 - 15
-			testMesh.y = Math.random() * 20 - 10
-			testMesh.z = -15 - Math.random() * 20
+			testMesh.y = Math.random() * 30 - 15
+			testMesh.z =  Math.random() * 30 - 15
+			testMesh.scaleX = testMesh.scaleY = testMesh.scaleZ = Math.random()
 			redGPU.addChild(testMesh)
 		}
 		const depthTexture = redGPU.device.createTexture({
