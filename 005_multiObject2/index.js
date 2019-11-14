@@ -3,8 +3,7 @@ ready.then(init);
 const vertexShaderGLSL = `
 	#version 450
     layout(set=0,binding = 0) uniform Uniforms {
-        mat4 projectionMatrix;
-        mat4 modelMatrix;
+        mat4 mvp;
     } uniforms;
 	layout(location = 0) in vec3 position;
 	layout(location = 1) in vec3 normal;
@@ -12,7 +11,7 @@ const vertexShaderGLSL = `
 	layout(location = 0) out vec3 vNormal;
 	layout(location = 1) out vec2 vUV;
 	void main() {
-		gl_Position = uniforms.projectionMatrix * uniforms.modelMatrix * vec4(position,1.0);
+		gl_Position = uniforms.mvp *  vec4(position,1.0);
 		vNormal = normal;
 		vUV = uv;
 	}
@@ -101,7 +100,7 @@ async function init(glslang) {
 	const MAX = 2000;
 	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
 	const offset = 0; // uniformBindGroup offset must be 256-byte aligned
-	const uniformBufferSize = matrixSize * 2;
+	const uniformBufferSize = matrixSize;
 	// 유니폼 버퍼를 생성하고
 
 	/**
@@ -268,7 +267,8 @@ async function init(glslang) {
 		passEncoder.setVertexBuffer(0, vertexBuffer);
 		passEncoder.setIndexBuffer(indexBuffer);
 		passEncoder.setPipeline(pipeline);
-		passEncoder.setScissorRect(0, 0, cvs.width, cvs.height)
+		// passEncoder.setViewport(0, 0, cvs.width, cvs.height,0,1)
+		// passEncoder.setScissorRect(0, 0, cvs.width, cvs.height)
 
 		let i = childList.length;
 		let tData;
@@ -279,11 +279,16 @@ async function init(glslang) {
 			mat4.rotateX(modelMatrix, modelMatrix, time / 1000 + i);
 			mat4.rotateY(modelMatrix, modelMatrix, time / 1000 + i);
 			mat4.rotateZ(modelMatrix, modelMatrix, time / 1000 + i);
+			mat4.multiply(modelMatrix, projectionMatrix, modelMatrix);
 			// mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
-			passEncoder.setBindGroup(0, tData['uniformsBindGroup']);
-			tData['uniformBuffer'].setSubData(0, projectionMatrix);
-			tData['uniformBuffer'].setSubData(4 * 16, modelMatrix);
-			passEncoder.drawIndexed(indexBuffer.pointNum, 1, 0, 0, 0);
+			///////////////////////////////////////////////////////////////////////////
+			// Chrome currently crashes with |setSubData| too large.
+			///////////////////////////////////////////////////////////////////////////
+			if (i < 2048) {
+				passEncoder.setBindGroup(0, tData['uniformsBindGroup']);
+				tData['uniformBuffer'].setSubData(0, modelMatrix);
+				passEncoder.drawIndexed(indexBuffer.pointNum, 1, 0, 0, 0);
+			}
 		}
 
 
