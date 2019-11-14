@@ -50,6 +50,34 @@ export default class RedSphere {
 				]
 			)
 		)
+		this.vertexState = {
+			indexFormat: 'uint32',
+			vertexBuffers: [
+				{
+					arrayStride: 8 * 4,
+					attributes: [
+						{
+							// position
+							shaderLocation: 0,
+							offset: 0,
+							format: "float3"
+						},
+						{
+							// normal
+							shaderLocation: 1,
+							offset: 3 * 4,
+							format: "float3"
+						},
+						{
+							// uv
+							shaderLocation: 2,
+							offset: 6 * 4,
+							format: "float2"
+						}
+					]
+				}
+			]
+		};
 		console.log(this)
 	}
 }

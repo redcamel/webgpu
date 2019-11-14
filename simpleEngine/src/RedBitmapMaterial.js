@@ -64,6 +64,15 @@ export default class RedBitmapMaterial {
 		this.fShaderModule = fShaderModule;
 		this.uniformsBindGroupLayout = get_uniformsBindGroupLayout(redGPU)
 
+		this.vertexStage = {
+			module: vShaderModule,
+			entryPoint: 'main'
+		};
+		this.fragmentStage = {
+			module: fShaderModule,
+			entryPoint: 'main'
+		};
+
 		const testSampler = redGPU.device.createSampler({
 			magFilter: "linear",
 			minFilter: "linear",
