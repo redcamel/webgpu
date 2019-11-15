@@ -1,10 +1,8 @@
 "use strict"
 import RedBaseObjectContainer from "./base/RedBaseObjectContainer.js";
 import RedSphere from "./geometry/RedSphere.js";
-import RedStandardMaterial from "./material/RedStandardMaterial.js";
 
 let table = new Map()
-let uniformbuffer;
 export default class RedMesh extends RedBaseObjectContainer {
 	#material;
 	#geometry;
@@ -23,6 +21,8 @@ export default class RedMesh extends RedBaseObjectContainer {
 
 	set geometry(v) {
 		this.#geometry = v
+		this.pipeline = null
+		this.isDirty = true
 	}
 	get material() {
 		return this.#material
@@ -30,10 +30,13 @@ export default class RedMesh extends RedBaseObjectContainer {
 
 	set material(v) {
 		this.#material = v
-		this.uniformBuffer = this.#redGPU .device.createBuffer(v.uniformBufferDescripter);
+		this.uniformBuffer = this.#redGPU.device.createBuffer(v.uniformBufferDescripter);
+		this.pipeline = null
+		this.isDirty = true
 	}
 
 	createPipeline(redGPU) {
+		this.uniformBindGroup=null
 		const device = redGPU.device;
 		const descriptor = {
 			// 레이아웃은 재질이 알고있으니 들고옴
@@ -48,7 +51,7 @@ export default class RedMesh extends RedBaseObjectContainer {
 				entryPoint: 'main'
 			},
 			// 버텍스 상태는 지오메트리가 알고있음으로 들고옴
-			vertexState: this.geometry.vertexState,
+			vertexState: this.#geometry.vertexState,
 			// 컬러모드 지정하고
 			colorStates: [
 				{
@@ -78,7 +81,9 @@ export default class RedMesh extends RedBaseObjectContainer {
 			 */
 		};
 		// console.log(table.get(this.#material))
+
 		if (table.has(this.#material)) return this.pipeline = table.get(this.#material)
+		// this.uniformBindGroup = null
 		let pipeline = device.createRenderPipeline(descriptor);
 		this.pipeline = pipeline
 		table.set(this.#material, pipeline);
