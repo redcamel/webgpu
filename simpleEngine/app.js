@@ -15,9 +15,10 @@ import RedRender from "./src/RedRender.js";
 	requestAnimationFrame(function () {
 		let i = 1000;
 		let tMat = new RedBitmapMaterial(redGPU, '../assets/crate.png')
+		let tMat2 = new RedBitmapMaterial(redGPU, '../assets/UV_Grid_Sm.jpg')
 		if (i > 2000) i = 2000
 		while (i--) {
-			let testMesh = new RedMesh(redGPU, tMat)
+			let testMesh = new RedMesh(redGPU, Math.random()>0.5 ? tMat : tMat2)
 			testMesh.x = Math.random() * 30 - 15
 			testMesh.y = Math.random() * 30 - 15
 			testMesh.z =  Math.random() * 30 - 15
