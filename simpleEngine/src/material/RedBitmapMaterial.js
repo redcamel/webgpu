@@ -59,7 +59,7 @@ let get_uniformsBindGroupLayout = function (redGPU) {
 		});
 	}
 	return uniformsBindGroupLayout
-}
+};
 
 export default class RedBitmapMaterial {
 	static matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
@@ -72,10 +72,10 @@ export default class RedBitmapMaterial {
 			vShaderModule = util_makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'vertex', vertexShaderGLSL);
 			fShaderModule = util_makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'fragment', fragmentShaderGLSL);
 		}
-		this.#redGPU = redGPU
+		this.#redGPU = redGPU;
 		this.vShaderModule = vShaderModule;
 		this.fShaderModule = fShaderModule;
-		this.uniformsBindGroupLayout = get_uniformsBindGroupLayout(redGPU)
+		this.uniformsBindGroupLayout = get_uniformsBindGroupLayout(redGPU);
 
 		this.vertexStage = {
 			module: vShaderModule,
@@ -104,7 +104,7 @@ export default class RedBitmapMaterial {
 		this.uniformBufferDescripter = {
 			size: RedBitmapMaterial.uniformBufferSize,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-		}
+		};
 
 		this.diffuseTexture = diffuseSrc
 	}
@@ -114,7 +114,7 @@ export default class RedBitmapMaterial {
 		self.bindings = null;
 		(async function (v) {
 			self.#diffuseTexture = await util_createTextureFromImage(self.#redGPU.device, v, GPUTextureUsage.SAMPLED);
-			console.log('로딩됨', v)
+			console.log('로딩됨', v);
 			self.resetBindingInfo()
 		})(src);
 	}
@@ -141,11 +141,11 @@ export default class RedBitmapMaterial {
 				binding: 2,
 				resource: this.#diffuseTexture.createView(),
 			}
-		]
+		];
 		this.uniformBindGroupDescriptor = {
 			layout: this.uniformsBindGroupLayout,
 			bindings: this.bindings
-		}
+		};
 		console.log(this.#diffuseTexture)
 	}
 }

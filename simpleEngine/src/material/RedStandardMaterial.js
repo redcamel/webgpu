@@ -121,13 +121,13 @@ let get_uniformsBindGroupLayout = function (redGPU) {
 		});
 	}
 	return uniformsBindGroupLayout
-}
+};
 
 export default class RedStandardMaterial {
 	static  matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
 	static uniformBufferSize = RedStandardMaterial.matrixSize;
-	#diffuseTexture
-	#normalTexture
+	#diffuseTexture;
+	#normalTexture;
 	#redGPU;
 
 	constructor(redGPU, diffuseSrc, normalSrc) {
@@ -135,10 +135,10 @@ export default class RedStandardMaterial {
 			vShaderModule = util_makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'vertex', vertexShaderGLSL);
 			fShaderModule = util_makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'fragment', fragmentShaderGLSL);
 		}
-		this.#redGPU = redGPU
+		this.#redGPU = redGPU;
 		this.vShaderModule = vShaderModule;
 		this.fShaderModule = fShaderModule;
-		this.uniformsBindGroupLayout = get_uniformsBindGroupLayout(redGPU)
+		this.uniformsBindGroupLayout = get_uniformsBindGroupLayout(redGPU);
 
 		this.vertexStage = {
 			module: vShaderModule,
@@ -167,9 +167,9 @@ export default class RedStandardMaterial {
 		this.uniformBufferDescripter = {
 			size: RedStandardMaterial.uniformBufferSize,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-		}
+		};
 
-		this.diffuseTexture = diffuseSrc
+		this.diffuseTexture = diffuseSrc;
 		this.normalTexture = normalSrc
 
 
@@ -180,7 +180,7 @@ export default class RedStandardMaterial {
 		self.bindings = null;
 		(async function (v) {
 			self.#diffuseTexture = await util_createTextureFromImage(self.#redGPU.device, v, GPUTextureUsage.SAMPLED);
-			console.log('로딩됨', v)
+			console.log('로딩됨', v);
 			self.resetBindingInfo()
 		})(src);
 	}
@@ -194,7 +194,7 @@ export default class RedStandardMaterial {
 		self.bindings = null;
 		(async function (v) {
 			self.#normalTexture = await util_createTextureFromImage(self.#redGPU.device, v, GPUTextureUsage.SAMPLED);
-			console.log('로딩됨', v)
+			console.log('로딩됨', v);
 			self.resetBindingInfo()
 		})(src);
 	}
@@ -204,7 +204,7 @@ export default class RedStandardMaterial {
 	}
 
 	resetBindingInfo() {
-		console.log(this.#diffuseTexture && this.#normalTexture)
+		console.log(this.#diffuseTexture && this.#normalTexture);
 		if ('resetBindingInfo', this.#diffuseTexture && this.#normalTexture) {
 			this.bindings = [
 				{
@@ -227,12 +227,12 @@ export default class RedStandardMaterial {
 					binding: 3,
 					resource: this.#normalTexture.createView(),
 				}
-			]
+			];
 			this.uniformBindGroupDescriptor = {
 				layout: this.uniformsBindGroupLayout,
 				bindings: this.bindings
-			}
-			console.log(this.#diffuseTexture)
+			};
+			console.log(this.#diffuseTexture);
 			console.log(this.#normalTexture)
 		}
 	}

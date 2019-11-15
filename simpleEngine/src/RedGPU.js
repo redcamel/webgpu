@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 import RedBaseObjectContainer from "./base/RedBaseObjectContainer.js";
 
 let redGPUList = new Set();
@@ -6,7 +6,7 @@ let setGlobalResizeEvent = function () {
 	window.addEventListener('resize', _ => {
 		// for (const redGPU of redGPUList) redGPU.setSize()
 	})
-}
+};
 export default class RedGPU extends RedBaseObjectContainer {
 
 	#width = 0;
@@ -17,7 +17,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 			powerPreference: "high-performance"
 		});
 		const device = await adapter.requestDevice();
-		this.device = device
+		this.device = device;
 		this.swapChainFormat = "bgra8unorm";
 		this.swapChain = await configureSwapChain(this.device, this.swapChainFormat, canvas.getContext('gpupresent'));
 		this.system_uniformBindGroupLayout = device.createBindGroupLayout({
@@ -29,13 +29,13 @@ export default class RedGPU extends RedBaseObjectContainer {
 				}
 			]
 		});
-		let uniformBufferSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT * 2
+		let uniformBufferSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT * 2;
 		let uniformBufferDescripter = {
 			size: uniformBufferSize,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-		}
+		};
 		this.system_uniformBuffer = await device.createBuffer(uniformBufferDescripter);
-		console.log(this.system_uniformBuffer)
+		console.log(this.system_uniformBuffer);
 		this.system_bindGroup = device.createBindGroup(
 			{
 				layout: this.system_uniformBindGroupLayout,
@@ -50,11 +50,11 @@ export default class RedGPU extends RedBaseObjectContainer {
 					}
 				]
 			}
-		)
+		);
 
 		this.projectionMatrix = mat4.create();
 		this.setSize('100%', '100%');
-	}
+	};
 
 	constructor(canvas, glslang) {
 		super();
@@ -72,7 +72,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 	setSize(w = this.#width, h = this.#height) {
 		this.#width = w;
 		this.#height = h;
-		console.log(w, h)
+		console.log(w, h);
 		let tW, tH;
 		let rect = document.body.getBoundingClientRect();
 		if (typeof w != 'number' && w.includes('%')) tW = rect.width;
@@ -97,9 +97,9 @@ export default class RedGPU extends RedBaseObjectContainer {
 					loadValue: {r: 1, g: 1, b: 0.0, a: 1.0}
 				}]
 			});
-			console.log(tW, tH)
-			passEncoder.setViewport(0, 0, tW, tH, 0, 1)
-			passEncoder.setScissorRect(0, 0, tW, tH)
+			console.log(tW, tH);
+			passEncoder.setViewport(0, 0, tW, tH, 0, 1);
+			passEncoder.setScissorRect(0, 0, tW, tH);
 			passEncoder.endPass();
 			const test = commandEncoder.finish();
 			this.device.getQueue().submit([test]);

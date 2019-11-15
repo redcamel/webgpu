@@ -1,8 +1,8 @@
-"use strict"
+"use strict";
 import RedBaseObjectContainer from "./base/RedBaseObjectContainer.js";
 import RedSphere from "./geometry/RedSphere.js";
 
-let table = new Map()
+let table = new Map();
 /**
  * uniformBuffer 버퍼를 생성할 책임을 가짐.
  *      uniformBuffer는 재질을 기반 가져옴
@@ -15,11 +15,11 @@ export default class RedMesh extends RedBaseObjectContainer {
 	#redGPU;
 
 	constructor(redGPU, material) {
-		super()
+		super();
 		this.#redGPU = redGPU;
-		console.log(this)
+		console.log(this);
 		this.geometry = new RedSphere(redGPU);
-		this.material = material
+		this.material = material;
 		console.log(this.uniformBuffer)
 	}
 
@@ -28,8 +28,8 @@ export default class RedMesh extends RedBaseObjectContainer {
 	}
 
 	set geometry(v) {
-		this.#geometry = v
-		this.pipeline = null
+		this.#geometry = v;
+		this.pipeline = null;
 		this.dirtyTransform = true
 	}
 
@@ -38,14 +38,14 @@ export default class RedMesh extends RedBaseObjectContainer {
 	}
 
 	set material(v) {
-		this.#material = v
+		this.#material = v;
 		this.uniformBuffer = this.#redGPU.device.createBuffer(v.uniformBufferDescripter);
-		this.pipeline = null
+		this.pipeline = null;
 		this.dirtyTransform = true
 	}
 
 	createPipeline(redGPU) {
-		this.uniformBindGroup = null
+		this.uniformBindGroup = null;
 		const device = redGPU.device;
 		const descriptor = {
 			// 레이아웃은 재질이 알고있으니 들고옴
@@ -91,13 +91,13 @@ export default class RedMesh extends RedBaseObjectContainer {
 		};
 		// console.log(table.get(this.#material))
 
-		if (table.has(this.#material)) return this.pipeline = table.get(this.#material)
+		if (table.has(this.#material)) return this.pipeline = table.get(this.#material);
 		// this.uniformBindGroup = null
 		let pipeline = device.createRenderPipeline(descriptor);
-		this.pipeline = pipeline
+		this.pipeline = pipeline;
 		table.set(this.#material, pipeline);
-		console.log('파이프라인생성')
-		console.log('table', table)
+		console.log('파이프라인생성');
+		console.log('table', table);
 		return this.pipeline
 	}
 

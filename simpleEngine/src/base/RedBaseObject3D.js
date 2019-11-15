@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 export default class RedBaseObject3D {
 	#x = 0;
 	#y = 0;
@@ -105,14 +105,14 @@ export default class RedBaseObject3D {
 	}
 
 	getTransform() {
-		var tLocalMatrix = this.localMatrix;
-		var aSx, aSy, aSz, aCx, aCy, aCz, aX, aY, aZ,
+		let tLocalMatrix = this.localMatrix;
+		let aSx, aSy, aSz, aCx, aCy, aCz, aX, aY, aZ,
 			a00, a01, a02, a03, a10, a11, a12, a13, a20, a21, a22, a23, a30, a31, a32, a33,
 			b0, b1, b2, b3,
-			b00, b01, b02, b10, b11, b12, b20, b21, b22
+			b00, b01, b02, b10, b11, b12, b20, b21, b22;
 		// sin,cos 관련
-		var tRadian, CPI, CPI2, C225, C127, C045, C157;
-		var CONVERT_RADIAN = Math.PI / 180;
+		let tRadian, CPI, CPI2, C225, C127, C045, C157;
+		let CONVERT_RADIAN = Math.PI / 180;
 		CPI = 3.141592653589793, CPI2 = 6.283185307179586, C225 = 0.225, C127 = 1.27323954, C045 = 0.405284735, C157 = 1.5707963267948966;
 		/////////////////////////////////////
 		a00 = 1, a01 = 0, a02 = 0,
@@ -124,7 +124,7 @@ export default class RedBaseObject3D {
 			tLocalMatrix[14] = this.#z,
 			tLocalMatrix[15] = 1,
 			// tLocalMatrix rotate
-			aX = this.#rotationX * CONVERT_RADIAN, aY = this.#rotationY * CONVERT_RADIAN, aZ = this.#rotationZ * CONVERT_RADIAN
+			aX = this.#rotationX * CONVERT_RADIAN, aY = this.#rotationY * CONVERT_RADIAN, aZ = this.#rotationZ * CONVERT_RADIAN;
 		/////////////////////////
 		tRadian = aX % CPI2,
 			tRadian < -CPI ? tRadian = tRadian + CPI2 : tRadian > CPI ? tRadian = tRadian - CPI2 : 0,
