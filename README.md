@@ -21,3 +21,6 @@ These study samples run in Chrome Canary() behind the flag --enable-unsafe-webgp
     - [indexBuffer - use drawIndexed](https://redcamel.github.io/webgpu/006_indexBuffer)
  - ## Lighting
     - [simple light test](https://redcamel.github.io/webgpu/007_simpleLight)
+ - ## Simple engine Test
+    - [simple engine](https://redcamel.github.io/webgpu/simpleEngine)
+    ![](simpleEngine/screenshot.png)

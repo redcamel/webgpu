@@ -1,8 +1,8 @@
 import RedGPU from "./src/RedGPU.js";
 import RedMesh from "./src/RedMesh.js";
-import RedStandardMaterial from "./src/RedStandardMaterial.js";
+import RedStandardMaterial from "./src/material/RedStandardMaterial.js";
 import RedRender from "./src/RedRender.js";
-import RedBitmapMaterial from "./src/RedBitmapMaterial.js";
+import RedBitmapMaterial from "./src/material/RedBitmapMaterial.js";
 
 
 (async function () {

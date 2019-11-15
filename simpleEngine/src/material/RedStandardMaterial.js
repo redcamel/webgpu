@@ -64,6 +64,7 @@ const fragmentShaderGLSL = `
 		N = perturb_normal(N, vVertexPosition.xyz, vUV, normalColor.rgb) ;
 
 		vec4 ld = vec4(0.0, 0.0, 0.0, 1.0);
+		vec4 la = vec4(0.0, 0.0, 0.0, 0.2);
 		vec4 ls = vec4(0.0, 0.0, 0.0, 1.0);
 		vec4 specularLightColor = vec4(1.0);
 		vec3 lightPosition = vec3( 5, 5, 5);
@@ -80,7 +81,7 @@ const fragmentShaderGLSL = `
 			specular = pow( max(dot(reflect(L, N), -L), 0.0), shininess) * specularPower ;
 			ls +=  specularLightColor * specular * intensity ;
 	    }
-	    vec4 finalColor = ld+ls;
+	    vec4 finalColor = la+ld+ls;
 		
 		outColor = finalColor;
 	}
