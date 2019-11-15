@@ -169,7 +169,7 @@ export default class RedBaseObject3D {
 			tLocalMatrix[10] = (a02 * b20 + a12 * b21 + a22 * b22) * aZ,
 			tLocalMatrix[11] = tLocalMatrix[11] * aZ;
 
-			return this.localMatrix = tLocalMatrix
+		return this.localMatrix = tLocalMatrix
 	}
 
 }

@@ -1,3 +1,7 @@
+"use strict";
+import createTextureFromImage from './createTextureFromImage.js'
+import makeShaderModule_GLSL from './makeShaderModule_GLSL.js'
+
 const vertexShaderGLSL = `
 	#version 450
     layout(set=0,binding = 0) uniform Uniforms {
@@ -120,11 +124,18 @@ let get_uniformsBindGroupLayout = function (redGPU) {
 }
 
 export default class RedStandardMaterial {
+	static  matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
+	static uniformBufferSize = RedStandardMaterial.matrixSize;
+	#diffuseTexture
+	#normalTexture
+	#redGPU;
+
 	constructor(redGPU, diffuseSrc, normalSrc) {
 		if (!vShaderModule) {
 			vShaderModule = makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'vertex', vertexShaderGLSL);
 			fShaderModule = makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'fragment', fragmentShaderGLSL);
 		}
+		this.#redGPU = redGPU
 		this.vShaderModule = vShaderModule;
 		this.fShaderModule = fShaderModule;
 		this.uniformsBindGroupLayout = get_uniformsBindGroupLayout(redGPU)
@@ -138,7 +149,7 @@ export default class RedStandardMaterial {
 			entryPoint: 'main'
 		};
 
-		const testSampler = redGPU.device.createSampler({
+		this.sampler = redGPU.device.createSampler({
 			magFilter: "linear",
 			minFilter: "linear",
 			mipmapFilter: "linear",
@@ -151,130 +162,78 @@ export default class RedStandardMaterial {
 			// 		"mirror-repeat"
 			//  };
 		});
-		const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
-		const uniformBufferSize = matrixSize;
+
 		// 유니폼 버퍼를 생성하고
 		this.uniformBufferDescripter = {
-			size: uniformBufferSize,
+			size: RedStandardMaterial.uniformBufferSize,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 		}
 
+		this.diffuseTexture = diffuseSrc
+		this.normalTexture = normalSrc
+
+
+	}
+
+	set diffuseTexture(src) {
 		let self = this;
-		let diffuseTexture;
-		let normalTexture;
-		(async function () {
-			if (!diffuseTexture) diffuseTexture = await createTextureFromImage(redGPU.device, diffuseSrc, GPUTextureUsage.SAMPLED);
-			if (!normalTexture) normalTexture = await createTextureFromImage(redGPU.device, normalSrc, GPUTextureUsage.SAMPLED);
-			self.bindings = [
+		self.bindings = null;
+		(async function (v) {
+			self.#diffuseTexture = await createTextureFromImage(self.#redGPU.device, v, GPUTextureUsage.SAMPLED);
+			console.log('로딩됨', v)
+			self.resetBindingInfo()
+		})(src);
+	}
+
+	get diffuseTexture() {
+		return this.#diffuseTexture
+	}
+
+	set normalTexture(src) {
+		let self = this;
+		self.bindings = null;
+		(async function (v) {
+			self.#normalTexture = await createTextureFromImage(self.#redGPU.device, v, GPUTextureUsage.SAMPLED);
+			console.log('로딩됨', v)
+			self.resetBindingInfo()
+		})(src);
+	}
+
+	get normalTexture() {
+		return this.#normalTexture
+	}
+
+	resetBindingInfo() {
+		console.log(this.#diffuseTexture && this.#normalTexture)
+		if ('resetBindingInfo', this.#diffuseTexture && this.#normalTexture) {
+			this.bindings = [
 				{
 					binding: 0,
 					resource: {
 						buffer: null,
 						offset: 0,
-						size: matrixSize
+						size: RedStandardMaterial.matrixSize
 					}
 				},
 				{
 					binding: 1,
-					resource: testSampler,
+					resource: this.sampler,
 				},
 				{
 					binding: 2,
-					resource: diffuseTexture.createView(),
+					resource: this.#diffuseTexture.createView(),
 				},
 				{
 					binding: 3,
-					resource: normalTexture.createView(),
+					resource: this.#normalTexture.createView(),
 				}
 			]
-
-		})();
-
-
-	}
-
-
-}
-
-async function createTextureFromImage(device, src, usage) {
-	// 귀찮아서 텍스쳐 맹그는 놈은 들고옴
-	const img = document.createElement('img');
-	console.log('여긴오곘고');
-	img.src = src;
-	await img.decode();
-
-	const imageCanvas = document.createElement('canvas');
-	imageCanvas.width = img.width;
-	imageCanvas.height = img.height;
-
-	const imageCanvasContext = imageCanvas.getContext('2d');
-	imageCanvasContext.translate(0, img.height);
-	imageCanvasContext.scale(1, -1);
-	imageCanvasContext.drawImage(img, 0, 0, img.width, img.height);
-	const imageData = imageCanvasContext.getImageData(0, 0, img.width, img.height);
-
-	let data = null;
-
-	const rowPitch = Math.ceil(img.width * 4 / 256) * 256;
-	if (rowPitch == img.width * 4) {
-		data = imageData.data;
-	} else {
-		data = new Uint8Array(rowPitch * img.height);
-		for (let y = 0; y < img.height; ++y) {
-			for (let x = 0; x < img.width; ++x) {
-				let i = x * 4 + y * rowPitch;
-				data[i] = imageData.data[i];
-				data[i + 1] = imageData.data[i + 1];
-				data[i + 2] = imageData.data[i + 2];
-				data[i + 3] = imageData.data[i + 3];
+			this.uniformBindGroupDescriptor = {
+				layout: this.uniformsBindGroupLayout,
+				bindings: this.bindings
 			}
+			console.log(this.#diffuseTexture)
+			console.log(this.#normalTexture)
 		}
 	}
-
-	const texture = device.createTexture({
-		size: {
-			width: img.width,
-			height: img.height,
-			depth: 1,
-		},
-		format: "rgba8unorm",
-		usage: GPUTextureUsage.COPY_DST | usage,
-	});
-
-	const textureDataBuffer = device.createBuffer({
-		size: data.byteLength,
-		usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
-	});
-
-	textureDataBuffer.setSubData(0, data);
-
-	const commandEncoder = device.createCommandEncoder({});
-	commandEncoder.copyBufferToTexture({
-		buffer: textureDataBuffer,
-		rowPitch: rowPitch,
-		imageHeight: 0,
-	}, {
-		texture: texture,
-	}, {
-		width: img.width,
-		height: img.height,
-		depth: 1,
-	});
-
-	device.getQueue().submit([commandEncoder.finish()]);
-
-	return texture;
-}
-
-function makeShaderModule_GLSL(glslang, device, type, source) {
-	console.log(`// makeShaderModule_GLSL start : ${type}/////////////////////////////////////////////////////////////`);
-	let shaderModuleDescriptor = {
-		code: glslang.compileGLSL(source, type),
-		source: source
-	};
-	console.log('shaderModuleDescriptor', shaderModuleDescriptor);
-	let shaderModule = device.createShaderModule(shaderModuleDescriptor);
-	console.log(`shaderModule_${type}}`, shaderModule);
-	console.log(`// makeShaderModule_GLSL end : ${type}/////////////////////////////////////////////////////////////`);
-	return shaderModule;
 }

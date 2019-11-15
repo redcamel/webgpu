@@ -18,6 +18,7 @@ import RedBitmapMaterial from "./src/material/RedBitmapMaterial.js";
 		let i = MAX;
 		let tMat = new RedStandardMaterial(redGPU, '../assets/Brick03_col.jpg', '../assets/Brick03_nrm.jpg');
 		let tMat2 = new RedBitmapMaterial(redGPU, '../assets/UV_Grid_Sm.jpg');
+
 		if (i > 2000) i = 2000
 		while (i--) {
 			let testMesh = new RedMesh(redGPU, i > MAX / 2 ? tMat : tMat2)

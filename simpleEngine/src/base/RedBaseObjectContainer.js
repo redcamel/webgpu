@@ -3,13 +3,16 @@ import RedBaseObject3D from "./RedBaseObject3D.js";
 
 export default class RedBaseObjectContainer extends RedBaseObject3D {
 	#children = [];
-	constructor(){
+
+	constructor() {
 		super()
 	}
-	addChild(v){
+
+	addChild(v) {
 		this.#children.push(v)
 	}
-	get children(){
+
+	get children() {
 		return this.#children
 	}
 }

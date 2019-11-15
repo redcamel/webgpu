@@ -2,6 +2,7 @@
 import RedBaseObjectContainer from "./base/RedBaseObjectContainer.js";
 import RedSphere from "./geometry/RedSphere.js";
 import RedStandardMaterial from "./material/RedStandardMaterial.js";
+
 let table = new Map()
 let uniformbuffer;
 export default class RedMesh extends RedBaseObjectContainer {
@@ -20,7 +21,7 @@ export default class RedMesh extends RedBaseObjectContainer {
 		const device = redGPU.device;
 		const descriptor = {
 			// 레이아웃은 재질이 알고있으니 들고옴
-			layout: device.createPipelineLayout({bindGroupLayouts: [this.material.uniformsBindGroupLayout,redGPU.system_uniformBindGroupLayout]}),
+			layout: device.createPipelineLayout({bindGroupLayouts: [this.material.uniformsBindGroupLayout, redGPU.system_uniformBindGroupLayout]}),
 			// 버텍스와 프레그먼트는 재질에서 들고온다.
 			vertexStage: {
 				module: this.material.vShaderModule,
@@ -61,15 +62,14 @@ export default class RedMesh extends RedBaseObjectContainer {
 			 */
 		};
 		// console.log(table.get(this.material))
-		if(	table.has(this.material)) return this.pipeline = table.get(this.material)
+		if (table.has(this.material)) return this.pipeline = table.get(this.material)
 		let pipeline = device.createRenderPipeline(descriptor);
 		this.pipeline = pipeline
-		table.set(this.material,pipeline);
+		table.set(this.material, pipeline);
 		console.log('파이프라인생성')
-		console.log('table',table)
+		console.log('table', table)
 		return this.pipeline
 	}
-
 
 
 }

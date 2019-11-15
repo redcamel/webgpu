@@ -52,22 +52,18 @@ export default class RedRender {
 			// Chrome currently crashes with |setSubData| too large.
 			///////////////////////////////////////////////////////////////////////////
 			if (tMesh.material.bindings) {
-				tMesh.material.bindings[0]['resource']['buffer'] = tMesh.uniformBuffer
 				if (!tMesh.uniformBindGroup) {
-					tMesh.uniformBindGroup = redGPU.device.createBindGroup(
-						{
-							layout: tMesh.material.uniformsBindGroupLayout,
-							bindings: tMesh.material.bindings
-						}
-					)
+					tMesh.material.bindings[0]['resource']['buffer'] = tMesh.uniformBuffer
+					tMesh.uniformBindGroup = redGPU.device.createBindGroup(tMesh.material.uniformBindGroupDescriptor)
 				}
-
 				// if (prevBindBuffer != tMesh.uniformBindGroup)
 				passEncoder.setBindGroup(0, prevBindBuffer = tMesh.uniformBindGroup);
 
 
 				passEncoder.drawIndexed(tMesh.geometry.indexBuffer.pointNum, 1, 0, 0, 0);
 
+			} else {
+				tMesh.uniformBindGroup = null
 			}
 
 		}
