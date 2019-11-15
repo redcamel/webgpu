@@ -6,29 +6,45 @@ import RedStandardMaterial from "./material/RedStandardMaterial.js";
 let table = new Map()
 let uniformbuffer;
 export default class RedMesh extends RedBaseObjectContainer {
-
+	#material;
+	#geometry;
+	#redGPU;
 	constructor(redGPU, material) {
 		super()
+		this.#redGPU = redGPU;
 		console.log(this)
 		this.geometry = new RedSphere(redGPU);
 		this.material = material
-		this.uniformBuffer = redGPU.device.createBuffer(this.material.uniformBufferDescripter);
 		console.log(this.uniformBuffer)
+	}
+	get geometry() {
+		return this.#geometry
+	}
 
+	set geometry(v) {
+		this.#geometry = v
+	}
+	get material() {
+		return this.#material
+	}
+
+	set material(v) {
+		this.#material = v
+		this.uniformBuffer = this.#redGPU .device.createBuffer(v.uniformBufferDescripter);
 	}
 
 	createPipeline(redGPU) {
 		const device = redGPU.device;
 		const descriptor = {
 			// 레이아웃은 재질이 알고있으니 들고옴
-			layout: device.createPipelineLayout({bindGroupLayouts: [this.material.uniformsBindGroupLayout, redGPU.system_uniformBindGroupLayout]}),
+			layout: device.createPipelineLayout({bindGroupLayouts: [this.#material.uniformsBindGroupLayout, redGPU.system_uniformBindGroupLayout]}),
 			// 버텍스와 프레그먼트는 재질에서 들고온다.
 			vertexStage: {
-				module: this.material.vShaderModule,
+				module: this.#material.vShaderModule,
 				entryPoint: 'main'
 			},
 			fragmentStage: {
-				module: this.material.fShaderModule,
+				module: this.#material.fShaderModule,
 				entryPoint: 'main'
 			},
 			// 버텍스 상태는 지오메트리가 알고있음으로 들고옴
@@ -61,11 +77,11 @@ export default class RedMesh extends RedBaseObjectContainer {
 			};
 			 */
 		};
-		// console.log(table.get(this.material))
-		if (table.has(this.material)) return this.pipeline = table.get(this.material)
+		// console.log(table.get(this.#material))
+		if (table.has(this.#material)) return this.pipeline = table.get(this.#material)
 		let pipeline = device.createRenderPipeline(descriptor);
 		this.pipeline = pipeline
-		table.set(this.material, pipeline);
+		table.set(this.#material, pipeline);
 		console.log('파이프라인생성')
 		console.log('table', table)
 		return this.pipeline
