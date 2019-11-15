@@ -2,12 +2,12 @@ export default class RedRender {
 	render(time, redGPU, depthTexture) {
 		let projectionMatrix = mat4.create();
 		let aspect = Math.abs(redGPU.canvas.width / redGPU.canvas.height);
-		mat4.perspective(projectionMatrix, ( Math.PI/180) *60, aspect, 0.01, 10000.0);
+		mat4.perspective(projectionMatrix, (Math.PI / 180) * 60, aspect, 0.01, 10000.0);
 
 		let cameraMatrix = mat4.create()
 		var up = new Float32Array([0, 1, 0]);
-		var tPosition = [0,0,0];
-		mat4.lookAt(cameraMatrix, [Math.sin(time/5000)*15,Math.cos(time/3000)*15,Math.sin(time/2500)*15], tPosition, up);
+		var tPosition = [0, 0, 0];
+		mat4.lookAt(cameraMatrix, [Math.sin(time / 5000) * 15, Math.cos(time / 3000) * 15, Math.sin(time / 2500) * 15], tPosition, up);
 
 		const swapChainTexture = redGPU.swapChain.getCurrentTexture();
 		const commandEncoder = redGPU.device.createCommandEncoder();
@@ -27,60 +27,57 @@ export default class RedRender {
 			}
 		};
 		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-		passEncoder.setViewport(0, 0, redGPU.canvas.width, redGPU.canvas.height,0,1)
-		passEncoder.setScissorRect(0, 0, redGPU.canvas.width, redGPU.canvas.height)
+
 		let i = redGPU.children.length
-		let tempMTX = mat4.create()
+		let prevPipeline;
+		let prevVertexBuffer
+		let prevIndexBuffer
+		let prevBindBuffer
+		let projectCameraMTX = mat4.create()
+		mat4.multiply(projectCameraMTX, projectionMatrix, cameraMatrix)
+		passEncoder.setBindGroup(1, redGPU.system_bindGroup)
+		redGPU.system_uniformBuffer.setSubData(0, projectionMatrix);
+		redGPU.system_uniformBuffer.setSubData(4 * 4 * Float32Array.BYTES_PER_ELEMENT, cameraMatrix);
 		while (i--) {
 			let tMesh = redGPU.children[i]
 			if (tMesh.isDirty) {
-				tMesh.calculateLocalMatrix()
-				tMesh.isDirty = false
-				// console.log(tMesh.localMatrix)
+				tMesh.getTransform()
+				tMesh.uniformBuffer.setSubData(0, tMesh.localMatrix)
+				tMesh.rotationX+=1
+
 			}
-			if (!tMesh.pipeline) tMesh.pipeline = tMesh.createPipeline(redGPU)
-			const pipeline = tMesh.pipeline
-			passEncoder.setPipeline(pipeline);
-			passEncoder.setVertexBuffer(0, tMesh.geometry.vertexBuffer);
-			passEncoder.setIndexBuffer(tMesh.geometry.indexBuffer);
+			if (!tMesh.pipeline) tMesh.createPipeline(redGPU)
+			if (prevPipeline != tMesh.pipeline) passEncoder.setPipeline(prevPipeline = tMesh.pipeline);
+			if (prevVertexBuffer != tMesh.geometry.vertexBuffer) passEncoder.setVertexBuffer(0, prevVertexBuffer = tMesh.geometry.vertexBuffer);
+			if (prevIndexBuffer != tMesh.geometry.indexBuffer) passEncoder.setIndexBuffer(prevIndexBuffer = tMesh.geometry.indexBuffer);
 
-
-
-			mat4.identity(tempMTX);
-			mat4.translate(tempMTX, tempMTX, [tMesh.x, tMesh.y, tMesh.z]);
-			mat4.rotateX(tempMTX, tempMTX, time / 1000);
-			mat4.rotateY(tempMTX, tempMTX, time / 1000);
-			mat4.rotateZ(tempMTX, tempMTX, time / 1000);
-			mat4.scale(tempMTX, tempMTX, [tMesh.scaleX, tMesh.scaleY, tMesh.scaleZ]);
-			mat4.multiply(tempMTX, cameraMatrix, tempMTX)
-			mat4.multiply(tempMTX, projectionMatrix, tempMTX)
-
-			// mat4.scale(tempMTX, tempMTX, [1, 1, 1]);
 			///////////////////////////////////////////////////////////////////////////
 			// Chrome currently crashes with |setSubData| too large.
 			///////////////////////////////////////////////////////////////////////////
 			if (tMesh.material.bindings) {
-
 				tMesh.material.bindings[0]['resource']['buffer'] = tMesh.uniformBuffer
-				if (!tMesh.uniformBindBuffer) {
-					tMesh.uniformBindBuffer = redGPU.device.createBindGroup(
+				if (!tMesh.uniformBindGroup) {
+					tMesh.uniformBindGroup = redGPU.device.createBindGroup(
 						{
 							layout: tMesh.material.uniformsBindGroupLayout,
 							bindings: tMesh.material.bindings
 						}
 					)
 				}
-				passEncoder.setBindGroup(0, tMesh.uniformBindBuffer);
-				tMesh.uniformBuffer.setSubData(0, tempMTX);
+
+				// if (prevBindBuffer != tMesh.uniformBindGroup)
+				passEncoder.setBindGroup(0, prevBindBuffer = tMesh.uniformBindGroup);
+
+
 				passEncoder.drawIndexed(tMesh.geometry.indexBuffer.pointNum, 1, 0, 0, 0);
 
 			}
-
-
+			tMesh.isDirty = false
 		}
 		passEncoder.endPass();
 
 		const test = commandEncoder.finish();
 		redGPU.device.getQueue().submit([test]);
+
 	}
 }
