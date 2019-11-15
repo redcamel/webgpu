@@ -3,23 +3,21 @@ ready.then(init);
 const vertexShaderGLSL = `
 	#version 450
     layout(set=0,binding = 0) uniform Uniforms {
-        mat4 projectionMatrix;
         mat4 modelMatrix;
     } uniforms;
+    layout(set=1,binding = 0) uniform SystemUniforms {
+        mat4 projectionMatrix;
+    } systemUniforms;
 	layout(location = 0) in vec4 position;
-	layout(location = 1) in vec4 color;
-	layout(location = 0) out vec4 vColor;
 	void main() {
-		gl_Position = uniforms.projectionMatrix * uniforms.modelMatrix * position;
-		vColor = color;
+		gl_Position = systemUniforms.projectionMatrix * uniforms.modelMatrix * position;
 	}
 	`;
 const fragmentShaderGLSL = `
 	#version 450
-	layout(location = 0) in vec4 vColor;
 	layout(location = 0) out vec4 outColor;
 	void main() {
-		outColor = vColor;
+		outColor = vec4(1.0, 0.0, 0.0, 1.0);
 	}
 `;
 
@@ -57,9 +55,9 @@ async function init(glslang) {
 		device,
 		new Float32Array(
 			[
-				-1.0, -1.0, 0.0, 1.0,  Math.random(),Math.random(),Math.random(),1.0,
-				0.0, 1.0, 0.0, 1.0,    Math.random(),Math.random(),Math.random(),1.0,
-				1.0, -1.0, 0.0, 1.0,   Math.random(),Math.random(),Math.random(),1.0
+				-1.0, -1.0, 0.0, 1.0,
+				0.0, 1.0, 0.0, 1.0,
+				1.0, -1.0, 0.0, 1.0
 			]
 		)
 	);
@@ -76,16 +74,15 @@ async function init(glslang) {
 			}
 		]
 	});
-	console.log('uniformsBindGroupLayout',uniformsBindGroupLayout)
 	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
-	const offset = 0; // uniformBindGroup offset must be 256-byte aligned
-	const uniformBufferSize = offset + matrixSize * 2;
+	const uniformBufferSize = matrixSize;
 	// 유니폼 버퍼를 생성하고
-	const uniformBuffer = await device.createBuffer({
+	const uniformBuffer = device.createBuffer({
 		size: uniformBufferSize,
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 	});
-	console.log('uniformBuffer',uniformBuffer)
+
+	console.log('uniformBuffer', uniformBuffer)
 	const uniformBindGroupDescriptor = {
 		layout: uniformsBindGroupLayout,
 		bindings: [
@@ -99,15 +96,46 @@ async function init(glslang) {
 			}
 		]
 	};
-	console.log('uniformBindGroupDescriptor',uniformBindGroupDescriptor)
+	console.log('uniformBindGroupDescriptor', uniformBindGroupDescriptor)
 	const uniformBindGroup = device.createBindGroup(uniformBindGroupDescriptor);
-	console.log('uniformBindGroup',uniformBindGroup)
+	console.log('uniformBindGroup', uniformBindGroup)
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	const systemUniformsBindGroupLayout = device.createBindGroupLayout({
+		bindings: [
+			{
+				binding: 0,
+				visibility: GPUShaderStage.VERTEX,
+				type: "uniform-buffer"
+			}
+		]
+	});
+	const systemUniformBuffer = device.createBuffer({
+		size: uniformBufferSize,
+		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+	});
+	console.log('systemUniformBuffer', systemUniformBuffer)
+	const systemUniformBindGroupDescriptor = {
+		layout: uniformsBindGroupLayout,
+		bindings: [
+			{
+				binding: 0,
+				resource: {
+					buffer: systemUniformBuffer,
+					offset: 0,
+					size: matrixSize
+				}
+			}
+		]
+	};
+	console.log('systemUniformBindGroupDescriptor', systemUniformBindGroupDescriptor)
+	const systemUniformBindGroup = device.createBindGroup(systemUniformBindGroupDescriptor);
+	console.log('systemUniformBindGroup', systemUniformBindGroup)
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
 	const pipeline = device.createRenderPipeline({
 		// 레이아웃은 아직 뭔지 모르곘고
-		layout: device.createPipelineLayout({bindGroupLayouts: [uniformsBindGroupLayout]}),
+		layout: device.createPipelineLayout({bindGroupLayouts: [uniformsBindGroupLayout, systemUniformsBindGroupLayout]}),
 		// 버텍스와 프레그먼트는 아래와 같이 붙인다..
 		vertexStage: {
 			module: vShaderModule,
@@ -121,18 +149,12 @@ async function init(glslang) {
 			indexFormat: 'uint32',
 			vertexBuffers: [
 				{
-					arrayStride: 8 * 4,
+					arrayStride: 4 * 4,
 					attributes: [
 						{
 							// position
 							shaderLocation: 0,
 							offset: 0,
-							format: "float4"
-						},
-						{
-							// color
-							shaderLocation: 1,
-							offset:  4 * 4,
 							format: "float4"
 						}
 					]
@@ -188,6 +210,10 @@ async function init(glslang) {
 			}]
 		};
 		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+		passEncoder.setBindGroup(1, systemUniformBindGroup);
+		systemUniformBuffer.setSubData(0, projectionMatrix);
+
+		
 		passEncoder.setVertexBuffer(0, renderData['vertexBuffer']);
 		passEncoder.setPipeline(renderData['pipeline']);
 
@@ -198,8 +224,7 @@ async function init(glslang) {
 		mat4.rotateZ(modelMatrix, modelMatrix, time / 1000)
 		mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
 		passEncoder.setBindGroup(0, renderData['uniformBindGroup']);
-		renderData['uniformBuffer'].setSubData(0, projectionMatrix);
-		renderData['uniformBuffer'].setSubData(4 * 16, modelMatrix);
+		renderData['uniformBuffer'].setSubData(0, modelMatrix);
 
 
 		passEncoder.draw(3, 1, 0, 0);
