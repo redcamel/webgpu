@@ -1,7 +1,8 @@
 import RedGPU from "./src/RedGPU.js";
 import RedMesh from "./src/RedMesh.js";
-import RedBitmapMaterial from "./src/RedBitmapMaterial.js";
+import RedStandardMaterial from "./src/RedStandardMaterial.js";
 import RedRender from "./src/RedRender.js";
+import RedBitmapMaterial from "./src/RedBitmapMaterial.js";
 
 
 (async function () {
@@ -15,14 +16,14 @@ import RedRender from "./src/RedRender.js";
 	requestAnimationFrame(function () {
 		let MAX = 2000
 		let i = MAX;
-		let tMat = new RedBitmapMaterial(redGPU, '../assets/crate.png')
-		let tMat2 = new RedBitmapMaterial(redGPU, '../assets/UV_Grid_Sm.jpg')
+		let tMat = new RedStandardMaterial(redGPU, '../assets/Brick03_col.jpg', '../assets/Brick03_nrm.jpg');
+		let tMat2 = new RedBitmapMaterial(redGPU, '../assets/UV_Grid_Sm.jpg');
 		if (i > 2000) i = 2000
 		while (i--) {
-			let testMesh = new RedMesh(redGPU, i>MAX/2 ? tMat : tMat2)
+			let testMesh = new RedMesh(redGPU, i > MAX / 2 ? tMat : tMat2)
 			testMesh.x = Math.random() * 30 - 15
 			testMesh.y = Math.random() * 30 - 15
-			testMesh.z =  Math.random() * 30 - 15
+			testMesh.z = Math.random() * 30 - 15
 			testMesh.scaleX = testMesh.scaleY = testMesh.scaleZ = Math.random()
 			redGPU.addChild(testMesh)
 

@@ -1,7 +1,7 @@
 "use strict"
 import RedBaseObjectContainer from "./base/RedBaseObjectContainer.js";
 import RedSphere from "./geometry/RedSphere.js";
-import RedBitmapMaterial from "./RedBitmapMaterial.js";
+import RedStandardMaterial from "./RedStandardMaterial.js";
 let table = new Map()
 let uniformbuffer;
 export default class RedMesh extends RedBaseObjectContainer {
