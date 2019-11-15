@@ -20,7 +20,6 @@ export default class RedGPU extends RedBaseObjectContainer {
 		this.device = device
 		this.swapChainFormat = "bgra8unorm";
 		this.swapChain = await configureSwapChain(this.device, this.swapChainFormat, canvas.getContext('gpupresent'));
-
 		this.system_uniformBindGroupLayout = device.createBindGroupLayout({
 			bindings: [
 				{
@@ -53,7 +52,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 			}
 		)
 
-
+		this.projectionMatrix = mat4.create();
 		this.setSize('100%', '100%');
 	}
 
@@ -84,6 +83,9 @@ export default class RedGPU extends RedBaseObjectContainer {
 		this.canvas.height = tH;
 		this.canvas.style.width = tW + 'px';
 		this.canvas.style.height = tH + 'px';
+
+		let aspect = Math.abs(this.canvas.width / this.canvas.height);
+		mat4.perspective(this.projectionMatrix, (Math.PI / 180) * 60, aspect, 0.01, 10000.0);
 
 		requestAnimationFrame(_ => {
 			const swapChainTexture = this.swapChain.getCurrentTexture();

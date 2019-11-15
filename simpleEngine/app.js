@@ -3,6 +3,7 @@ import RedMesh from "./src/RedMesh.js";
 import RedStandardMaterial from "./src/material/RedStandardMaterial.js";
 import RedRender from "./src/RedRender.js";
 import RedBitmapMaterial from "./src/material/RedBitmapMaterial.js";
+import RedCamera from "./src/RedCamera.js";
 
 
 (async function () {
@@ -13,6 +14,7 @@ import RedBitmapMaterial from "./src/material/RedBitmapMaterial.js";
 	const glslang = await glslangModule.default();
 	console.log(glslang)
 	let redGPU = new RedGPU(cvs, glslang)
+	redGPU.camera = new RedCamera()
 	requestAnimationFrame(function () {
 		let MAX = 1000
 		let i = MAX;
@@ -48,6 +50,11 @@ import RedBitmapMaterial from "./src/material/RedBitmapMaterial.js";
 		});
 		let renderer = new RedRender()
 		let render = function (time) {
+
+			redGPU.camera.x = Math.sin(time/3000)*20
+			redGPU.camera.y = Math.cos(time/5000)*20
+			redGPU.camera.z = Math.cos(time/3000)*20
+			redGPU.camera.lookAt(0,0,0)
 			renderer.render(time, redGPU, depthTexture)
 			let i = MAX
 			// while (i--) {

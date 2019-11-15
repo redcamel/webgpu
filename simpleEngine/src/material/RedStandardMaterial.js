@@ -1,6 +1,6 @@
 "use strict";
-import createTextureFromImage from './createTextureFromImage.js'
-import makeShaderModule_GLSL from './makeShaderModule_GLSL.js'
+import util_createTextureFromImage from './util_createTextureFromImage.js'
+import util_makeShaderModule_GLSL from './util_makeShaderModule_GLSL.js'
 
 const vertexShaderGLSL = `
 	#version 450
@@ -132,8 +132,8 @@ export default class RedStandardMaterial {
 
 	constructor(redGPU, diffuseSrc, normalSrc) {
 		if (!vShaderModule) {
-			vShaderModule = makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'vertex', vertexShaderGLSL);
-			fShaderModule = makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'fragment', fragmentShaderGLSL);
+			vShaderModule = util_makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'vertex', vertexShaderGLSL);
+			fShaderModule = util_makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'fragment', fragmentShaderGLSL);
 		}
 		this.#redGPU = redGPU
 		this.vShaderModule = vShaderModule;
@@ -179,7 +179,7 @@ export default class RedStandardMaterial {
 		let self = this;
 		self.bindings = null;
 		(async function (v) {
-			self.#diffuseTexture = await createTextureFromImage(self.#redGPU.device, v, GPUTextureUsage.SAMPLED);
+			self.#diffuseTexture = await util_createTextureFromImage(self.#redGPU.device, v, GPUTextureUsage.SAMPLED);
 			console.log('로딩됨', v)
 			self.resetBindingInfo()
 		})(src);
@@ -193,7 +193,7 @@ export default class RedStandardMaterial {
 		let self = this;
 		self.bindings = null;
 		(async function (v) {
-			self.#normalTexture = await createTextureFromImage(self.#redGPU.device, v, GPUTextureUsage.SAMPLED);
+			self.#normalTexture = await util_createTextureFromImage(self.#redGPU.device, v, GPUTextureUsage.SAMPLED);
 			console.log('로딩됨', v)
 			self.resetBindingInfo()
 		})(src);

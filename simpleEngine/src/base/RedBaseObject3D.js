@@ -9,18 +9,18 @@ export default class RedBaseObject3D {
 	#scaleX = 1;
 	#scaleY = 1;
 	#scaleZ = 1;
-	#isDirty = true;
+	#dirtyTransform = true;
 
 	constructor() {
 		this.localMatrix = mat4.create()
 	}
 
-	get isDirty() {
-		return this.#isDirty
+	get dirtyTransform() {
+		return this.#dirtyTransform
 	}
 
-	set isDirty(v) {
-		this.#isDirty = v
+	set dirtyTransform(v) {
+		this.#dirtyTransform = v
 	}
 
 	get x() {
@@ -29,7 +29,7 @@ export default class RedBaseObject3D {
 
 	set x(v) {
 		this.#x = v;
-		this.#isDirty = true;
+		this.#dirtyTransform = true;
 	}
 
 	get y() {
@@ -38,7 +38,7 @@ export default class RedBaseObject3D {
 
 	set y(v) {
 		this.#y = v;
-		this.#isDirty = true;
+		this.#dirtyTransform = true;
 	}
 
 	get z() {
@@ -47,7 +47,7 @@ export default class RedBaseObject3D {
 
 	set z(v) {
 		this.#z = v;
-		this.#isDirty = true;
+		this.#dirtyTransform = true;
 	}
 
 	get rotationX() {
@@ -56,7 +56,7 @@ export default class RedBaseObject3D {
 
 	set rotationX(v) {
 		this.#rotationX = v;
-		this.#isDirty = true;
+		this.#dirtyTransform = true;
 	}
 
 	get rotationY() {
@@ -65,7 +65,7 @@ export default class RedBaseObject3D {
 
 	set rotationY(v) {
 		this.#rotationY = v;
-		this.#isDirty = true;
+		this.#dirtyTransform = true;
 	}
 
 	get rotationZ() {
@@ -74,7 +74,7 @@ export default class RedBaseObject3D {
 
 	set rotationZ(v) {
 		this.#rotationZ = v;
-		this.#isDirty = true;
+		this.#dirtyTransform = true;
 	}
 
 	get scaleX() {
@@ -83,7 +83,7 @@ export default class RedBaseObject3D {
 
 	set scaleX(v) {
 		this.#scaleX = v;
-		this.#isDirty = true;
+		this.#dirtyTransform = true;
 	}
 
 	get scaleY() {
@@ -92,7 +92,7 @@ export default class RedBaseObject3D {
 
 	set scaleY(v) {
 		this.#scaleY = v;
-		this.#isDirty = true;
+		this.#dirtyTransform = true;
 	}
 
 	get scaleZ() {
@@ -101,7 +101,7 @@ export default class RedBaseObject3D {
 
 	set scaleZ(v) {
 		this.#scaleZ = v;
-		this.#isDirty = true;
+		this.#dirtyTransform = true;
 	}
 
 	getTransform() {

@@ -3,10 +3,17 @@ import RedBaseObjectContainer from "./base/RedBaseObjectContainer.js";
 import RedSphere from "./geometry/RedSphere.js";
 
 let table = new Map()
+/**
+ * uniformBuffer 버퍼를 생성할 책임을 가짐.
+ *      uniformBuffer는 재질을 기반 가져옴
+ * pipeline을 생성할 책임을 가짐
+ *      pipeline 생성시 uniformBindGroup을 삭제할 책임도 가짐
+ */
 export default class RedMesh extends RedBaseObjectContainer {
 	#material;
 	#geometry;
 	#redGPU;
+
 	constructor(redGPU, material) {
 		super()
 		this.#redGPU = redGPU;
@@ -15,6 +22,7 @@ export default class RedMesh extends RedBaseObjectContainer {
 		this.material = material
 		console.log(this.uniformBuffer)
 	}
+
 	get geometry() {
 		return this.#geometry
 	}
@@ -22,8 +30,9 @@ export default class RedMesh extends RedBaseObjectContainer {
 	set geometry(v) {
 		this.#geometry = v
 		this.pipeline = null
-		this.isDirty = true
+		this.dirtyTransform = true
 	}
+
 	get material() {
 		return this.#material
 	}
@@ -32,11 +41,11 @@ export default class RedMesh extends RedBaseObjectContainer {
 		this.#material = v
 		this.uniformBuffer = this.#redGPU.device.createBuffer(v.uniformBufferDescripter);
 		this.pipeline = null
-		this.isDirty = true
+		this.dirtyTransform = true
 	}
 
 	createPipeline(redGPU) {
-		this.uniformBindGroup=null
+		this.uniformBindGroup = null
 		const device = redGPU.device;
 		const descriptor = {
 			// 레이아웃은 재질이 알고있으니 들고옴

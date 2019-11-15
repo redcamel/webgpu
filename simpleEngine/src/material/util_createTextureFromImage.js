@@ -1,4 +1,4 @@
-export default async function createTextureFromImage(device, src, usage) {
+export default async function util_createTextureFromImage(device, src, usage) {
 	// 귀찮아서 텍스쳐 맹그는 놈은 들고옴
 	const img = document.createElement('img');
 	console.log('여긴오곘고');
