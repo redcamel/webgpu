@@ -39,13 +39,10 @@ export default class RedRender {
 		while (i--) {
 			let tMesh = redGPU.children[i]
 			if (tMesh.isDirty) {
-
 				tMesh.getTransform()
 				tMesh.uniformBuffer.setSubData(0, tMesh.localMatrix)
+				tMesh.isDirty = false
 			}
-			tMesh.rotationX+=1
-			tMesh.rotationY+=1
-			tMesh.rotationZ+=1
 			if (!tMesh.pipeline) tMesh.createPipeline(redGPU)
 			if (prevPipeline != tMesh.pipeline) passEncoder.setPipeline(prevPipeline = tMesh.pipeline);
 			if (prevVertexBuffer != tMesh.geometry.vertexBuffer) passEncoder.setVertexBuffer(0, prevVertexBuffer = tMesh.geometry.vertexBuffer);
@@ -72,7 +69,7 @@ export default class RedRender {
 				passEncoder.drawIndexed(tMesh.geometry.indexBuffer.pointNum, 1, 0, 0, 0);
 
 			}
-			tMesh.isDirty = false
+
 		}
 		passEncoder.endPass();
 

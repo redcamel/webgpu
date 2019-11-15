@@ -6,18 +6,21 @@ export default class RedBaseObject3D {
 	#rotationX = 0;
 	#rotationY = 0;
 	#rotationZ = 0;
-	#scaleX = 0;
-	#scaleY = 0;
-	#scaleZ = 0;
+	#scaleX = 1;
+	#scaleY = 1;
+	#scaleZ = 1;
 	#isDirty = true;
-	constructor(){
+
+	constructor() {
 		this.localMatrix = mat4.create()
 	}
-	get isDirty(){
+
+	get isDirty() {
 		return this.#isDirty
 	}
-	set isDirty(v){
-		 this.#isDirty=v
+
+	set isDirty(v) {
+		this.#isDirty = v
 	}
 
 	get x() {
@@ -55,6 +58,7 @@ export default class RedBaseObject3D {
 		this.#rotationX = v;
 		this.#isDirty = true;
 	}
+
 	get rotationY() {
 		return this.#rotationY;
 	}
@@ -63,6 +67,7 @@ export default class RedBaseObject3D {
 		this.#rotationY = v;
 		this.#isDirty = true;
 	}
+
 	get rotationZ() {
 		return this.#rotationZ;
 	}
@@ -72,6 +77,99 @@ export default class RedBaseObject3D {
 		this.#isDirty = true;
 	}
 
+	get scaleX() {
+		return this.#scaleX;
+	}
 
+	set scaleX(v) {
+		this.#scaleX = v;
+		this.#isDirty = true;
+	}
+
+	get scaleY() {
+		return this.#scaleY;
+	}
+
+	set scaleY(v) {
+		this.#scaleY = v;
+		this.#isDirty = true;
+	}
+
+	get scaleZ() {
+		return this.#scaleZ;
+	}
+
+	set scaleZ(v) {
+		this.#scaleZ = v;
+		this.#isDirty = true;
+	}
+
+	getTransform() {
+		var tLocalMatrix = this.localMatrix;
+		var aSx, aSy, aSz, aCx, aCy, aCz, aX, aY, aZ,
+			a00, a01, a02, a03, a10, a11, a12, a13, a20, a21, a22, a23, a30, a31, a32, a33,
+			b0, b1, b2, b3,
+			b00, b01, b02, b10, b11, b12, b20, b21, b22
+		// sin,cos 관련
+		var tRadian, CPI, CPI2, C225, C127, C045, C157;
+		var CONVERT_RADIAN = Math.PI / 180;
+		CPI = 3.141592653589793, CPI2 = 6.283185307179586, C225 = 0.225, C127 = 1.27323954, C045 = 0.405284735, C157 = 1.5707963267948966;
+		/////////////////////////////////////
+		a00 = 1, a01 = 0, a02 = 0,
+			a10 = 0, a11 = 1, a12 = 0,
+			a20 = 0, a21 = 0, a22 = 1,
+			// tLocalMatrix translate
+			tLocalMatrix[12] = this.#x ,
+			tLocalMatrix[13] = this.#y,
+			tLocalMatrix[14] = this.#z,
+			tLocalMatrix[15] = 1,
+			// tLocalMatrix rotate
+			aX = this.#rotationX * CONVERT_RADIAN, aY = this.#rotationY * CONVERT_RADIAN, aZ = this.#rotationZ * CONVERT_RADIAN
+		/////////////////////////
+		tRadian = aX % CPI2,
+			tRadian < -CPI ? tRadian = tRadian + CPI2 : tRadian > CPI ? tRadian = tRadian - CPI2 : 0,
+			tRadian = tRadian < 0 ? C127 * tRadian + C045 * tRadian * tRadian : C127 * tRadian - C045 * tRadian * tRadian,
+			aSx = tRadian < 0 ? C225 * (tRadian * -tRadian - tRadian) + tRadian : C225 * (tRadian * tRadian - tRadian) + tRadian,
+			tRadian = (aX + C157) % CPI2,
+			tRadian < -CPI ? tRadian = tRadian + CPI2 : tRadian > CPI ? tRadian = tRadian - CPI2 : 0,
+			tRadian = tRadian < 0 ? C127 * tRadian + C045 * tRadian * tRadian : C127 * tRadian - C045 * tRadian * tRadian,
+			aCx = tRadian < 0 ? C225 * (tRadian * -tRadian - tRadian) + tRadian : C225 * (tRadian * tRadian - tRadian) + tRadian,
+			tRadian = aY % CPI2,
+			tRadian < -CPI ? tRadian = tRadian + CPI2 : tRadian > CPI ? tRadian = tRadian - CPI2 : 0,
+			tRadian = tRadian < 0 ? C127 * tRadian + C045 * tRadian * tRadian : C127 * tRadian - C045 * tRadian * tRadian,
+			aSy = tRadian < 0 ? C225 * (tRadian * -tRadian - tRadian) + tRadian : C225 * (tRadian * tRadian - tRadian) + tRadian,
+			tRadian = (aY + C157) % CPI2,
+			tRadian < -CPI ? tRadian = tRadian + CPI2 : tRadian > CPI ? tRadian = tRadian - CPI2 : 0,
+			tRadian = tRadian < 0 ? C127 * tRadian + C045 * tRadian * tRadian : C127 * tRadian - C045 * tRadian * tRadian,
+			aCy = tRadian < 0 ? C225 * (tRadian * -tRadian - tRadian) + tRadian : C225 * (tRadian * tRadian - tRadian) + tRadian,
+			tRadian = aZ % CPI2,
+			tRadian < -CPI ? tRadian = tRadian + CPI2 : tRadian > CPI ? tRadian = tRadian - CPI2 : 0,
+			tRadian = tRadian < 0 ? C127 * tRadian + C045 * tRadian * tRadian : C127 * tRadian - C045 * tRadian * tRadian,
+			aSz = tRadian < 0 ? C225 * (tRadian * -tRadian - tRadian) + tRadian : C225 * (tRadian * tRadian - tRadian) + tRadian,
+			tRadian = (aZ + C157) % CPI2,
+			tRadian < -CPI ? tRadian = tRadian + CPI2 : tRadian > CPI ? tRadian = tRadian - CPI2 : 0,
+			tRadian = tRadian < 0 ? C127 * tRadian + C045 * tRadian * tRadian : C127 * tRadian - C045 * tRadian * tRadian,
+			aCz = tRadian < 0 ? C225 * (tRadian * -tRadian - tRadian) + tRadian : C225 * (tRadian * tRadian - tRadian) + tRadian,
+			/////////////////////////
+			b00 = aCy * aCz, b01 = aSx * aSy * aCz - aCx * aSz, b02 = aCx * aSy * aCz + aSx * aSz,
+			b10 = aCy * aSz, b11 = aSx * aSy * aSz + aCx * aCz, b12 = aCx * aSy * aSz - aSx * aCz,
+			b20 = -aSy, b21 = aSx * aCy, b22 = aCx * aCy,
+			// tLocalMatrix scale
+			aX = this.#scaleX, aY = this.#scaleY , aZ = this.#scaleZ,
+			tLocalMatrix[0] = (a00 * b00 + a10 * b01 + a20 * b02) * aX,
+			tLocalMatrix[1] = (a01 * b00 + a11 * b01 + a21 * b02) * aX,
+			tLocalMatrix[2] = (a02 * b00 + a12 * b01 + a22 * b02) * aX,
+			tLocalMatrix[3] = tLocalMatrix[3] * aX,
+			tLocalMatrix[4] = (a00 * b10 + a10 * b11 + a20 * b12) * aY,
+			tLocalMatrix[5] = (a01 * b10 + a11 * b11 + a21 * b12) * aY,
+			tLocalMatrix[6] = (a02 * b10 + a12 * b11 + a22 * b12) * aY,
+			tLocalMatrix[7] = tLocalMatrix[7] * aY,
+			tLocalMatrix[8] = (a00 * b20 + a10 * b21 + a20 * b22) * aZ,
+			tLocalMatrix[9] = (a01 * b20 + a11 * b21 + a21 * b22) * aZ,
+			tLocalMatrix[10] = (a02 * b20 + a12 * b21 + a22 * b22) * aZ,
+			tLocalMatrix[11] = tLocalMatrix[11] * aZ;
+
+			return this.localMatrix = tLocalMatrix
+	}
 
 }
