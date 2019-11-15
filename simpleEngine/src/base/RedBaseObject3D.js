@@ -47,14 +47,31 @@ export default class RedBaseObject3D {
 		this.#isDirty = true;
 	}
 
-	calculateLocalMatrix() {
-		var tMTX = this.localMatrix;
-		mat4.identity(tMTX)
-		mat4.translate(tMTX, tMTX, [this.#x, this.#y, this.#z])
-		mat4.rotateX(tMTX, tMTX, this.#rotationX * Math.PI / 180)
-		mat4.rotateY(tMTX, tMTX, this.#rotationY * Math.PI / 180)
-		mat4.rotateZ(tMTX, tMTX, this.#rotationZ * Math.PI / 180)
-		mat4.scale(tMTX, tMTX, [this.#scaleX, this.#scaleY, this.#scaleZ])
-		this.localMatrix = tMTX
+	get rotationX() {
+		return this.#rotationX;
 	}
+
+	set rotationX(v) {
+		this.#rotationX = v;
+		this.#isDirty = true;
+	}
+	get rotationY() {
+		return this.#rotationY;
+	}
+
+	set rotationY(v) {
+		this.#rotationY = v;
+		this.#isDirty = true;
+	}
+	get rotationZ() {
+		return this.#rotationZ;
+	}
+
+	set rotationZ(v) {
+		this.#rotationZ = v;
+		this.#isDirty = true;
+	}
+
+
+
 }

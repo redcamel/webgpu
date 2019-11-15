@@ -33,19 +33,19 @@ export default class RedRender {
 		let prevVertexBuffer
 		let prevIndexBuffer
 		let prevBindBuffer
-		let projectCameraMTX = mat4.create()
-		mat4.multiply(projectCameraMTX, projectionMatrix, cameraMatrix)
 		passEncoder.setBindGroup(1, redGPU.system_bindGroup)
 		redGPU.system_uniformBuffer.setSubData(0, projectionMatrix);
 		redGPU.system_uniformBuffer.setSubData(4 * 4 * Float32Array.BYTES_PER_ELEMENT, cameraMatrix);
 		while (i--) {
 			let tMesh = redGPU.children[i]
 			if (tMesh.isDirty) {
+
 				tMesh.getTransform()
 				tMesh.uniformBuffer.setSubData(0, tMesh.localMatrix)
-				tMesh.rotationX+=1
-
 			}
+			tMesh.rotationX+=1
+			tMesh.rotationY+=1
+			tMesh.rotationZ+=1
 			if (!tMesh.pipeline) tMesh.createPipeline(redGPU)
 			if (prevPipeline != tMesh.pipeline) passEncoder.setPipeline(prevPipeline = tMesh.pipeline);
 			if (prevVertexBuffer != tMesh.geometry.vertexBuffer) passEncoder.setVertexBuffer(0, prevVertexBuffer = tMesh.geometry.vertexBuffer);

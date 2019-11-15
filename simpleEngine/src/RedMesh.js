@@ -69,14 +69,17 @@ export default class RedMesh extends RedBaseObjectContainer {
 		console.log('table',table)
 		return this.pipeline
 	}
-
 	getTransform() {
-		let tempMTX = this.localMatrix
-		mat4.identity(tempMTX);
-		mat4.translate(tempMTX, tempMTX, [this.x, this.y, this.z]);
-
-		mat4.scale(tempMTX, tempMTX, [this.scaleX, this.scaleY, this.scaleZ]);
+		var tMTX = this.localMatrix;
+		mat4.identity(tMTX)
+		mat4.translate(tMTX, tMTX, [this.x, this.y, this.z])
+		mat4.rotateX(tMTX, tMTX, this.rotationX * Math.PI / 180)
+		mat4.rotateY(tMTX, tMTX, this.rotationY * Math.PI / 180)
+		mat4.rotateZ(tMTX, tMTX, this.rotationZ * Math.PI / 180)
+		mat4.scale(tMTX, tMTX, [this.scaleX, this.scaleY, this.scaleZ])
+		this.localMatrix = tMTX
 		return this.localMatrix
 	}
+
 
 }
