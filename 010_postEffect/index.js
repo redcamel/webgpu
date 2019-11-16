@@ -179,7 +179,7 @@ async function init(glslang) {
 		]
 	});
 	console.log('uniformsBindGroupLayout', uniformsBindGroupLayout);
-	const MAX = 100;
+	const MAX = 1000;
 	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
 	const offset = 256; // uniformBindGroup offset must be 256-byte aligned
 	const uniformBufferSize = offset * MAX + matrixSize * 2;
@@ -345,7 +345,7 @@ async function init(glslang) {
 	let i = MAX;
 	while (i--) {
 		childList.push({
-			position: [Math.random() * 40 - 20, Math.random() * 24 - 12, -30],
+			position: [Math.random() * 40 - 20, Math.random() * 24 - 12, -30- Math.random()*50],
 			offset: i * offset,
 			uniformBuffer: uniformBuffer,
 			uniformBindGroup: device.createBindGroup({
