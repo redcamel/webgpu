@@ -323,9 +323,7 @@ async function init(glslang) {
 					operation: "add"
 				},
 				colorBlend: {
-					srcFactor: "src-alpha",
-					dstFactor: "one-minus-src-alpha",
-					operation: "add"
+
 				}
 			}
 		],
