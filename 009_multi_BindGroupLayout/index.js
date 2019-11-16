@@ -37,14 +37,14 @@ async function init(glslang) {
 	// 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
 	const cvs = document.createElement('canvas');
 	cvs.width = 1024;
-	cvs.height = 768
+	cvs.height = 768;
 	document.body.appendChild(cvs);
-	const ctx = cvs.getContext('gpupresent')
+	const ctx = cvs.getContext('gpupresent');
 
 	const swapChainFormat = "bgra8unorm";
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
-	console.log('ctx', ctx)
-	console.log('swapChain', swapChain)
+	console.log('ctx', ctx);
+	console.log('swapChain', swapChain);
 
 	// 쉐이더를 이제 만들어야함.
 	let vShaderModule = makeShaderModule_GLSL(glslang, device, 'vertex', vertexShaderGLSL);
@@ -82,7 +82,7 @@ async function init(glslang) {
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 	});
 
-	console.log('uniformBuffer', uniformBuffer)
+	console.log('uniformBuffer', uniformBuffer);
 	const uniformBindGroupDescriptor = {
 		layout: uniformsBindGroupLayout,
 		bindings: [
@@ -96,9 +96,9 @@ async function init(glslang) {
 			}
 		]
 	};
-	console.log('uniformBindGroupDescriptor', uniformBindGroupDescriptor)
+	console.log('uniformBindGroupDescriptor', uniformBindGroupDescriptor);
 	const uniformBindGroup = device.createBindGroup(uniformBindGroupDescriptor);
-	console.log('uniformBindGroup', uniformBindGroup)
+	console.log('uniformBindGroup', uniformBindGroup);
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	const systemUniformsBindGroupLayout = device.createBindGroupLayout({
 		bindings: [
@@ -113,7 +113,7 @@ async function init(glslang) {
 		size: uniformBufferSize,
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 	});
-	console.log('systemUniformBuffer', systemUniformBuffer)
+	console.log('systemUniformBuffer', systemUniformBuffer);
 	const systemUniformBindGroupDescriptor = {
 		layout: uniformsBindGroupLayout,
 		bindings: [
@@ -127,9 +127,9 @@ async function init(glslang) {
 			}
 		]
 	};
-	console.log('systemUniformBindGroupDescriptor', systemUniformBindGroupDescriptor)
+	console.log('systemUniformBindGroupDescriptor', systemUniformBindGroupDescriptor);
 	const systemUniformBindGroup = device.createBindGroup(systemUniformBindGroupDescriptor);
-	console.log('systemUniformBindGroup', systemUniformBindGroup)
+	console.log('systemUniformBindGroup', systemUniformBindGroup);
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
@@ -198,7 +198,7 @@ async function init(glslang) {
 			vertexBuffer: vertexBuffer,
 			uniformBindGroup: uniformBindGroup,
 			uniformBuffer: uniformBuffer
-		}
+		};
 
 		const commandEncoder = device.createCommandEncoder();
 		const textureView = swapChain.getCurrentTexture().createView();
@@ -219,9 +219,9 @@ async function init(glslang) {
 
 		mat4.identity(modelMatrix);
 		mat4.translate(modelMatrix, modelMatrix, [Math.sin(time / 1000), Math.cos(time / 1000), -5]);
-		mat4.rotateX(modelMatrix, modelMatrix, time / 1000)
-		mat4.rotateY(modelMatrix, modelMatrix, time / 1000)
-		mat4.rotateZ(modelMatrix, modelMatrix, time / 1000)
+		mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
+		mat4.rotateY(modelMatrix, modelMatrix, time / 1000);
+		mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
 		mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
 		passEncoder.setBindGroup(0, renderData['uniformBindGroup']);
 		renderData['uniformBuffer'].setSubData(0, modelMatrix);
@@ -229,10 +229,10 @@ async function init(glslang) {
 
 		passEncoder.draw(3, 1, 0, 0);
 		passEncoder.endPass();
-		const test = commandEncoder.finish()
+		const test = commandEncoder.finish();
 		device.getQueue().submit([test]);
 		requestAnimationFrame(render)
-	}
+	};
 	requestAnimationFrame(render)
 
 }
@@ -268,7 +268,7 @@ function makeVertexBuffer(device, data) {
 	let verticesBuffer = device.createBuffer(bufferDescriptor);
 	console.log('bufferDescriptor', bufferDescriptor);
 	verticesBuffer.setSubData(0, data);
-	console.log('verticesBuffer', verticesBuffer)
+	console.log('verticesBuffer', verticesBuffer);
 	console.log(`// makeVertexBuffer end /////////////////////////////////////////////////////////////`);
 	return verticesBuffer
 }

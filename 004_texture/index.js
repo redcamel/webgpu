@@ -45,14 +45,14 @@ async function init(glslang) {
 	// 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
 	const cvs = document.createElement('canvas');
 	cvs.width = 1024;
-	cvs.height = 768
+	cvs.height = 768;
 	document.body.appendChild(cvs);
-	const ctx = cvs.getContext('gpupresent')
+	const ctx = cvs.getContext('gpupresent');
 
 	const swapChainFormat = "bgra8unorm";
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
-	console.log('ctx', ctx)
-	console.log('swapChain', swapChain)
+	console.log('ctx', ctx);
+	console.log('swapChain', swapChain);
 
 	// 쉐이더를 이제 만들어야함.
 	let vShaderModule = makeShaderModule_GLSL(glslang, device, 'vertex', vertexShaderGLSL);
@@ -96,7 +96,7 @@ async function init(glslang) {
 			}
 		]
 	});
-	console.log('uniformsBindGroupLayout', uniformsBindGroupLayout)
+	console.log('uniformsBindGroupLayout', uniformsBindGroupLayout);
 	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
 	const offset = 0; // uniformBindGroup offset must be 256-byte aligned
 	const uniformBufferSize = offset + matrixSize * 2;
@@ -105,7 +105,7 @@ async function init(glslang) {
 		size: uniformBufferSize,
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 	});
-	console.log('uniformBuffer', uniformBuffer)
+	console.log('uniformBuffer', uniformBuffer);
 	/**
 	 * 텍스쳐를 만들어보자
 	 */
@@ -115,7 +115,7 @@ async function init(glslang) {
 		minFilter: "linear",
 		mipmapFilter: "linear"
 	});
-	console.log('testTexture', testTexture)
+	console.log('testTexture', testTexture);
 
 	const uniformBindGroupDescriptor = {
 		layout: uniformsBindGroupLayout,
@@ -138,9 +138,9 @@ async function init(glslang) {
 			}
 		]
 	};
-	console.log('uniformBindGroupDescriptor', uniformBindGroupDescriptor)
+	console.log('uniformBindGroupDescriptor', uniformBindGroupDescriptor);
 	const uniformBindGroup = device.createBindGroup(uniformBindGroupDescriptor);
-	console.log('uniformBindGroup', uniformBindGroup)
+	console.log('uniformBindGroup', uniformBindGroup);
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
@@ -220,7 +220,7 @@ async function init(glslang) {
 			vertexBuffer: vertexBuffer,
 			uniformBindGroup: uniformBindGroup,
 			uniformBuffer: uniformBuffer
-		}
+		};
 
 		const commandEncoder = device.createCommandEncoder();
 		const textureView = swapChain.getCurrentTexture().createView();
@@ -237,9 +237,9 @@ async function init(glslang) {
 
 		mat4.identity(modelMatrix);
 		mat4.translate(modelMatrix, modelMatrix, [Math.sin(time / 1000), Math.cos(time / 1000), -5]);
-		mat4.rotateX(modelMatrix, modelMatrix, time / 1000)
-		mat4.rotateY(modelMatrix, modelMatrix, time / 1000)
-		mat4.rotateZ(modelMatrix, modelMatrix, time / 1000)
+		mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
+		mat4.rotateY(modelMatrix, modelMatrix, time / 1000);
+		mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
 		mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
 		passEncoder.setBindGroup(0, renderData['uniformBindGroup']);
 		renderData['uniformBuffer'].setSubData(0, projectionMatrix);
@@ -248,10 +248,10 @@ async function init(glslang) {
 
 		passEncoder.draw(6, 1, 0, 0);
 		passEncoder.endPass();
-		const test = commandEncoder.finish()
+		const test = commandEncoder.finish();
 		device.getQueue().submit([test]);
 		requestAnimationFrame(render)
-	}
+	};
 	requestAnimationFrame(render)
 
 }
@@ -287,7 +287,7 @@ function makeVertexBuffer(device, data) {
 	let verticesBuffer = device.createBuffer(bufferDescriptor);
 	console.log('bufferDescriptor', bufferDescriptor);
 	verticesBuffer.setSubData(0, data);
-	console.log('verticesBuffer', verticesBuffer)
+	console.log('verticesBuffer', verticesBuffer);
 	console.log(`// makeVertexBuffer end /////////////////////////////////////////////////////////////`);
 	return verticesBuffer
 }
@@ -295,7 +295,7 @@ function makeVertexBuffer(device, data) {
 async function createTextureFromImage(device, src, usage) {
 	// 귀찮아서 텍스쳐 맹그는 놈은 들고옴
 	const img = document.createElement('img');
-	console.log('여긴오곘고')
+	console.log('여긴오곘고');
 	img.src = src;
 	await img.decode();
 

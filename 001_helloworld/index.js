@@ -33,12 +33,12 @@ async function init(glslang) {
 	cvs.width = 1024;
 	cvs.height = 768;
 	document.body.appendChild(cvs);
-	const ctx = cvs.getContext('gpupresent')
+	const ctx = cvs.getContext('gpupresent');
 
 	const swapChainFormat = "bgra8unorm";
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
-	console.log('ctx', ctx)
-	console.log('swapChain', swapChain)
+	console.log('ctx', ctx);
+	console.log('swapChain', swapChain);
 
 	// 쉐이더를 이제 만들어야함.
 	let vShaderModule = makeShaderModule_GLSL(glslang, device, 'vertex', vertexShaderGLSL);
@@ -119,9 +119,9 @@ async function init(glslang) {
 		passEncoder.setPipeline(pipeline);
 		passEncoder.draw(3, 1, 0, 0);
 		passEncoder.endPass();
-		const test = commandEncoder.finish()
+		const test = commandEncoder.finish();
 		device.getQueue().submit([test]);
-	}
+	};
 	requestAnimationFrame(render)
 
 }
@@ -157,7 +157,7 @@ function makeVertexBuffer(device, data) {
 	let verticesBuffer = device.createBuffer(bufferDescriptor);
 	console.log('bufferDescriptor', bufferDescriptor);
 	verticesBuffer.setSubData(0, data);
-	console.log('verticesBuffer', verticesBuffer)
+	console.log('verticesBuffer', verticesBuffer);
 	console.log(`// makeVertexBuffer end /////////////////////////////////////////////////////////////`);
 	return verticesBuffer
 }
