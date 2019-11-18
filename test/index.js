@@ -6,10 +6,13 @@ const vertexShaderGLSL_quad = `
     layout(set=0,binding = 0) uniform Uniforms {
         mat4 projectionMatrix;
         mat4 modelMatrix;
+        float time;
     } uniforms;
     layout(location = 0) in vec3 position;
+    layout(location = 0) out float vTime;
 	void main() {
 		gl_Position = uniforms.projectionMatrix * uniforms.modelMatrix * vec4(position,1.0);
+		vTime = uniforms.time;
 	}
 	`;
 const fragmentShaderGLSL_quad = `
@@ -18,6 +21,7 @@ const fragmentShaderGLSL_quad = `
 	layout(set = 0, binding = 2) uniform texture2D uDiffuseTexture;
 	layout(set = 0, binding = 3) uniform texture2D uNormalTexture;
 	layout(set = 0, binding = 4) uniform texture2D uPositionTexture;
+    layout(location = 0) in float vTime;
 	layout(location = 0) out vec4 outColor;
 	
 	const int cPOINT_MAX =3;
@@ -25,16 +29,18 @@ const fragmentShaderGLSL_quad = `
 	vec4 lightColor[cPOINT_MAX];
 	float lightRadius[cPOINT_MAX];
 	
-
+ 
 	
 	void main() {
-		lightPosition[0] = vec3(-5.0, -5.0, -12.0);
-		lightPosition[1] = vec3(5.0, 5.0, -13.0);
+		lightPosition[0] = vec3(-5.0* sin(vTime/1000.0), -5.0* cos(vTime/1000.0), -12.0*cos(vTime/1000.0)-25) ;
+		lightPosition[1] = vec3(5.0* sin(vTime/1000.0), 5.0* cos(vTime/1000.0), -12.0*sin(vTime/1000.0)-25) ;
 		lightPosition[2] = vec3(0.0, 0.0, -14.0);
 		
-		lightRadius[0] = 3.5;
-		lightRadius[1] = 3.5;
-		lightRadius[2] = 3.5;
+		
+		
+		lightRadius[0] = 25.5;
+		lightRadius[1] = 25.5;
+		lightRadius[2] = 25.5;
 		
 		lightColor[0] = vec4(0.0, 1.0, 1.0, 1.0);
 		lightColor[1] = vec4(1.0, 0.0, 1.0, 1.0);
@@ -65,7 +71,7 @@ const fragmentShaderGLSL_quad = `
            L =  -lightPosition[i] + positionColor.xyz;
            distanceLength = abs(length(L));
            if(lightRadius[i] >  distanceLength){
-               attenuation = 1.0 / (0.01 + 0.02 * distanceLength* distanceLength + 0.03 * distanceLength * distanceLength) * 0.5;
+               attenuation = 1.0 / (0.01 + 0.02 * distanceLength + 0.03 * distanceLength * distanceLength) * 0.5;
         
                L = normalize(L);
                lambertTerm = dot(N,-L);
@@ -250,7 +256,7 @@ async function init(glslang) {
 		]
 	});
 	console.log('uniformsBindGroupLayout', uniformsBindGroupLayout);
-	const MAX = 500;
+	const MAX = 1000;
 	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
 	const offset = 256; // uniformBindGroup offset must be 256-byte aligned
 	const uniformBufferSize = offset * MAX + matrixSize * 3;
@@ -260,7 +266,7 @@ async function init(glslang) {
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 	});
 	const uniformBuffer_quad = await device.createBuffer({
-		size: matrixSize * 2,
+		size: matrixSize * 2 + Float32Array.BYTES_PER_ELEMENT,
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 	});
 
@@ -462,7 +468,7 @@ async function init(glslang) {
 				resource: {
 					buffer: uniformBuffer_quad,
 					offset: 0,
-					size: matrixSize
+					size: matrixSize * 2 + Float32Array.BYTES_PER_ELEMENT
 				}
 			},
 			{
@@ -485,9 +491,7 @@ async function init(glslang) {
 	})
 
 	let lightList = [
-		{
-
-		}
+		{}
 	]
 
 	let projectionMatrix = mat4.create();
@@ -499,7 +503,7 @@ async function init(glslang) {
 	let i = MAX;
 	while (i--) {
 		childList.push({
-			position: [Math.random() * 40 - 20,Math.random() * 40 - 20, -16 + Math.random()*10-5],
+			position: [Math.random() * 40 - 20, Math.random() * 40 - 20, Math.random() * 50 - 25-25],
 			offset: i * offset,
 			uniformBuffer: uniformBuffer,
 			uniformBindGroup: device.createBindGroup({
@@ -637,7 +641,8 @@ async function init(glslang) {
 
 		passEncoder2.setBindGroup(0, uniformsBindGroup_quad);
 		uniformBuffer_quad.setSubData(0, orthoMTX);
-		uniformBuffer_quad.setSubData(0 + 4 * 16, modelMatrix);
+		uniformBuffer_quad.setSubData(4 * 4 * Float32Array.BYTES_PER_ELEMENT, modelMatrix);
+		uniformBuffer_quad.setSubData( 8 * 4 * Float32Array.BYTES_PER_ELEMENT, new Float32Array([time]));
 		passEncoder2.draw(6, 1, 0, 0, 0);
 
 
