@@ -514,6 +514,7 @@ async function init(glslang) {
 
 
 	let projectionMatrix = mat4.create();
+	let cameraMTX = mat4.create();
 	let modelMatrix = mat4.create();
 	let aspect = Math.abs(cvs.width / cvs.height);
 	mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
@@ -522,7 +523,7 @@ async function init(glslang) {
 	let i = MAX;
 	while (i--) {
 		childList.push({
-			position: [Math.random() * 30 - 15, Math.random() * 20 - 10, -Math.random() * 20-15],
+			position: [Math.random() * 50 - 25,Math.random() * 50 - 25,Math.random() * 50 - 25],
 			offset: i * offset,
 			uniformBuffer: uniformBuffer,
 			uniformBindGroup: device.createBindGroup({
@@ -568,13 +569,24 @@ async function init(glslang) {
 	i = LIGHT_MAX
 	while (i--) {
 		lightList.push({
-			position: [Math.random() * 20 - 10, Math.random() * 20 - 10,Math.random()*30 - 15],
+			position: [Math.random() * 40 - 20, Math.random() * 40 - 20,Math.random() * 40 - 20],
 			color: new Float32Array([Math.random(), Math.random(), Math.random(), 1.0]),
-			radius: new Float32Array([4])
+			radius: new Float32Array([10])
 		})
 	}
 
 	let render = async function (time) {
+
+		mat4.identity(projectionMatrix)
+		mat4.identity(cameraMTX);
+		let aspect = Math.abs(cvs.width / cvs.height);
+		mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
+
+		mat4.lookAt(cameraMTX,[Math.sin(time/3000) * 35,Math.cos(time/2500) * 35,Math.sin(time/5000) * 35],[0,0,0],[0,1,0])
+
+		mat4.multiply(projectionMatrix,projectionMatrix,cameraMTX)
+
+
 		const swapChainTexture = swapChain.getCurrentTexture();
 		const commandEncoder = device.createCommandEncoder();
 		const commandEncoder2 = device.createCommandEncoder();
