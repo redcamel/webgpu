@@ -58,7 +58,7 @@ const fragmentShaderGLSL_quad = `
         float distanceLength;
         float attenuation;
         float specular;
-        float shininess =16.0;
+        float shininess =64.0;
         float specularPower = 1.0;
         for(int i=0;i<cPOINT_MAX;i++){
            L =  -lightUniforms.lightPosition[i].xyz + positionColor.xyz;
@@ -70,14 +70,14 @@ const fragmentShaderGLSL_quad = `
                lambertTerm = dot(N,-L);
                if(lambertTerm > 0.0){
 	               ld += lightUniforms.lightColor[i] * diffuseColor * lambertTerm * attenuation * 1.0 ;
-	               specular = pow( max(dot( reflect(L, N), -N), 0.0), shininess) * specularPower * attenuation;
+	               specular = pow( max(dot( reflect(L, N), -N), 0.2), shininess) * specularPower * attenuation;
 	               ls +=  specularLightColor * specular  ;
                }
            }
         }
         	    
 	    vec4 finalColor = ld + ls;	    
-		outColor = finalColor;
+		outColor = mix(diffuseColor,finalColor,0.7);
 		
 	}
 `;
@@ -371,6 +371,7 @@ async function init(glslang) {
 		],
 		// 드로잉 방법을 결정함
 		primitiveTopology: 'triangle-list',
+
 		/*
 		GPUPrimitiveTopology {
 			"point-list",
@@ -427,6 +428,7 @@ async function init(glslang) {
 		],
 		// 드로잉 방법을 결정함
 		primitiveTopology: 'triangle-list',
+
 		/*
 		GPUPrimitiveTopology {
 			"point-list",
@@ -522,10 +524,14 @@ async function init(glslang) {
 	let childList = [];
 	let i = MAX;
 	while (i--) {
+		let tScale = Math.random()*3
 		childList.push({
-			position: [Math.random() * 50 - 25,Math.random() * 50 - 25,Math.random() * 50 - 25],
+			position: [Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50],
+			scale: [tScale,tScale,tScale],
 			offset: i * offset,
 			uniformBuffer: uniformBuffer,
+			vertexBuffer: vertexBuffer,
+			indexBuffer: indexBuffer,
 			uniformBindGroup: device.createBindGroup({
 				layout: uniformsBindGroupLayout,
 				bindings: [
@@ -554,6 +560,77 @@ async function init(glslang) {
 			})
 		})
 	}
+	const pModel = new Promise((resolve) => {
+		OBJ.downloadMeshes({
+			'obj': '../assets/sponza.obj'
+		}, resolve);
+	});
+	pModel.then(function (v) {
+		console.log(v)
+		let interleave = []
+		let vertexData = v.obj.vertices
+		let vertexNormals = v.obj.vertexNormals
+		let uvData = v.obj.textures
+
+
+		let i = 0, len = v.obj.indices.length
+		for (i; i < len; i++) {
+			let tIndex = v.obj.indices[i]
+			interleave[tIndex * 8 + 0] = vertexData[tIndex * 3 + 0]
+			interleave[tIndex * 8 + 1] = vertexData[tIndex * 3 + 1]
+			interleave[tIndex * 8 + 2] = vertexData[tIndex * 3 + 2]
+			interleave[tIndex * 8 + 3] = vertexNormals[tIndex * 3 + 0]
+			interleave[tIndex * 8 + 4] = vertexNormals[tIndex * 3 + 1]
+			interleave[tIndex * 8 + 5] = vertexNormals[tIndex * 3 + 2]
+			interleave[tIndex * 8 + 6] = uvData[tIndex * 2 + 0]
+			interleave[tIndex * 8 + 7] = uvData[tIndex * 2 + 1]
+		}
+		let vertexBuffer = makeVertexBuffer(
+			device,
+			new Float32Array(
+				interleave
+			)
+		);
+		let indexBuffer = makeIndexBuffer(
+			device,
+			new Uint32Array(v.obj.indices)
+		);
+		indexBuffer.pointNum = v.obj.indices.length
+		childList.push({
+			position: [0, -25, 0],
+			scale: [10, 10, 10],
+			offset: MAX * offset,
+			vertexBuffer: vertexBuffer,
+			indexBuffer: indexBuffer,
+			uniformBuffer: uniformBuffer,
+			uniformBindGroup: device.createBindGroup({
+				layout: uniformsBindGroupLayout,
+				bindings: [
+					{
+						binding: 0,
+						resource: {
+							buffer: uniformBuffer,
+							offset: MAX * offset,
+							size: matrixSize
+						}
+					},
+					{
+						binding: 1,
+						resource: testSampler,
+					},
+					{
+						binding: 2,
+						resource: testDiffuseTexture.createView(),
+					},
+					{
+						binding: 3,
+						resource: testNormalTexture.createView(),
+					}
+
+				]
+			})
+		})
+	})
 	const depthTexture = device.createTexture({
 		size: {
 			width: cvs.width,
@@ -569,9 +646,9 @@ async function init(glslang) {
 	i = LIGHT_MAX
 	while (i--) {
 		lightList.push({
-			position: [Math.random() * 40 - 20, Math.random() * 40 - 20,Math.random() * 40 - 20],
+			position: [Math.random() * 100-50, Math.random() * 100 -50, Math.random() * 100-50],
 			color: new Float32Array([Math.random(), Math.random(), Math.random(), 1.0]),
-			radius: new Float32Array([10])
+			radius: new Float32Array([Math.random()*50])
 		})
 	}
 
@@ -580,11 +657,12 @@ async function init(glslang) {
 		mat4.identity(projectionMatrix)
 		mat4.identity(cameraMTX);
 		let aspect = Math.abs(cvs.width / cvs.height);
-		mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
+		mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100000.0);
 
-		mat4.lookAt(cameraMTX,[Math.sin(time/3000) * 35,Math.cos(time/2500) * 35,Math.sin(time/5000) * 35],[0,0,0],[0,1,0])
+		// mat4.lookAt(cameraMTX, [Math.sin(time / 3000) * 100, Math.cos(time / 2500) * 30+100, Math.sin(time / 2000) * 100], [0, 0, 0], [0, 1, 0])
+		mat4.lookAt(cameraMTX, [Math.sin(time / 3000) * 15, Math.cos(time / 2500) * 3+5, Math.sin(time / 1000) * 15], [0, 0, 0], [0, 1, 0])
 
-		mat4.multiply(projectionMatrix,projectionMatrix,cameraMTX)
+		mat4.multiply(projectionMatrix, projectionMatrix, cameraMTX)
 
 
 		const swapChainTexture = swapChain.getCurrentTexture();
@@ -619,8 +697,7 @@ async function init(glslang) {
 			}
 		};
 		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-		passEncoder.setVertexBuffer(0, vertexBuffer);
-		passEncoder.setIndexBuffer(indexBuffer);
+
 		passEncoder.setPipeline(pipeline);
 		passEncoder.setScissorRect(0, 0, cvs.width, cvs.height);
 
@@ -628,12 +705,14 @@ async function init(glslang) {
 		let tData;
 		while (i--) {
 			tData = childList[i];
+			passEncoder.setVertexBuffer(0, tData['vertexBuffer']);
+			passEncoder.setIndexBuffer(tData['indexBuffer']);
 			mat4.identity(modelMatrix);
 			mat4.translate(modelMatrix, modelMatrix, tData['position']);
-			mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
-			mat4.rotateY(modelMatrix, modelMatrix, time / 1000);
-			mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
-			mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
+			// mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
+			// mat4.rotateY(modelMatrix, modelMatrix, time / 1000);
+			// mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
+			mat4.scale(modelMatrix, modelMatrix, tData['scale']);
 			///////////////////////////////////////////////////////////////////////////
 			// Chrome currently crashes with |setSubData| too large.
 			///////////////////////////////////////////////////////////////////////////
@@ -646,7 +725,7 @@ async function init(glslang) {
 				tData['uniformBuffer'].setSubData(tData['offset'], projectionMatrix);
 				tData['uniformBuffer'].setSubData(tData['offset'] + 4 * 16, modelMatrix);
 				tData['uniformBuffer'].setSubData(tData['offset'] + 8 * 16, normalMatrix);
-				passEncoder.drawIndexed(indexBuffer.pointNum, 1, 0, 0, 0);
+				passEncoder.drawIndexed(tData['indexBuffer'].pointNum, 1, 0, 0, 0);
 			}
 		}
 
@@ -689,8 +768,8 @@ async function init(glslang) {
 		i = lightList.length
 		while (i--) {
 			let tPosition = (lightList[i]['position'])
-			tPosition[2] = Math.cos(time / 1000+i)*20
-			let tUpdateData = [...tPosition,lightList[i]['radius'],...lightList[i]['color']]
+			tPosition[2] = Math.cos(time / 1000 + i) * 20
+			let tUpdateData = [...tPosition, lightList[i]['radius'], ...lightList[i]['color']]
 			uniformBuffer_light.setSubData(i * 8 * Float32Array.BYTES_PER_ELEMENT, new Float32Array(tUpdateData));
 		}
 
@@ -706,6 +785,7 @@ async function init(glslang) {
 		requestAnimationFrame(render)
 	};
 	requestAnimationFrame(render)
+
 
 }
 
