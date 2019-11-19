@@ -4,13 +4,14 @@ import util_makeShaderModule_GLSL from './util_makeShaderModule_GLSL.js'
 
 const vertexShaderGLSL = `
 	#version 450
-    layout(set=0,binding = 0) uniform Uniforms {
-        mat4 modelMTX;
-    } uniforms;
-     layout(set=1,binding = 0) uniform SystemUniforms {
+    layout(set=0,binding = 0) uniform SystemUniforms {
         mat4 perspectiveMTX;
         mat4 cameraMTX;
     } systemUniforms;
+    layout(set=1,binding = 0) uniform Uniforms {
+        mat4 modelMTX;
+    } uniforms;
+     
 	layout(location = 0) in vec3 position;
 	layout(location = 1) in vec3 normal;
 	layout(location = 2) in vec2 uv;
@@ -29,9 +30,9 @@ const fragmentShaderGLSL = `
 	layout(location = 0) in vec3 vNormal;
 	layout(location = 1) in vec2 vUV;
 	layout(location = 2) in vec4 vVertexPosition;
-	layout(set = 0, binding = 1) uniform sampler uSampler;
-	layout(set = 0, binding = 2) uniform texture2D uDiffuseTexture;
-	layout(set = 0, binding = 3) uniform texture2D uNormalTexture;
+	layout(set = 1, binding = 1) uniform sampler uSampler;
+	layout(set = 1, binding = 2) uniform texture2D uDiffuseTexture;
+	layout(set = 1, binding = 3) uniform texture2D uNormalTexture;
 	layout(location = 0) out vec4 outColor;
 	
 	mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)

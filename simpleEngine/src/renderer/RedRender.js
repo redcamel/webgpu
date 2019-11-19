@@ -1,8 +1,8 @@
 export default class RedRender {
-	render(time, redGPU, depthTexture) {
+	constructor() {
+	}
 
-
-
+	render(time, redGPU, depthTextureView) {
 		const swapChainTexture = redGPU.swapChain.getCurrentTexture();
 		const commandEncoder = redGPU.device.createCommandEncoder();
 		const textureView = swapChainTexture.createView();
@@ -13,23 +13,23 @@ export default class RedRender {
 				loadValue: {r: 1, g: 1, b: 0.0, a: 1.0}
 			}],
 			depthStencilAttachment: {
-				attachment: depthTexture.createView(),
+				attachment: depthTextureView,
 				depthLoadValue: 1.0,
 				depthStoreOp: "store",
 				stencilLoadValue: 0,
 				stencilStoreOp: "store",
 			}
 		};
-
 		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+
 		let i = redGPU.children.length;
 		let prevPipeline;
 		let prevVertexBuffer;
 		let prevIndexBuffer;
 		let prevBindBuffer;
-		passEncoder.setBindGroup(1, redGPU.system_bindGroup);
-		redGPU.system_uniformBuffer.setSubData(0, redGPU.projectionMatrix);
-		redGPU.system_uniformBuffer.setSubData(4 * 4 * Float32Array.BYTES_PER_ELEMENT, redGPU.camera.localMatrix);
+		// 시스템 유니폼 업데이트
+		redGPU.updateSystemUniform(passEncoder)
+
 		while (i--) {
 			let tMesh = redGPU.children[i];
 			if (tMesh.dirtyTransform) {
@@ -39,8 +39,9 @@ export default class RedRender {
 			}
 			if (!tMesh.pipeline) tMesh.createPipeline(redGPU);
 			if (prevPipeline != tMesh.pipeline) passEncoder.setPipeline(prevPipeline = tMesh.pipeline);
-			if (prevVertexBuffer != tMesh.geometry.vertexBuffer) passEncoder.setVertexBuffer(0, prevVertexBuffer = tMesh.geometry.vertexBuffer);
-			if (prevIndexBuffer != tMesh.geometry.indexBuffer) passEncoder.setIndexBuffer(prevIndexBuffer = tMesh.geometry.indexBuffer);
+			if (prevVertexBuffer != tMesh.geometry.interleaveBuffer) passEncoder.setVertexBuffer(0, prevVertexBuffer = tMesh.geometry.interleaveBuffer.buffer);
+			if (prevIndexBuffer != tMesh.geometry.indexBuffer) passEncoder.setIndexBuffer(prevIndexBuffer = tMesh.geometry.indexBuffer.buffer);
+
 
 			///////////////////////////////////////////////////////////////////////////
 			// Chrome currently crashes with |setSubData| too large.
@@ -50,11 +51,8 @@ export default class RedRender {
 					tMesh.material.bindings[0]['resource']['buffer'] = tMesh.uniformBuffer;
 					tMesh.uniformBindGroup = redGPU.device.createBindGroup(tMesh.material.uniformBindGroupDescriptor)
 				}
-				// if (prevBindBuffer != tMesh.uniformBindGroup)
-				passEncoder.setBindGroup(0, prevBindBuffer = tMesh.uniformBindGroup);
-
-
-				passEncoder.drawIndexed(tMesh.geometry.indexBuffer.pointNum, 1, 0, 0, 0);
+				if (prevBindBuffer != tMesh.uniformBindGroup) passEncoder.setBindGroup(1, prevBindBuffer = tMesh.uniformBindGroup);
+				passEncoder.drawIndexed(tMesh.geometry.indexBuffer.indexNum, 1, 0, 0, 0);
 
 			} else {
 				tMesh.uniformBindGroup = null

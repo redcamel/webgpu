@@ -4,20 +4,20 @@ import util_makeShaderModule_GLSL from './util_makeShaderModule_GLSL.js'
 
 const vertexShaderGLSL = `
 	#version 450
-    layout(set=0,binding = 0) uniform Uniforms {
-        mat4 mvp;
-    } uniforms;
-     layout(set=1,binding = 0) uniform SystemUniforms {
+	layout(set=0,binding = 0) uniform SystemUniforms {
         mat4 perspectiveMTX;
         mat4 cameraMTX;
     } systemUniforms;
+    layout(set=1,binding = 0) uniform Uniforms {
+        mat4 modelMatrix;
+    } uniforms;
 	layout(location = 0) in vec3 position;
 	layout(location = 1) in vec3 normal;
 	layout(location = 2) in vec2 uv;
 	layout(location = 0) out vec3 vNormal;
 	layout(location = 1) out vec2 vUV;
 	void main() {
-		gl_Position = systemUniforms.perspectiveMTX * systemUniforms.cameraMTX * uniforms.mvp* vec4(position,1.0);
+		gl_Position = systemUniforms.perspectiveMTX * systemUniforms.cameraMTX * uniforms.modelMatrix* vec4(position,1.0);
 		vNormal = normal;
 		vUV = uv;
 	}
@@ -26,8 +26,8 @@ const fragmentShaderGLSL = `
 	#version 450
 	layout(location = 0) in vec3 vNormal;
 	layout(location = 1) in vec2 vUV;
-	layout(set = 0, binding = 1) uniform sampler uSampler;
-	layout(set = 0, binding = 2) uniform texture2D uTexture;
+	layout(set = 1, binding = 1) uniform sampler uSampler;
+	layout(set = 1, binding = 2) uniform texture2D uTexture;
 	layout(location = 0) out vec4 outColor;
 	void main() {
 		outColor = texture(sampler2D(uTexture, uSampler), vUV) ;
