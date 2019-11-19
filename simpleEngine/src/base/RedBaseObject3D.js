@@ -1,5 +1,4 @@
 "use strict";
-import RedTypeSize from "../RedTypeSize.js";
 
 export default class RedBaseObject3D {
 	#x = 0;
@@ -114,9 +113,10 @@ export default class RedBaseObject3D {
 		return this.localNormalMatrix = tLocalNormalMatrix;
 	}
 
-	updateUniformBuffer(){
-		this.uniformBuffer.setSubData(0, this.localMatrix);
-		if(RedTypeSize.mat4<this.material.uniformBufferDescripter.size) this.uniformBuffer.setSubData(RedTypeSize.mat4, this.localNormalMatrix);
+	updateUniformBuffer() {
+		for (const data of this.material.uniformBufferDescripter.redStruct) {
+			this.uniformBuffer.setSubData(data['offset'], this[data.valueName]);
+		}
 	}
 
 	getTransform() {

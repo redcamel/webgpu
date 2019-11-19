@@ -54,9 +54,9 @@ import RedSphere from "./src/primitives/RedSphere.js";
 		let renderer = new RedRender();
 		let render = function (time) {
 
-			redGPU.camera.x = Math.sin(time / 3000) * 20;
-			redGPU.camera.y = Math.cos(time / 5000) * 20;
-			redGPU.camera.z = Math.cos(time / 3000) * 20;
+			redGPU.camera.x = Math.sin(time / 2000) * 20;
+			redGPU.camera.y = Math.cos(time / 3000) * 20;
+			redGPU.camera.z = Math.cos(time / 1000) * 20;
 			redGPU.camera.lookAt(0, 0, 0);
 			renderer.render(time, redGPU, depthTextureView);
 			let i = MAX/5;

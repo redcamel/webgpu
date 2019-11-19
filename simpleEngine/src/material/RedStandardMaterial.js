@@ -72,8 +72,7 @@ const fragmentShaderGLSL = `
 		vec4 ls = vec4(0.0, 0.0, 0.0, 1.0);
 		vec4 specularLightColor = vec4(1.0);
 		vec3 lightPosition = vec3( 5, 5, 5);
-	    vec3 L = normalize(-lightPosition);
-	
+	    vec3 L = normalize(-lightPosition);	
 	    vec4 lightColor = vec4(1.0);
 	    float lambertTerm = dot(N,-L);
 	    float intensity = 1.0;
@@ -82,6 +81,16 @@ const fragmentShaderGLSL = `
 	    float specularPower = 1.0;
 	    if(lambertTerm > 0.0){
 			ld += lightColor * diffuseColor * lambertTerm * intensity;
+			specular = pow( max(dot(reflect(L, N), -L), 0.0), shininess) * specularPower ;
+			ls +=  specularLightColor * specular * intensity ;
+	    }
+	    
+	    vec3 lightPosition2= vec3( -5, -5, -5);
+	    L = normalize(-lightPosition2);	
+	    vec4 lightColor2 = vec4(1.0,0.0,0.0,0.5);
+	    lambertTerm = dot(N,-L);
+	    if(lambertTerm > 0.0){
+			ld += lightColor2 * diffuseColor * lambertTerm * intensity;
 			specular = pow( max(dot(reflect(L, N), -L), 0.0), shininess) * specularPower ;
 			ls +=  specularLightColor * specular * intensity ;
 	    }
@@ -127,6 +136,10 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 		this.uniformBufferDescripter = {
 			size: RedTypeSize.mat4 * 2,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+			redStruct: [
+				{offset: 0, valueName: 'localMatrix'},
+				{offset: RedTypeSize.mat4, valueName: 'localNormalMatrix'}
+			]
 		};
 
 		this.diffuseTexture = diffuseSrc;

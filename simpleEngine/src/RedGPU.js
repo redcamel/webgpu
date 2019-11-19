@@ -15,6 +15,9 @@ export default class RedGPU extends RedBaseObjectContainer {
 		const uniformBufferDescriptor = {
 			size: uniformBufferSize,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+			redStruct: [
+				{offset: 0, valueName: 'projectionMatrix'}
+			]
 		};
 		const bindGroupLayoutDescriptor = {
 			bindings: [

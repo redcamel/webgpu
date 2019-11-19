@@ -61,6 +61,9 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 		this.uniformBufferDescripter = {
 			size: RedTypeSize.mat4,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+			redStruct: [
+				{offset: 0, valueName: 'localMatrix'}
+			]
 		};
 
 		this.diffuseTexture = diffuseSrc
