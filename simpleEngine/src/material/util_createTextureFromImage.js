@@ -1,5 +1,16 @@
 export default async function util_createTextureFromImage(device, src, usage) {
 	// 귀찮아서 텍스쳐 맹그는 놈은 들고옴
+	if(!src){
+		 return device.createTexture({
+			size: {
+				width: 2,
+				height: 2,
+				depth: 1,
+			},
+			format: "rgba8unorm",
+			usage: GPUTextureUsage.COPY_DST | usage,
+		})
+	}
 	const img = document.createElement('img');
 	console.log('여긴오곘고');
 	img.src = src;

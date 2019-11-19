@@ -12,6 +12,7 @@ export default class RedBaseObject3D {
 	#dirtyTransform = true;
 
 	constructor() {
+		this.localNormalMatrix = mat4.create()
 		this.localMatrix = mat4.create()
 	}
 
@@ -102,6 +103,13 @@ export default class RedBaseObject3D {
 	set scaleZ(v) {
 		this.#scaleZ = v;
 		this.#dirtyTransform = true;
+	}
+
+	getNormalTransform() {
+		let tLocalNormalMatrix = mat4.clone(this.localMatrix);
+		mat4.invert(tLocalNormalMatrix, tLocalNormalMatrix)
+		mat4.transpose(tLocalNormalMatrix, tLocalNormalMatrix)
+		return this.localNormalMatrix = tLocalNormalMatrix;
 	}
 
 	getTransform() {

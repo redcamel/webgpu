@@ -8,6 +8,7 @@ const vertexShaderGLSL = `
     ${RedBaseMaterial.GLSL_SystemUniforms}
     layout(set=1,binding = 0) uniform Uniforms {
         mat4 modelMTX;
+        mat4 normalMTX;
     } uniforms;
      
 	layout(location = 0) in vec3 position;
@@ -19,7 +20,7 @@ const vertexShaderGLSL = `
 	void main() {
 		gl_Position = systemUniforms.perspectiveMTX * systemUniforms.cameraMTX * uniforms.modelMTX* vec4(position,1.0);
 		vVertexPosition = uniforms.modelMTX * vec4(position, 1.0);
-		vNormal = normal;
+		vNormal = (uniforms.normalMTX * vec4(normal,1.0)).xyz;
 		vUV = uv;
 	}
 	`;
@@ -123,9 +124,8 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 		super(redGPU, vertexShaderGLSL, fragmentShaderGLSL, RedStandardMaterial.uniformsBindGroupLayoutDescriptor);
 		this.#redGPU = redGPU;
 
-		// 유니폼 버퍼를 생성하고
 		this.uniformBufferDescripter = {
-			size: RedTypeSize.mat4,
+			size: RedTypeSize.mat4 * 2,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 		};
 

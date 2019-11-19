@@ -39,6 +39,7 @@ export default class RedMesh extends RedBaseObjectContainer {
 		this.#material = v;
 		if (this.uniformBuffer) this.uniformBuffer.destroy();
 		this.uniformBuffer = this.#redGPU.device.createBuffer(v.uniformBufferDescripter);
+		this.uniformBuffer.uniformBufferDescripter = v.uniformBufferDescripter
 		this.pipeline = null;
 		this.dirtyTransform = true
 	}

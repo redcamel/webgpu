@@ -36,6 +36,7 @@ import RedSphere from "./src/primitives/RedSphere.js";
 			testMesh.x = Math.random() * 30 - 15;
 			testMesh.y = Math.random() * 30 - 15;
 			testMesh.z = Math.random() * 30 - 15;
+			testMesh.rotationX = testMesh.rotationY = testMesh.rotationZ = Math.random()*360
 			testMesh.scaleX = testMesh.scaleY = testMesh.scaleZ = Math.random();
 			redGPU.addChild(testMesh)
 
@@ -58,12 +59,12 @@ import RedSphere from "./src/primitives/RedSphere.js";
 			redGPU.camera.z = Math.cos(time / 3000) * 20;
 			redGPU.camera.lookAt(0, 0, 0);
 			renderer.render(time, redGPU, depthTextureView);
-			let i = MAX;
-			// while (i--) {
-			// 	redGPU.children[i].rotationX+=1
-			// 	redGPU.children[i].rotationY+=1
-			// 	redGPU.children[i].rotationZ+=1
-			// }
+			let i = MAX/5;
+			while (i--) {
+				redGPU.children[i].rotationX+=1
+				redGPU.children[i].rotationY+=1
+				redGPU.children[i].rotationZ+=1
+			}
 			requestAnimationFrame(render)
 		};
 		requestAnimationFrame(render)

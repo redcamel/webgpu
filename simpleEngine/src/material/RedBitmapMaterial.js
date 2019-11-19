@@ -58,7 +58,6 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 		super(redGPU, vertexShaderGLSL, fragmentShaderGLSL, RedBitmapMaterial.uniformsBindGroupLayoutDescriptor);
 		this.#redGPU = redGPU;
 
-		// 유니폼 버퍼를 생성하고a
 		this.uniformBufferDescripter = {
 			size: RedTypeSize.mat4,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
