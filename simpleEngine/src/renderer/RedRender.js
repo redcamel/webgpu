@@ -39,10 +39,8 @@ export default class RedRender {
 				tMesh.getNormalTransform()
 				// TODO 유니폼 버퍼를 동적생성하는 부분을 잘생각해야함
 				// TODO 유니폼 버퍼에 뭘넣어야하는지는 누가 가져야하지?-_-?
-				tMesh.uniformBuffer.setSubData(0, tMesh.localMatrix);
-				if (RedTypeSize.mat4 < tMesh.material.uniformBufferDescripter.size) {
-					tMesh.uniformBuffer.setSubData(RedTypeSize.mat4, tMesh.localNormalMatrix);
-				}
+				tMesh.updateUniformBuffer();
+
 				tMesh.dirtyTransform = false
 			}
 			if (!tMesh.pipeline) tMesh.createPipeline(redGPU);

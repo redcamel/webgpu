@@ -1,4 +1,6 @@
 "use strict";
+import RedTypeSize from "../RedTypeSize.js";
+
 export default class RedBaseObject3D {
 	#x = 0;
 	#y = 0;
@@ -112,6 +114,11 @@ export default class RedBaseObject3D {
 		return this.localNormalMatrix = tLocalNormalMatrix;
 	}
 
+	updateUniformBuffer(){
+		this.uniformBuffer.setSubData(0, this.localMatrix);
+		if(RedTypeSize.mat4<this.material.uniformBufferDescripter.size) this.uniformBuffer.setSubData(RedTypeSize.mat4, this.localNormalMatrix);
+	}
+
 	getTransform() {
 		let tLocalMatrix = this.localMatrix;
 		let aSx, aSy, aSz, aCx, aCy, aCz, aX, aY, aZ,
@@ -176,7 +183,6 @@ export default class RedBaseObject3D {
 			tLocalMatrix[9] = (a01 * b20 + a11 * b21 + a21 * b22) * aZ,
 			tLocalMatrix[10] = (a02 * b20 + a12 * b21 + a22 * b22) * aZ,
 			tLocalMatrix[11] = tLocalMatrix[11] * aZ;
-
 		return this.localMatrix = tLocalMatrix
 	}
 
