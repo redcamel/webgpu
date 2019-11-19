@@ -37,7 +37,7 @@ export default class RedMesh extends RedBaseObjectContainer {
 
 	set material(v) {
 		this.#material = v;
-		if (this.uniformBuffer) this.uniformBuffer.destroy()
+		if (this.uniformBuffer) this.uniformBuffer.destroy();
 		this.uniformBuffer = this.#redGPU.device.createBuffer(v.uniformBufferDescripter);
 		this.pipeline = null;
 		this.dirtyTransform = true
@@ -48,7 +48,14 @@ export default class RedMesh extends RedBaseObjectContainer {
 		const device = redGPU.device;
 		const descriptor = {
 			// 레이아웃은 재질이 알고있으니 들고옴
-			layout: device.createPipelineLayout({bindGroupLayouts: [redGPU.systemUniformInfo.uniformBindGroupLayout, this.#material.uniformsBindGroupLayout]}),
+			layout: device.createPipelineLayout(
+				{
+					bindGroupLayouts: [
+						redGPU.systemUniformInfo.uniformBindGroupLayout,
+						this.#material.uniformsBindGroupLayout
+					]
+				}
+			),
 			// 버텍스와 프레그먼트는 재질에서 들고온다.
 			vertexStage: {
 				module: this.#material.vShaderModule,

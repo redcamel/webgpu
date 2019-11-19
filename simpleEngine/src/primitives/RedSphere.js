@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 import RedBuffer from "../buffer/RedBuffer.js";
 import RedGeometry from "../geometry/RedGeometry.js";
 import RedInterleaveInfo from "../geometry/RedInterleaveInfo.js";
@@ -66,9 +66,9 @@ export default class RedSphere {
 					RedBuffer.TYPE_VERTEX,
 					new Float32Array(interleaveData),
 					[
-						new RedInterleaveInfo('aVertexPosition', 'float3'),
-						new RedInterleaveInfo('aVertexNormal', 'float3'),
-						new RedInterleaveInfo('aTexcoord', 'float2')
+						new RedInterleaveInfo('vertexPosition', 'float3'),
+						new RedInterleaveInfo('vertexNormal', 'float3'),
+						new RedInterleaveInfo('texCord', 'float2')
 					]
 				),
 				new RedBuffer(
@@ -86,13 +86,13 @@ export default class RedSphere {
 		widthSegments = Math.max(3, Math.floor(widthSegments));
 		heightSegments = Math.max(2, Math.floor(heightSegments));
 		// 유일키 생성
-		typeKey = [this.constructor.name, radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength].join('_')
+		typeKey = [this.constructor.name, radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength].join('_');
 		if (redGPU.state.RedGeometry.has(typeKey)) return redGPU.state.RedGeometry.get(typeKey);
 		let tData = this.#makeData(redGPU, typeKey, radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength);
 		this['interleaveBuffer'] = tData['interleaveBuffer'];
 		this['indexBuffer'] = tData['indexBuffer'];
 		this['vertexState'] = tData['vertexState'];
-		redGPU.state.RedGeometry.set(typeKey, this)
+		redGPU.state.RedGeometry.set(typeKey, this);
 		console.log(this)
 	}
 }

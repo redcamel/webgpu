@@ -38,7 +38,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 					}
 				}
 			]
-		}
+		};
 		let uniformBindGroup = device.createBindGroup(bindGroupDescriptor);
 		let projectionMatrix = mat4.create();
 		return {
@@ -63,7 +63,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 			adapter.requestDevice().then(device => {
 				this.glslang = glslang;
 				this.canvas = canvas;
-				this.context = canvas.getContext('gpupresent')
+				this.context = canvas.getContext('gpupresent');
 				this.device = device;
 				this.swapChainFormat = "bgra8unorm";
 				this.swapChain = configureSwapChain(this.device, this.swapChainFormat, this.context);
@@ -74,7 +74,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 						vertexBuffer: new Map(),
 						indexBuffer: new Map()
 					}
-				}
+				};
 
 				this.setSize('100%', '100%');
 				if (!redGPUList.size) setGlobalResizeEvent();
@@ -88,7 +88,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 	}
 
 	setSize(w = this.#width, h = this.#height) {
-		console.log('setSize!!!!!!!!!!!!!!!!!!!!!!')
+		console.log('setSize!!!!!!!!!!!!!!!!!!!!!!');
 		this.#width = w;
 		this.#height = h;
 		console.log(w, h);
@@ -109,7 +109,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 			const swapChainTexture = this.swapChain.getCurrentTexture();
 			const commandEncoder = this.device.createCommandEncoder();
 			const textureView = swapChainTexture.createView();
-			console.log('textureView', textureView)
+			console.log('textureView', textureView);
 			const passEncoder = commandEncoder.beginRenderPass({
 				colorAttachments: [{
 					attachment: textureView,

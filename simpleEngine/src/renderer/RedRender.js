@@ -28,7 +28,7 @@ export default class RedRender {
 		let prevIndexBuffer;
 		let prevBindBuffer;
 		// 시스템 유니폼 업데이트
-		redGPU.updateSystemUniform(passEncoder)
+		redGPU.updateSystemUniform(passEncoder);
 
 		while (i--) {
 			let tMesh = redGPU.children[i];

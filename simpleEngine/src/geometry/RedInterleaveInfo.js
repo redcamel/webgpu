@@ -1,16 +1,13 @@
 "use strict";
-export default class RedInterleaveInfo {
-	static STRIDE_TABLE = {
-		'float': 1 * Float32Array.BYTES_PER_ELEMENT,
-		'float2': 2 * Float32Array.BYTES_PER_ELEMENT,
-		'float3': 3 * Float32Array.BYTES_PER_ELEMENT,
-		'float4': 4 * Float32Array.BYTES_PER_ELEMENTy
-	}
+import RedTypeSize from "../RedTypeSize.js";
 
-	constructor(attributeKey, format) {
-		this['attributeKey'] = attributeKey;
-		this['format'] = format
-		this['stride'] = RedInterleaveInfo.STRIDE_TABLE[format]
+export default class RedInterleaveInfo {
+
+
+	constructor(attributeHint, format) {
+		this['attributeHint'] = attributeHint;
+		this['format'] = format;
+		this['stride'] = RedTypeSize[format];
 		console.log(this)
 	}
 }

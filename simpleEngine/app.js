@@ -32,7 +32,7 @@ import RedSphere from "./src/primitives/RedSphere.js";
 		}, 2000);
 		if (i > 2000) i = 2000;
 		while (i--) {
-			let testMesh = new RedMesh(redGPU, new RedSphere(redGPU, Math.random() > 0.5 ? 1 : 0.5), i > MAX / 2 ? tMat : tMat2);
+			let testMesh = new RedMesh(redGPU, new RedSphere(redGPU, Math.random() > 0.5 ? 1 : 0.5,16,16,16), i > MAX / 2 ? tMat : tMat2);
 			testMesh.x = Math.random() * 30 - 15;
 			testMesh.y = Math.random() * 30 - 15;
 			testMesh.z = Math.random() * 30 - 15;

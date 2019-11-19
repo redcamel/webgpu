@@ -1,13 +1,11 @@
 "use strict";
 import util_createTextureFromImage from './util_createTextureFromImage.js'
-import util_makeShaderModule_GLSL from './util_makeShaderModule_GLSL.js'
+import RedTypeSize from "../RedTypeSize.js";
+import RedBaseMaterial from "../base/RedBaseMaterial.js";
 
 const vertexShaderGLSL = `
 	#version 450
-	layout(set=0,binding = 0) uniform SystemUniforms {
-        mat4 perspectiveMTX;
-        mat4 cameraMTX;
-    } systemUniforms;
+	${RedBaseMaterial.GLSL_SystemUniforms}
     layout(set=1,binding = 0) uniform Uniforms {
         mat4 modelMatrix;
     } uniforms;
@@ -33,76 +31,36 @@ const fragmentShaderGLSL = `
 		outColor = texture(sampler2D(uTexture, uSampler), vUV) ;
 	}
 `;
-let vShaderModule;
-let fShaderModule;
-let uniformsBindGroupLayout;
-let get_uniformsBindGroupLayout = function (redGPU) {
-	if (!uniformsBindGroupLayout) {
-		uniformsBindGroupLayout = redGPU.device.createBindGroupLayout({
-			bindings: [
-				{
-					binding: 0,
-					visibility: GPUShaderStage.VERTEX,
-					type: "uniform-buffer"
-				},
-				{
-					binding: 1,
-					visibility: GPUShaderStage.FRAGMENT,
-					type: "sampler"
-				},
-				{
-					binding: 2,
-					visibility: GPUShaderStage.FRAGMENT,
-					type: "sampled-texture"
-				},
-			]
-		});
-	}
-	return uniformsBindGroupLayout
-};
-
-export default class RedBitmapMaterial {
-	static matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
-	static uniformBufferSize = RedBitmapMaterial.matrixSize;
-	#diffuseTexture;
+export default class RedBitmapMaterial extends RedBaseMaterial {
+	static uniformsBindGroupLayoutDescriptor = {
+		bindings: [
+			{
+				binding: 0,
+				visibility: GPUShaderStage.VERTEX,
+				type: "uniform-buffer"
+			},
+			{
+				binding: 1,
+				visibility: GPUShaderStage.FRAGMENT,
+				type: "sampler"
+			},
+			{
+				binding: 2,
+				visibility: GPUShaderStage.FRAGMENT,
+				type: "sampled-texture"
+			},
+		]
+	};
 	#redGPU;
+	#diffuseTexture;
 
 	constructor(redGPU, diffuseSrc) {
-		if (!vShaderModule) {
-			vShaderModule = util_makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'vertex', vertexShaderGLSL);
-			fShaderModule = util_makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'fragment', fragmentShaderGLSL);
-		}
+		super(redGPU, vertexShaderGLSL, fragmentShaderGLSL, RedBitmapMaterial.uniformsBindGroupLayoutDescriptor);
 		this.#redGPU = redGPU;
-		this.vShaderModule = vShaderModule;
-		this.fShaderModule = fShaderModule;
-		this.uniformsBindGroupLayout = get_uniformsBindGroupLayout(redGPU);
 
-		this.vertexStage = {
-			module: vShaderModule,
-			entryPoint: 'main'
-		};
-		this.fragmentStage = {
-			module: fShaderModule,
-			entryPoint: 'main'
-		};
-
-		this.sampler = redGPU.device.createSampler({
-			magFilter: "linear",
-			minFilter: "linear",
-			mipmapFilter: "linear",
-			addressModeU: "mirror-repeat",
-			addressModeV: "mirror-repeat",
-			addressModeW: "mirror-repeat"
-			// 	enum GPUAddressMode {
-			// 	    "clamp-to-edge",
-			// 		"repeat",
-			// 		"mirror-repeat"
-			//  };
-		});
-
-		// 유니폼 버퍼를 생성하고
+		// 유니폼 버퍼를 생성하고a
 		this.uniformBufferDescripter = {
-			size: RedBitmapMaterial.uniformBufferSize,
+			size: RedTypeSize.mat4,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 		};
 
@@ -130,7 +88,7 @@ export default class RedBitmapMaterial {
 				resource: {
 					buffer: null,
 					offset: 0,
-					size: RedBitmapMaterial.matrixSize
+					size: this.uniformBufferDescripter.size
 				}
 			},
 			{

@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 export default class RedBuffer {
 	static TYPE_VERTEX = 'vertexBuffer';
 	static TYPE_INDEX = 'indexBuffer';
@@ -9,11 +9,11 @@ export default class RedBuffer {
 		this.type = bufferType;
 		switch (bufferType) {
 			case RedBuffer.TYPE_VERTEX :
-				tUsage = usage || GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+				tUsage = usage || GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST;
 				this.interleaveInfo = interleaveInfo;
 				break;
 			case RedBuffer.TYPE_INDEX :
-				tUsage = usage || GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
+				tUsage = usage || GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST;
 				this.indexNum = data.length;
 				break
 		}
@@ -25,7 +25,7 @@ export default class RedBuffer {
 		this.originData = data;
 		this.buffer = redGPU.device.createBuffer(this.bufferDescriptor);
 		this.buffer.setSubData(0, data);
-		redGPU.state.RedBuffer[bufferType].set(typeKey, this)
+		redGPU.state.RedBuffer[bufferType].set(typeKey, this);
 		console.log(this);
 	}
 }
