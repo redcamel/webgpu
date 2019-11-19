@@ -258,7 +258,7 @@ async function init(glslang) {
 		passEncoder.draw(6, 1, 0, 0);
 		passEncoder.endPass();
 		const test = commandEncoder.finish();
-		device.getQueue().submit([test]);
+		(device.defaultQueue ? device.defaultQueue() : device.getQueue()).submit([test]);
 		requestAnimationFrame(render)
 	};
 	requestAnimationFrame(render)
@@ -366,7 +366,7 @@ async function createTextureFromImage(device, src, usage) {
 		depth: 1,
 	});
 
-	device.getQueue().submit([commandEncoder.finish()]);
+	(device.defaultQueue ? device.defaultQueue() : device.getQueue()).submit([commandEncoder.finish()]);
 
 	return texture;
 }

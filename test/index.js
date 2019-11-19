@@ -524,10 +524,10 @@ async function init(glslang) {
 	let childList = [];
 	let i = MAX;
 	while (i--) {
-		let tScale = Math.random()*3
+		let tScale = Math.random() * 3
 		childList.push({
 			position: [Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50],
-			scale: [tScale,tScale,tScale],
+			scale: [tScale, tScale, tScale],
 			offset: i * offset,
 			uniformBuffer: uniformBuffer,
 			vertexBuffer: vertexBuffer,
@@ -646,21 +646,22 @@ async function init(glslang) {
 	i = LIGHT_MAX
 	while (i--) {
 		lightList.push({
-			position: [Math.random() * 100-50, Math.random() * 100 -50, Math.random() * 100-50],
+			position: [Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50],
 			color: new Float32Array([Math.random(), Math.random(), Math.random(), 1.0]),
-			radius: new Float32Array([Math.random()*50])
+			radius: new Float32Array([Math.random() * 50])
 		})
 	}
+	let lightDataList = new Float32Array(8 * LIGHT_MAX)
 
 	let render = async function (time) {
 
 		mat4.identity(projectionMatrix)
 		mat4.identity(cameraMTX);
 		let aspect = Math.abs(cvs.width / cvs.height);
-		mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100000.0);
+		mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 10000.0);
 
 		// mat4.lookAt(cameraMTX, [Math.sin(time / 3000) * 100, Math.cos(time / 2500) * 30+100, Math.sin(time / 2000) * 100], [0, 0, 0], [0, 1, 0])
-		mat4.lookAt(cameraMTX, [Math.sin(time / 3000) * 15, Math.cos(time / 2500) * 3+5, Math.sin(time / 1000) * 15], [0, 0, 0], [0, 1, 0])
+		mat4.lookAt(cameraMTX, [Math.sin(time / 3000) * 15, Math.cos(time / 2500) * 3 + 15, Math.sin(time / 1000) * 15], [0, 0, 0], [0, 1, 0])
 
 		mat4.multiply(projectionMatrix, projectionMatrix, cameraMTX)
 
@@ -765,13 +766,17 @@ async function init(glslang) {
 		// uniformBuffer_quad.setSubData(8 * 4 * Float32Array.BYTES_PER_ELEMENT, new Float32Array([time]));
 
 		passEncoder2.setBindGroup(1, uniformsBindGroup_light);
+		passEncoder2.setScissorRect(0, 0, cvs.width, cvs.height);
+
 		i = lightList.length
 		while (i--) {
-			let tPosition = (lightList[i]['position'])
-			tPosition[2] = Math.cos(time / 1000 + i) * 20
-			let tUpdateData = [...tPosition, lightList[i]['radius'], ...lightList[i]['color']]
-			uniformBuffer_light.setSubData(i * 8 * Float32Array.BYTES_PER_ELEMENT, new Float32Array(tUpdateData));
+
+			lightDataList[i * 8 + 0] = lightList[i]['position'][0], lightDataList[i * 8 + 1] = lightList[i]['position'][1], lightDataList[i * 8 + 2] = lightList[i]['position'][2]
+			lightDataList[i * 8 + 3] = lightList[i]['radius']
+			lightDataList[i * 8 + 4] = lightList[i]['color'][0], lightDataList[i * 8 + 5] = lightList[i]['color'][1], lightDataList[i * 8 + 6] = lightList[i]['color'][2], lightDataList[i * 8 + 7] = lightList[i]['color'][3]
+
 		}
+		uniformBuffer_light.setSubData(0, lightDataList);
 
 		passEncoder2.draw(6, 1, 0, 0, 0);
 
@@ -781,7 +786,7 @@ async function init(glslang) {
 
 		const test = commandEncoder.finish();
 		const test2 = commandEncoder2.finish();
-		device.getQueue().submit([test, test2]);
+		(device.defaultQueue ? device.defaultQueue() : device.getQueue()).submit([test, test2]);
 		requestAnimationFrame(render)
 	};
 	requestAnimationFrame(render)
@@ -904,7 +909,7 @@ async function createTextureFromImage(device, src, usage) {
 		depth: 1,
 	});
 
-	device.getQueue().submit([commandEncoder.finish()]);
+	(device.defaultQueue ? device.defaultQueue() : device.getQueue()).submit([commandEncoder.finish()]);
 
 	return texture;
 }

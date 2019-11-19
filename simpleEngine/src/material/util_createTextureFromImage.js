@@ -63,7 +63,7 @@ export default async function util_createTextureFromImage(device, src, usage) {
 		depth: 1,
 	});
 
-	device.getQueue().submit([commandEncoder.finish()]);
+	(device.defaultQueue ? device.defaultQueue() : device.getQueue()).submit([commandEncoder.finish()]);
 
 	return texture;
 }

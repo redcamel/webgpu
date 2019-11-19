@@ -102,7 +102,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 			passEncoder.setScissorRect(0, 0, tW, tH);
 			passEncoder.endPass();
 			const test = commandEncoder.finish();
-			this.device.getQueue().submit([test]);
+			(this.device.defaultQueue ? this.device.defaultQueue() : this.device.getQueue()).submit([test]);
 		})
 	}
 

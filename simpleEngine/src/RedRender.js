@@ -64,7 +64,7 @@ export default class RedRender {
 		passEncoder.endPass();
 
 		const test = commandEncoder.finish();
-		redGPU.device.getQueue().submit([test]);
+		(redGPU.device.defaultQueue ? redGPU.device.defaultQueue() : redGPU.device.getQueue()).submit([test]);
 
 	}
 }
