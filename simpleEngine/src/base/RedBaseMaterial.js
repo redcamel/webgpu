@@ -27,14 +27,44 @@ export default class RedBaseMaterial {
 
 	constructor(redGPU, materialClass, vertexGLSL, fragmentGLSL) {
 		let vShaderModule, fShaderModule;
-		let uniformsBindGroupLayoutDescriptor = materialClass.uniformsBindGroupLayoutDescriptor;
 		let programOptionList = materialClass.PROGRAM_OPTION_LIST || []
 		if (!(vShaderModule = TABLE.get(vertexGLSL))) TABLE.set(vertexGLSL, vShaderModule = new RedShaderModule_GLSL(redGPU, 'vertex', materialClass, vertexGLSL, programOptionList));
 		if (!(fShaderModule = TABLE.get(fragmentGLSL))) TABLE.set(fragmentGLSL, fShaderModule = new RedShaderModule_GLSL(redGPU, 'fragment', materialClass, fragmentGLSL, programOptionList));
-		this.uniformsBindGroupLayout = makeUniformBindLayout(redGPU, uniformsBindGroupLayoutDescriptor);
+
+		if (!materialClass.uniformBufferDescripter) throw new Error(`${materialClass.name} : uniformBufferDescripter 를 정의해야함`)
+		if (!materialClass.uniformsBindGroupLayoutDescriptor) throw  new Error(`${materialClass.name} : uniformsBindGroupLayoutDescriptor 를  정의해야함`)
+
+		this.uniformBufferDescripter = materialClass.uniformBufferDescripter;
+		this.uniformsBindGroupLayout = makeUniformBindLayout(redGPU, materialClass.uniformsBindGroupLayoutDescriptor);
 		this.vShaderModule = vShaderModule
 		this.fShaderModule = fShaderModule
 
 		this.sampler = new RedSampler(redGPU).sampler;
+	}
+
+	checkTexture(texture, textureName) {
+		throw new Error(`${this.constructor.name} : must override!!!`)
+	}
+
+	resetBindingInfo() {
+		throw new Error(`${this.constructor.name} : must override!!!`)
+	}
+
+	searchModules() {
+		let tKey = [this.constructor.name]
+		this.constructor.PROGRAM_OPTION_LIST.forEach(key => {
+			if (this[key]) tKey.push(key)
+		});
+		this.vShaderModule.searchShaderModule(tKey.join('_'))
+		this.fShaderModule.searchShaderModule(tKey.join('_'))
+		console.log(this.vShaderModule)
+		console.log(this.fShaderModule)
+	}
+
+	setUniformBindGroupDescriptor() {
+		this.uniformBindGroupDescriptor = {
+			layout: this.uniformsBindGroupLayout,
+			bindings: this.bindings
+		};
 	}
 }

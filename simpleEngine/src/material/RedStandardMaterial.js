@@ -129,6 +129,14 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 			}
 		]
 	};
+	static uniformBufferDescripter = {
+		size: RedTypeSize.mat4 * 2,
+		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+		redStruct: [
+			{offset: 0, valueName: 'localMatrix'},
+			{offset: RedTypeSize.mat4, valueName: 'localNormalMatrix'}
+		]
+	}
 	#redGPU;
 	#diffuseTexture;
 	#normalTexture;
@@ -137,79 +145,50 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 		super(redGPU, RedStandardMaterial, vertexShaderGLSL, fragmentShaderGLSL);
 		this.#redGPU = redGPU;
 
-		this.uniformBufferDescripter = {
-			size: RedTypeSize.mat4 * 2,
-			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-			redStruct: [
-				{offset: 0, valueName: 'localMatrix'},
-				{offset: RedTypeSize.mat4, valueName: 'localNormalMatrix'}
-			]
-		};
 		console.log(diffuseTexture, normalTexture)
 		this.diffuseTexture = diffuseTexture;
 		this.normalTexture = normalTexture
 	}
 
-	set diffuseTexture(texture) {
-		let self = this;
-		self.#diffuseTexture = null;
-		self.bindings = null
+	checkTexture(texture, textureName) {
+		this.bindings = null
 		if (texture) {
-			texture.then(function (v) {
-				console.log('diffuseTexture', v);
-				self.#diffuseTexture = v
-				self.resetBindingInfo()
+			texture.then(v => {
+				switch (textureName) {
+					case 'diffuseTexture' :
+						this.#diffuseTexture = v
+						break
+					case 'normalTexture' :
+						this.#normalTexture = v
+				}
+				console.log(textureName, v);
+				this.resetBindingInfo()
 			}).catch(function (v) {
 				console.log('로딩실패!', v)
 			})
 		} else {
-			self.resetBindingInfo()
+			this.resetBindingInfo()
 		}
-
-
 	}
 
+	set diffuseTexture(texture) {
+		this.#diffuseTexture = null;
+		this.checkTexture(texture, 'diffuseTexture')
+	}
 	get diffuseTexture() {
 		return this.#diffuseTexture
 	}
-
 	set normalTexture(texture) {
-		let self = this;
-		self.#normalTexture = null;
-		self.bindings = null
-		console.log(texture)
-		if (texture) {
-			texture.then(function (v) {
-				console.log('normalTexture', v);
-				self.#normalTexture = v
-				self.resetBindingInfo()
-			}).catch(function (v) {
-				console.log('로딩실패!', v)
-			})
-		} else {
-			self.resetBindingInfo()
-		}
-
+		this.#normalTexture = null;
+		this.checkTexture(texture, 'normalTexture')
 	}
-
 	get normalTexture() {
 		return this.#normalTexture
 	}
 
 	resetBindingInfo() {
-		console.log(this.#diffuseTexture, this.#normalTexture);
 		this.bindings = null
-		let tKey = [this.constructor.name]
-		this.constructor.PROGRAM_OPTION_LIST.forEach(key => {
-			if (this[key]) tKey.push(key)
-		})
-		console.log(tKey)
-		this.vShaderModule.searchShaderModule(tKey.join('_'))
-		this.fShaderModule.searchShaderModule(tKey.join('_'))
-
-		console.log(this.vShaderModule)
-		console.log(this.fShaderModule)
-
+		this.searchModules();
 		this.bindings = [
 			{
 				binding: 0,
@@ -232,11 +211,6 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 				resource: this.#normalTexture ? this.#normalTexture.createView() : this.#redGPU.state.emptyTextureView,
 			}
 		];
-		this.uniformBindGroupDescriptor = {
-			layout: this.uniformsBindGroupLayout,
-			bindings: this.bindings
-		};
-
-
+		this.setUniformBindGroupDescriptor()
 	}
 }

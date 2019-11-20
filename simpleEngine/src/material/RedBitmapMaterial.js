@@ -54,41 +54,44 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 			},
 		]
 	};
+	static uniformBufferDescripter = {
+		size: RedTypeSize.mat4,
+		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+		redStruct: [
+			{offset: 0, valueName: 'localMatrix'}
+		]
+	};
 	#redGPU;
 	#diffuseTexture;
 
 	constructor(redGPU, diffuseSrc) {
 		super(redGPU, RedBitmapMaterial, vertexShaderGLSL, fragmentShaderGLSL);
 		this.#redGPU = redGPU;
-
-		this.uniformBufferDescripter = {
-			size: RedTypeSize.mat4,
-			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-			redStruct: [
-				{offset: 0, valueName: 'localMatrix'}
-			]
-		};
-
 		this.diffuseTexture = diffuseSrc
 	}
 
-	set diffuseTexture(texture) {
-		let self = this;
-		self.#diffuseTexture = null;
-		self.bindings = null
+	checkTexture(texture, textureName) {
+		this.bindings = null
 		if (texture) {
-			texture.then(function (v) {
-				console.log('diffuseTexture', v);
-				self.#diffuseTexture = v
-				self.resetBindingInfo()
+			texture.then(v => {
+				switch (textureName) {
+					case 'diffuseTexture' :
+						this.#diffuseTexture = v
+						break
+				}
+				console.log(textureName, v);
+				this.resetBindingInfo()
 			}).catch(function (v) {
 				console.log('로딩실패!', v)
 			})
 		} else {
-			self.resetBindingInfo()
+			this.resetBindingInfo()
 		}
+	}
 
-
+	set diffuseTexture(texture) {
+		this.#diffuseTexture = null;
+		this.checkTexture(texture, 'diffuseTexture')
 	}
 
 	get diffuseTexture() {
@@ -97,12 +100,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 
 	resetBindingInfo() {
 		this.bindings = null
-		let tKey = [this.constructor.name]
-		this.constructor.PROGRAM_OPTION_LIST.forEach(key => {
-			if (this[key]) tKey.push('diffuseTexture')
-		})
-		this.vShaderModule.searchShaderModule(tKey.join('_'))
-		this.fShaderModule.searchShaderModule(tKey.join('_'))
+		this.searchModules();
 		this.bindings = [
 			{
 				binding: 0,
@@ -121,10 +119,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 				resource: this.#diffuseTexture ? this.#diffuseTexture.createView() : this.#redGPU.state.emptyTextureView,
 			}
 		];
-		this.uniformBindGroupDescriptor = {
-			layout: this.uniformsBindGroupLayout,
-			bindings: this.bindings
-		};
+		this.setUniformBindGroupDescriptor()
 		console.log(this.#diffuseTexture)
 	}
 }
