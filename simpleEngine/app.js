@@ -18,18 +18,19 @@ import RedBitmapTexture from "./src/resources/RedBitmapTexture.js";
 	let redGPU = new RedGPU(cvs, glslang);
 	redGPU.camera = new RedCamera();
 	requestAnimationFrame(function () {
-		let MAX = 1000;
+		let MAX = 100;
 		let i = MAX;
-		let testTexture1 = new RedBitmapTexture(redGPU, '../assets/UV_Grid_Sm.jpg')
-		let testTexture2 = new RedBitmapTexture(redGPU, '../assets/Brick03_col.jpg')
-		let testTexture3 = new RedBitmapTexture(redGPU, '../assets/Brick03_nrm.jpg')
-		console.log('testTexture1',testTexture1)
-		console.log('testTexture2',testTexture2)
-		console.log('testTexture3',testTexture3)
-		let tMat1 = new RedStandardMaterial(redGPU, testTexture2);
-		let tMat2 = new RedStandardMaterial(redGPU, testTexture2, testTexture3);
+		let testTextureList = [
+			new RedBitmapTexture(redGPU, '../assets/UV_Grid_Sm.jpg'),
+			new RedBitmapTexture(redGPU, '../assets/Brick03_col.jpg'),
+			new RedBitmapTexture(redGPU, '../assets/Brick03_nrm.jpg'),
+			new RedBitmapTexture(redGPU, '../assets/crate.png')
+		]
 
-		let tMat3 = new RedBitmapMaterial(redGPU, testTexture1);
+		let tMat1 = new RedStandardMaterial(redGPU, testTextureList[1]);
+		let tMat2 = new RedStandardMaterial(redGPU, testTextureList[1], testTextureList[2]);
+		let tMat3 = new RedBitmapMaterial(redGPU, testTextureList[0]);
+		let tMat4 = new RedStandardMaterial(redGPU, testTextureList[0], testTextureList[2]);
 		// setTimeout(function(){
 		// 	tMat2.normalTexture = null
 		// },3000)
@@ -45,7 +46,12 @@ import RedBitmapTexture from "./src/resources/RedBitmapTexture.js";
 		// }, 2000);
 		if (i > 2000) i = 2000;
 		while (i--) {
-			let testMesh = new RedMesh(redGPU, new RedSphere(redGPU, Math.random() > 0.5 ? 1 : 0.5, 16, 16, 16), i > MAX / 2 ? tMat1 : Math.random() > 0.5 ? tMat2 : tMat3);
+			let testMesh = new RedMesh(
+				redGPU,
+				new RedSphere(redGPU, Math.random() > 0.5 ? 1 : 0.5, 16, 16, 16),
+				i > MAX / 2 ? tMat1 : Math.random() > 0.5 ? tMat2 : Math.random() > 0.5 ? tMat3 : tMat4
+
+			);
 			testMesh.x = Math.random() * 30 - 15;
 			testMesh.y = Math.random() * 30 - 15;
 			testMesh.z = Math.random() * 30 - 15;

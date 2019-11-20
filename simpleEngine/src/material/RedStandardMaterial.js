@@ -153,6 +153,7 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 	checkTexture(texture, textureName) {
 		this.bindings = null
 		if (texture) {
+
 			texture.then(v => {
 				switch (textureName) {
 					case 'diffuseTexture' :
@@ -160,8 +161,9 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 						break
 					case 'normalTexture' :
 						this.#normalTexture = v
+						break
 				}
-				console.log(textureName, v);
+				console.log(textureName, v,texture);
 				this.resetBindingInfo()
 			}).catch(function (v) {
 				console.log('로딩실패!', v)

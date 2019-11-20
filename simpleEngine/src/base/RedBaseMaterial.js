@@ -1,6 +1,6 @@
 "use strict";
-import RedShaderModule_GLSL from "../material/RedShaderModule_GLSL.js";
-import RedSampler from "../material/RedSampler.js";
+import RedShaderModule_GLSL from "../resources/RedShaderModule_GLSL.js";
+import RedSampler from "../resources/RedSampler.js";
 
 let TABLE = new Map();
 let makeUniformBindLayout = function (redGPU, uniformsBindGroupLayoutDescriptor) {
