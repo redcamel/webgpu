@@ -25,8 +25,10 @@ export default class RedBaseMaterial {
 	fragmentStage;
 	sampler;
 
-	constructor(redGPU, materialClass, vertexGLSL, fragmentGLSL, uniformsBindGroupLayoutDescriptor, programOptionList = []) {
+	constructor(redGPU, materialClass, vertexGLSL, fragmentGLSL) {
 		let vShaderModule, fShaderModule;
+		let uniformsBindGroupLayoutDescriptor = materialClass.uniformsBindGroupLayoutDescriptor;
+		let programOptionList = materialClass.PROGRAM_OPTION_LIST || []
 		if (!(vShaderModule = TABLE.get(vertexGLSL))) TABLE.set(vertexGLSL, vShaderModule = new RedShaderModule_GLSL(redGPU, 'vertex', materialClass, vertexGLSL, programOptionList));
 		if (!(fShaderModule = TABLE.get(fragmentGLSL))) TABLE.set(fragmentGLSL, fShaderModule = new RedShaderModule_GLSL(redGPU, 'fragment', materialClass, fragmentGLSL, programOptionList));
 		this.uniformsBindGroupLayout = makeUniformBindLayout(redGPU, uniformsBindGroupLayoutDescriptor);

@@ -58,7 +58,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 	#diffuseTexture;
 
 	constructor(redGPU, diffuseSrc) {
-		super(redGPU, RedBitmapMaterial, vertexShaderGLSL, fragmentShaderGLSL, RedBitmapMaterial.uniformsBindGroupLayoutDescriptor, RedBitmapMaterial.PROGRAM_OPTION_LIST);
+		super(redGPU, RedBitmapMaterial, vertexShaderGLSL, fragmentShaderGLSL);
 		this.#redGPU = redGPU;
 
 		this.uniformBufferDescripter = {
@@ -76,7 +76,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 		let self = this;
 		self.#diffuseTexture = null;
 		self.bindings = null
-		if(texture){
+		if (texture) {
 			texture.then(function (v) {
 				console.log('diffuseTexture', v);
 				self.#diffuseTexture = v
@@ -84,7 +84,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 			}).catch(function (v) {
 				console.log('로딩실패!', v)
 			})
-		}else{
+		} else {
 			self.resetBindingInfo()
 		}
 
@@ -97,8 +97,10 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 
 	resetBindingInfo() {
 		this.bindings = null
-		let tKey = [RedBitmapMaterial.name]
-		if (this.#diffuseTexture) tKey.push('diffuseTexture')
+		let tKey = [this.constructor.name]
+		this.constructor.PROGRAM_OPTION_LIST.forEach(key => {
+			if (this[key]) tKey.push('diffuseTexture')
+		})
 		this.vShaderModule.searchShaderModule(tKey.join('_'))
 		this.fShaderModule.searchShaderModule(tKey.join('_'))
 		this.bindings = [

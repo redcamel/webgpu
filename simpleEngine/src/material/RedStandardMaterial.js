@@ -134,7 +134,7 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 	#normalTexture;
 
 	constructor(redGPU, diffuseTexture, normalTexture) {
-		super(redGPU, RedStandardMaterial, vertexShaderGLSL, fragmentShaderGLSL, RedStandardMaterial.uniformsBindGroupLayoutDescriptor, RedStandardMaterial.PROGRAM_OPTION_LIST);
+		super(redGPU, RedStandardMaterial, vertexShaderGLSL, fragmentShaderGLSL);
 		this.#redGPU = redGPU;
 
 		this.uniformBufferDescripter = {
@@ -199,9 +199,10 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 	resetBindingInfo() {
 		console.log(this.#diffuseTexture, this.#normalTexture);
 		this.bindings = null
-		let tKey = [RedStandardMaterial.name]
-		if (this.#diffuseTexture) tKey.push('diffuseTexture')
-		if (this.#normalTexture) tKey.push('normalTexture')
+		let tKey = [this.constructor.name]
+		this.constructor.PROGRAM_OPTION_LIST.forEach(key => {
+			if (this[key]) tKey.push(key)
+		})
 		console.log(tKey)
 		this.vShaderModule.searchShaderModule(tKey.join('_'))
 		this.fShaderModule.searchShaderModule(tKey.join('_'))
