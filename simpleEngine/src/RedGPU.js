@@ -76,7 +76,8 @@ export default class RedGPU extends RedBaseObjectContainer {
 					RedBuffer: {
 						vertexBuffer: new Map(),
 						indexBuffer: new Map()
-					}
+					},
+					// shaderModule :
 				};
 
 				this.setSize('100%', '100%');

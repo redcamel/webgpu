@@ -61,11 +61,14 @@ const fragmentShaderGLSL = `
 	}
 	
 	void main() {
-		vec4 diffuseColor = texture(sampler2D(uDiffuseTexture, uSampler), vUV) ;
-		vec4 normalColor = texture(sampler2D(uNormalTexture, uSampler), vUV) ;
+		vec4 diffuseColor = vec4(0.0);
+		//#RedGPU#diffuseTexture# diffuseColor = texture(sampler2D(uDiffuseTexture, uSampler), vUV) ;
+		
+		vec4 normalColor = vec4(0.0);
+		//#RedGPU#normalTexture# normalColor = texture(sampler2D(uNormalTexture, uSampler), vUV) ;
 	    
 	    vec3 N = normalize(vNormal);
-		N = perturb_normal(N, vVertexPosition.xyz, vUV, normalColor.rgb) ;
+		//#RedGPU#normalTexture# N = perturb_normal(N, vVertexPosition.xyz, vUV, normalColor.rgb) ;
 
 		vec4 ld = vec4(0.0, 0.0, 0.0, 1.0);
 		vec4 la = vec4(0.0, 0.0, 0.0, 0.2);
@@ -101,6 +104,7 @@ const fragmentShaderGLSL = `
 `;
 
 export default class RedStandardMaterial extends RedBaseMaterial {
+	static PROGRAM_OPTION_LIST = ['diffuseTexture', 'normalTexture'];
 	static uniformsBindGroupLayoutDescriptor = {
 		bindings: [
 			{
@@ -130,7 +134,7 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 	#normalTexture;
 
 	constructor(redGPU, diffuseSrc, normalSrc) {
-		super(redGPU, vertexShaderGLSL, fragmentShaderGLSL, RedStandardMaterial.uniformsBindGroupLayoutDescriptor);
+		super(redGPU, RedStandardMaterial, vertexShaderGLSL, fragmentShaderGLSL, RedStandardMaterial.uniformsBindGroupLayoutDescriptor, RedStandardMaterial.PROGRAM_OPTION_LIST);
 		this.#redGPU = redGPU;
 
 		this.uniformBufferDescripter = {
@@ -148,12 +152,16 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 
 	set diffuseTexture(src) {
 		let self = this;
-		self.bindings = null;
-		(async function (v) {
-			self.#diffuseTexture = await util_createTextureFromImage(self.#redGPU.device, v, GPUTextureUsage.SAMPLED);
-			console.log('로딩됨', v);
+		self.#diffuseTexture = null;
+		self.bindings = null
+		let t0 = util_createTextureFromImage(self.#redGPU.device, src, GPUTextureUsage.SAMPLED);
+		t0.then(function (v) {
+			console.log('diffuseTexture', v);
+			self.#diffuseTexture = v
 			self.resetBindingInfo()
-		})(src);
+		})
+
+
 	}
 
 	get diffuseTexture() {
@@ -162,12 +170,15 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 
 	set normalTexture(src) {
 		let self = this;
-		self.bindings = null;
-		(async function (v) {
-			self.#normalTexture = await util_createTextureFromImage(self.#redGPU.device, v, GPUTextureUsage.SAMPLED);
-			console.log('로딩됨', v);
+		self.#normalTexture = null;
+		self.bindings = null
+		let t0 = util_createTextureFromImage(self.#redGPU.device, src, GPUTextureUsage.SAMPLED);
+		t0.then(function (v) {
+			console.log('normalTexture', v);
+			self.#normalTexture = v
 			self.resetBindingInfo()
-		})(src);
+		})
+
 	}
 
 	get normalTexture() {
@@ -175,36 +186,54 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 	}
 
 	resetBindingInfo() {
-		console.log(this.#diffuseTexture && this.#normalTexture);
-		if ('resetBindingInfo', this.#diffuseTexture && this.#normalTexture) {
-			this.bindings = [
-				{
-					binding: 0,
-					resource: {
-						buffer: null,
-						offset: 0,
-						size: this.uniformBufferDescripter.size
-					}
-				},
-				{
-					binding: 1,
-					resource: this.sampler,
-				},
-				{
-					binding: 2,
-					resource: this.#diffuseTexture.createView(),
-				},
-				{
-					binding: 3,
-					resource: this.#normalTexture.createView(),
+		console.log(this.#diffuseTexture , this.#normalTexture);
+		this.bindings = null
+		let tKey = [RedStandardMaterial.name]
+		if (this.#diffuseTexture) tKey.push('diffuseTexture')
+		if (this.#normalTexture) tKey.push('normalTexture')
+		console.log(tKey)
+		this.vShaderModule.searchShaderModule(tKey.join('_'))
+		this.fShaderModule.searchShaderModule(tKey.join('_'))
+
+		console.log(this.vShaderModule)
+		console.log(this.fShaderModule)
+		const empty = this.#redGPU.device.createTexture({
+			size: {
+				width: 2,
+				height: 2,
+				depth: 1,
+			},
+			format: "rgba8unorm",
+			usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED,
+		})
+		this.bindings = [
+			{
+				binding: 0,
+				resource: {
+					buffer: null,
+					offset: 0,
+					size: this.uniformBufferDescripter.size
 				}
-			];
-			this.uniformBindGroupDescriptor = {
-				layout: this.uniformsBindGroupLayout,
-				bindings: this.bindings
-			};
-			console.log(this.#diffuseTexture);
-			console.log(this.#normalTexture)
-		}
+			},
+			{
+				binding: 1,
+				resource: this.sampler,
+			},
+			{
+				binding: 2,
+				resource: this.#diffuseTexture ? this.#diffuseTexture.createView() : empty.createView(),
+			},
+			{
+				binding: 3,
+				resource: this.#normalTexture ? this.#normalTexture.createView() : empty.createView(),
+			}
+		];
+		this.uniformBindGroupDescriptor = {
+			layout: this.uniformsBindGroupLayout,
+			bindings: this.bindings
+		};
+		this.dirty = true
+
+
 	}
 }

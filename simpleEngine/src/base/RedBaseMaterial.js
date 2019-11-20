@@ -1,5 +1,5 @@
 "use strict";
-import util_makeShaderModule_GLSL from "../material/util_makeShaderModule_GLSL.js";
+import RedShaderModule_GLSL from "../material/RedShaderModule_GLSL.js";
 import RedSampler from "../material/RedSampler.js";
 
 let TABLE = new Map();
@@ -25,19 +25,13 @@ export default class RedBaseMaterial {
 	fragmentStage;
 	sampler;
 
-	constructor(redGPU, vertexGLSL, fragmentGLSL, uniformsBindGroupLayoutDescriptor) {
+	constructor(redGPU, materialClass, vertexGLSL, fragmentGLSL, uniformsBindGroupLayoutDescriptor, programOptionList = []) {
 		let vShaderModule, fShaderModule;
-		if (!(vShaderModule = TABLE.get(vertexGLSL))) TABLE.set(vertexGLSL, vShaderModule = util_makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'vertex', vertexGLSL));
-		if (!(fShaderModule = TABLE.get(fragmentGLSL))) TABLE.set(fragmentGLSL, fShaderModule = util_makeShaderModule_GLSL(redGPU.glslang, redGPU.device, 'fragment', fragmentGLSL));
+		if (!(vShaderModule = TABLE.get(vertexGLSL))) TABLE.set(vertexGLSL, vShaderModule = new RedShaderModule_GLSL(redGPU, 'vertex', materialClass, vertexGLSL, programOptionList));
+		if (!(fShaderModule = TABLE.get(fragmentGLSL))) TABLE.set(fragmentGLSL, fShaderModule = new RedShaderModule_GLSL(redGPU, 'fragment', materialClass, fragmentGLSL, programOptionList));
 		this.uniformsBindGroupLayout = makeUniformBindLayout(redGPU, uniformsBindGroupLayoutDescriptor);
-		this.vertexStage = {
-			module: this.vShaderModule = vShaderModule,
-			entryPoint: 'main'
-		};
-		this.fragmentStage = {
-			module: this.fShaderModule = fShaderModule,
-			entryPoint: 'main'
-		};
+		this.vShaderModule = vShaderModule
+		this.fShaderModule = fShaderModule
 
 		this.sampler = new RedSampler(redGPU).sampler;
 	}

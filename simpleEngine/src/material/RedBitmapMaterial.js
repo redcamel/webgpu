@@ -55,7 +55,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 	#diffuseTexture;
 
 	constructor(redGPU, diffuseSrc) {
-		super(redGPU, vertexShaderGLSL, fragmentShaderGLSL, RedBitmapMaterial.uniformsBindGroupLayoutDescriptor);
+		super(redGPU, RedBitmapMaterial, vertexShaderGLSL, fragmentShaderGLSL, RedBitmapMaterial.uniformsBindGroupLayoutDescriptor);
 		this.#redGPU = redGPU;
 
 		this.uniformBufferDescripter = {

@@ -1,13 +1,6 @@
 "use strict";
 import RedBaseObjectContainer from "../base/RedBaseObjectContainer.js";
 
-let table = new Map();
-/**
- * uniformBuffer 버퍼를 생성할 책임을 가짐.
- *      uniformBuffer는 재질을 기반 가져옴
- * pipeline을 생성할 책임을 가짐
- *      pipeline 생성시 uniformBindGroup을 삭제할 책임도 가짐
- */
 export default class RedMesh extends RedBaseObjectContainer {
 	#material;
 	#geometry;
@@ -59,11 +52,11 @@ export default class RedMesh extends RedBaseObjectContainer {
 			),
 			// 버텍스와 프레그먼트는 재질에서 들고온다.
 			vertexStage: {
-				module: this.#material.vShaderModule,
+				module: this.#material.vShaderModule.shaderModule,
 				entryPoint: 'main'
 			},
 			fragmentStage: {
-				module: this.#material.fShaderModule,
+				module: this.#material.fShaderModule.shaderModule,
 				entryPoint: 'main'
 			},
 			// 버텍스 상태는 지오메트리가 알고있음으로 들고옴
@@ -89,13 +82,12 @@ export default class RedMesh extends RedBaseObjectContainer {
 		};
 		// console.log(table.get(this.#material))
 
-		if (table.has(this.#material)) return this.pipeline = table.get(this.#material);
-		// this.uniformBindGroup = null
+
 		let pipeline = device.createRenderPipeline(descriptor);
 		this.pipeline = pipeline;
-		table.set(this.#material, pipeline);
-		console.log('파이프라인생성');
-		console.log('table', table);
+
+		// console.log('파이프라인생성');
+		// console.log('table', table);
 		return this.pipeline
 	}
 

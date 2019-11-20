@@ -41,15 +41,12 @@ export default class RedRender {
 				tMesh.updateUniformBuffer();
 				tMesh.dirtyTransform = false
 			}
-			if (!tMesh.pipeline) tMesh.createPipeline(redGPU);
+			if (!tMesh.pipeline || tMesh._prevBindings != tMesh.material.bindings) tMesh.createPipeline(redGPU);
+
 			if (prevPipeline != tMesh.pipeline) passEncoder.setPipeline(prevPipeline = tMesh.pipeline);
 			if (prevVertexBuffer != tMesh.geometry.interleaveBuffer) passEncoder.setVertexBuffer(0, prevVertexBuffer = tMesh.geometry.interleaveBuffer.buffer);
 			if (prevIndexBuffer != tMesh.geometry.indexBuffer) passEncoder.setIndexBuffer(prevIndexBuffer = tMesh.geometry.indexBuffer.buffer);
 
-
-			///////////////////////////////////////////////////////////////////////////
-			// Chrome currently crashes with |setSubData| too large.
-			///////////////////////////////////////////////////////////////////////////
 			if (tMesh.material.bindings) {
 				if (!tMesh.uniformBindGroup) {
 					tMesh.material.bindings[0]['resource']['buffer'] = tMesh.uniformBuffer;
@@ -60,7 +57,10 @@ export default class RedRender {
 
 			} else {
 				tMesh.uniformBindGroup = null
+				tMesh.pipeline = null
 			}
+			tMesh._prevBindings = tMesh.material.bindings
+
 
 		}
 		passEncoder.endPass();
