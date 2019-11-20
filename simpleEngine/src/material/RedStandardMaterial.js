@@ -1,5 +1,5 @@
 "use strict";
-import util_createTextureFromImage from './util_createTextureFromImage.js'
+import RedBitmapTexture from '../resources/RedBitmapTexture.js'
 import RedTypeSize from "../RedTypeSize.js";
 import RedBaseMaterial from "../base/RedBaseMaterial.js";
 
@@ -133,7 +133,7 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 	#diffuseTexture;
 	#normalTexture;
 
-	constructor(redGPU, diffuseSrc, normalSrc) {
+	constructor(redGPU, diffuseTexture, normalTexture) {
 		super(redGPU, RedStandardMaterial, vertexShaderGLSL, fragmentShaderGLSL, RedStandardMaterial.uniformsBindGroupLayoutDescriptor, RedStandardMaterial.PROGRAM_OPTION_LIST);
 		this.#redGPU = redGPU;
 
@@ -145,23 +145,26 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 				{offset: RedTypeSize.mat4, valueName: 'localNormalMatrix'}
 			]
 		};
-
-		this.diffuseTexture = diffuseSrc;
-		this.normalTexture = normalSrc
+		console.log(diffuseTexture, normalTexture)
+		this.diffuseTexture = diffuseTexture;
+		this.normalTexture = normalTexture
 	}
 
-	set diffuseTexture(src) {
+	set diffuseTexture(texture) {
 		let self = this;
 		self.#diffuseTexture = null;
 		self.bindings = null
-		let t0 = util_createTextureFromImage(self.#redGPU.device, src, GPUTextureUsage.SAMPLED);
-		t0.then(function (v) {
-			console.log('diffuseTexture', v);
-			self.#diffuseTexture = v
+		if (texture) {
+			texture.then(function (v) {
+				console.log('diffuseTexture', v);
+				self.#diffuseTexture = v
+				self.resetBindingInfo()
+			}).catch(function (v) {
+				console.log('로딩실패!', v)
+			})
+		} else {
 			self.resetBindingInfo()
-		}).catch(function(v){
-			console.log('로딩실패!')
-		})
+		}
 
 
 	}
@@ -170,18 +173,22 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 		return this.#diffuseTexture
 	}
 
-	set normalTexture(src) {
+	set normalTexture(texture) {
 		let self = this;
 		self.#normalTexture = null;
 		self.bindings = null
-		let t0 = util_createTextureFromImage(self.#redGPU.device, src, GPUTextureUsage.SAMPLED);
-		t0.then(function (v) {
-			console.log('normalTexture', v);
-			self.#normalTexture = v
+		console.log(texture)
+		if (texture) {
+			texture.then(function (v) {
+				console.log('normalTexture', v);
+				self.#normalTexture = v
+				self.resetBindingInfo()
+			}).catch(function (v) {
+				console.log('로딩실패!', v)
+			})
+		} else {
 			self.resetBindingInfo()
-		}).catch(function(v){
-			console.log('로딩실패!')
-		})
+		}
 
 	}
 
@@ -190,7 +197,7 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 	}
 
 	resetBindingInfo() {
-		console.log(this.#diffuseTexture , this.#normalTexture);
+		console.log(this.#diffuseTexture, this.#normalTexture);
 		this.bindings = null
 		let tKey = [RedStandardMaterial.name]
 		if (this.#diffuseTexture) tKey.push('diffuseTexture')
@@ -201,15 +208,7 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 
 		console.log(this.vShaderModule)
 		console.log(this.fShaderModule)
-		const empty = this.#redGPU.device.createTexture({
-			size: {
-				width: 2,
-				height: 2,
-				depth: 1,
-			},
-			format: "rgba8unorm",
-			usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED,
-		})
+
 		this.bindings = [
 			{
 				binding: 0,
@@ -225,18 +224,17 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 			},
 			{
 				binding: 2,
-				resource: this.#diffuseTexture ? this.#diffuseTexture.createView() : empty.createView(),
+				resource: this.#diffuseTexture ? this.#diffuseTexture.createView() : this.#redGPU.state.emptyTextureView,
 			},
 			{
 				binding: 3,
-				resource: this.#normalTexture ? this.#normalTexture.createView() : empty.createView(),
+				resource: this.#normalTexture ? this.#normalTexture.createView() : this.#redGPU.state.emptyTextureView,
 			}
 		];
 		this.uniformBindGroupDescriptor = {
 			layout: this.uniformsBindGroupLayout,
 			bindings: this.bindings
 		};
-		this.dirty = true
 
 
 	}

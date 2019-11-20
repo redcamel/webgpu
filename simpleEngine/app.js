@@ -5,6 +5,7 @@ import RedRender from "./src/renderer/RedRender.js";
 import RedBitmapMaterial from "./src/material/RedBitmapMaterial.js";
 import RedCamera from "./src/controller/RedCamera.js";
 import RedSphere from "./src/primitives/RedSphere.js";
+import RedBitmapTexture from "./src/resources/RedBitmapTexture.js";
 
 
 (async function () {
@@ -17,11 +18,21 @@ import RedSphere from "./src/primitives/RedSphere.js";
 	let redGPU = new RedGPU(cvs, glslang);
 	redGPU.camera = new RedCamera();
 	requestAnimationFrame(function () {
-		let MAX = 5;
+		let MAX = 1000;
 		let i = MAX;
-		let tMat = new RedStandardMaterial(redGPU, '../assets/Brick03_col.jpg',);
-		let tMat2 = new RedStandardMaterial(redGPU, '../assets/Brick03_col.jpg', '../assets/Brick03_nrm.jpg');
-		let tMat3 = new RedBitmapMaterial(redGPU, '../assets/UV_Grid_Sm.jpg');
+		let testTexture1 = new RedBitmapTexture(redGPU, '../assets/UV_Grid_Sm.jpg')
+		let testTexture2 = new RedBitmapTexture(redGPU, '../assets/Brick03_col.jpg')
+		let testTexture3 = new RedBitmapTexture(redGPU, '../assets/Brick03_nrm.jpg')
+		console.log('testTexture1',testTexture1)
+		console.log('testTexture2',testTexture2)
+		console.log('testTexture3',testTexture3)
+		let tMat1 = new RedStandardMaterial(redGPU, testTexture2);
+		let tMat2 = new RedStandardMaterial(redGPU, testTexture2, testTexture3);
+
+		let tMat3 = new RedBitmapMaterial(redGPU, testTexture1);
+		// setTimeout(function(){
+		// 	tMat2.normalTexture = null
+		// },3000)
 
 		// setInterval(function () {
 		// 	i = MAX;
@@ -34,12 +45,12 @@ import RedSphere from "./src/primitives/RedSphere.js";
 		// }, 2000);
 		if (i > 2000) i = 2000;
 		while (i--) {
-			let testMesh = new RedMesh(redGPU, new RedSphere(redGPU, Math.random() > 0.5 ? 1 : 0.5, 16, 16, 16), i > MAX / 2 ? tMat : Math.random() > 0.5 ? tMat2 : tMat3);
+			let testMesh = new RedMesh(redGPU, new RedSphere(redGPU, Math.random() > 0.5 ? 1 : 0.5, 16, 16, 16), i > MAX / 2 ? tMat1 : Math.random() > 0.5 ? tMat2 : tMat3);
 			testMesh.x = Math.random() * 30 - 15;
 			testMesh.y = Math.random() * 30 - 15;
 			testMesh.z = Math.random() * 30 - 15;
 			testMesh.rotationX = testMesh.rotationY = testMesh.rotationZ = Math.random() * 360
-			testMesh.scaleX = testMesh.scaleY = testMesh.scaleZ = Math.random();
+			// testMesh.scaleX = testMesh.scaleY = testMesh.scaleZ = Math.random();
 			redGPU.addChild(testMesh)
 
 		}

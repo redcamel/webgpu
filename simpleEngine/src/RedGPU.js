@@ -77,8 +77,18 @@ export default class RedGPU extends RedBaseObjectContainer {
 						vertexBuffer: new Map(),
 						indexBuffer: new Map()
 					},
+					emptyTextureView: device.createTexture({
+						size: {
+							width: 1,
+							height: 1,
+							depth: 1,
+						},
+						format: "rgba8unorm",
+						usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED,
+					}).createView()
 					// shaderModule :
 				};
+
 
 				this.setSize('100%', '100%');
 				if (!redGPUList.size) setGlobalResizeEvent();
