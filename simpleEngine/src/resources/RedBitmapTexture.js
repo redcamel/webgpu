@@ -3,12 +3,12 @@ let imageCanvasContext;
 export default class RedBitmapTexture {
 	constructor(redGPU, src) {
 		// 귀찮아서 텍스쳐 맹그는 놈은 들고옴
-		return new Promise((resolve, reject) => {
+		let self = this;
+		this.promise = new Promise((resolve, reject) => {
 				if (!src) {
 					console.log('src')
 					reject()
-				}
-				else {
+				} else {
 					const img = new Image();
 					img.src = src
 					img.onerror = reject
@@ -72,6 +72,7 @@ export default class RedBitmapTexture {
 							depth: 1,
 						});
 						redGPU.device.defaultQueue.submit([commandEncoder.finish()]);
+						self.texture = texture
 						resolve(texture)
 					}
 				}

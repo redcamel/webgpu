@@ -73,17 +73,29 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 	checkTexture(texture, textureName) {
 		this.bindings = null
 		if (texture) {
-			texture.then(v => {
+			console.log(texture)
+			if(texture.texture){
 				switch (textureName) {
 					case 'diffuseTexture' :
-						this.#diffuseTexture = v
+						this.#diffuseTexture = texture.texture
 						break
 				}
-				console.log(textureName, v);
+				console.log(textureName, texture.texture);
 				this.resetBindingInfo()
-			}).catch(function (v) {
-				console.log('로딩실패!', v)
-			})
+			}else{
+				texture.promise.then(v => {
+					switch (textureName) {
+						case 'diffuseTexture' :
+							this.#diffuseTexture = v
+							break
+					}
+					console.log(textureName, v);
+					this.resetBindingInfo()
+				}).catch(function (v) {
+					console.log('로딩실패!', v)
+				})
+			}
+
 		} else {
 			this.resetBindingInfo()
 		}

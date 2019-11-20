@@ -153,21 +153,33 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 	checkTexture(texture, textureName) {
 		this.bindings = null
 		if (texture) {
-
-			texture.then(v => {
+			if (texture.texture) {
 				switch (textureName) {
 					case 'diffuseTexture' :
-						this.#diffuseTexture = v
+						this.#diffuseTexture = texture.texture
 						break
 					case 'normalTexture' :
-						this.#normalTexture = v
+						this.#normalTexture = texture.texture
 						break
 				}
-				console.log(textureName, v,texture);
+				console.log(textureName, texture.texture);
 				this.resetBindingInfo()
-			}).catch(function (v) {
-				console.log('로딩실패!', v)
-			})
+			} else {
+				texture.promise.then(v => {
+					switch (textureName) {
+						case 'diffuseTexture' :
+							this.#diffuseTexture = v
+							break
+						case 'normalTexture' :
+							this.#normalTexture = v
+							break
+					}
+					console.log(textureName, v, texture);
+					this.resetBindingInfo()
+				}).catch(function (v) {
+					console.log('로딩실패!', v)
+				})
+			}
 		} else {
 			this.resetBindingInfo()
 		}
@@ -177,13 +189,16 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 		this.#diffuseTexture = null;
 		this.checkTexture(texture, 'diffuseTexture')
 	}
+
 	get diffuseTexture() {
 		return this.#diffuseTexture
 	}
+
 	set normalTexture(texture) {
 		this.#normalTexture = null;
 		this.checkTexture(texture, 'normalTexture')
 	}
+
 	get normalTexture() {
 		return this.#normalTexture
 	}
