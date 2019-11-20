@@ -8,7 +8,7 @@ export default class RedShaderModule_GLSL {
 				function (key, index) {
 					let newList = optionList.concat();
 					let tSource = source;
-					newList.forEach(function(replaceKey){
+					newList.forEach(function (replaceKey) {
 						let tReg = new RegExp(`\/\/\#RedGPU\#${replaceKey}\#`, 'gi');
 						tSource = tSource.replace(tReg, '')
 					})
@@ -29,14 +29,14 @@ export default class RedShaderModule_GLSL {
 		console.log(this);
 	}
 
-	searchShaderModule(key) {
-		console.log('searchShaderModule',key)
+	async searchShaderModule(key) {
+		console.log('searchShaderModule', key)
 		if (this.shaderModuleMap.get(key)) {
-			console.log(key, this.shaderModuleMap.get(key))
-			return this.shaderModuleMap.get(key)
-		}
-		else {
-			this.shaderModuleDescriptor = {
+			this.shaderModule = this.shaderModuleMap.get(key);
+			return this.shaderModule
+		} else {
+			 this.shaderModuleDescriptor = {
+				key: key,
 				code: this.redGPU.glslang.compileGLSL(this.sourceMap.get(key), this.type),
 				source: this.sourceMap.get(key)
 			};
