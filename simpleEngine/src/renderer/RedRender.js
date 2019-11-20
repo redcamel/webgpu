@@ -29,11 +29,14 @@ export default class RedRender {
 		let prevVertexBuffer;
 		let prevIndexBuffer;
 		let prevBindBuffer;
+		let tMaterial;
+		let tMesh
 		// 시스템 유니폼 업데이트
 		redGPU.updateSystemUniform(passEncoder);
 
 		while (i--) {
-			let tMesh = redGPU.children[i];
+			tMesh = redGPU.children[i];
+			tMaterial = tMesh.material;
 			if (tMesh.dirtyTransform) {
 				tMesh.getTransform();
 				tMesh.getNormalTransform()
@@ -41,16 +44,18 @@ export default class RedRender {
 				tMesh.updateUniformBuffer();
 				tMesh.dirtyTransform = false
 			}
-			if (!tMesh.pipeline || tMesh._prevBindings != tMesh.material.bindings) tMesh.createPipeline(redGPU);
+
+
+			if (!tMesh.pipeline || tMesh._prevBindings != tMaterial.bindings) tMesh.createPipeline(redGPU);
 
 			if (prevPipeline != tMesh.pipeline) passEncoder.setPipeline(prevPipeline = tMesh.pipeline);
 			if (prevVertexBuffer != tMesh.geometry.interleaveBuffer) passEncoder.setVertexBuffer(0, prevVertexBuffer = tMesh.geometry.interleaveBuffer.buffer);
 			if (prevIndexBuffer != tMesh.geometry.indexBuffer) passEncoder.setIndexBuffer(prevIndexBuffer = tMesh.geometry.indexBuffer.buffer);
 
-			if (tMesh.material.bindings) {
+			if (tMaterial.bindings) {
 				if (!tMesh.uniformBindGroup) {
-					tMesh.material.bindings[0]['resource']['buffer'] = tMesh.uniformBuffer;
-					tMesh.uniformBindGroup = redGPU.device.createBindGroup(tMesh.material.uniformBindGroupDescriptor)
+					tMaterial.bindings[0]['resource']['buffer'] = tMesh.uniformBuffer;
+					tMesh.uniformBindGroup = redGPU.device.createBindGroup(tMaterial.uniformBindGroupDescriptor)
 				}
 				if (prevBindBuffer != tMesh.uniformBindGroup) passEncoder.setBindGroup(1, prevBindBuffer = tMesh.uniformBindGroup);
 				passEncoder.drawIndexed(tMesh.geometry.indexBuffer.indexNum, 1, 0, 0, 0);
@@ -59,7 +64,7 @@ export default class RedRender {
 				tMesh.uniformBindGroup = null
 				tMesh.pipeline = null
 			}
-			tMesh._prevBindings = tMesh.material.bindings
+			tMesh._prevBindings = tMaterial.bindings
 
 
 		}

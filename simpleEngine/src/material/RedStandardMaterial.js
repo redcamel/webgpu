@@ -159,6 +159,8 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 			console.log('diffuseTexture', v);
 			self.#diffuseTexture = v
 			self.resetBindingInfo()
+		}).catch(function(v){
+			console.log('로딩실패!')
 		})
 
 
@@ -177,6 +179,8 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 			console.log('normalTexture', v);
 			self.#normalTexture = v
 			self.resetBindingInfo()
+		}).catch(function(v){
+			console.log('로딩실패!')
 		})
 
 	}

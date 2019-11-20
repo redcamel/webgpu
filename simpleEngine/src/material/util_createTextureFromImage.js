@@ -1,11 +1,10 @@
 export default async function util_createTextureFromImage(device, src, usage) {
 	// 귀찮아서 텍스쳐 맹그는 놈은 들고옴
-	const img = new Image();
-	img.src = src;
-
 	return new Promise((resolve, reject) => {
-			if (!src) reject()
+			if (!src) resolve()
 			else {
+				const img = new Image();
+				img.src = src
 				img.onload =  function () {
 					img.decode()
 					const imageCanvas = document.createElement('canvas');

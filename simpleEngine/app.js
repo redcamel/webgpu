@@ -17,11 +17,12 @@ import RedSphere from "./src/primitives/RedSphere.js";
 	let redGPU = new RedGPU(cvs, glslang);
 	redGPU.camera = new RedCamera();
 	requestAnimationFrame(function () {
-		let MAX = 1000;
+		let MAX = 5;
 		let i = MAX;
 		let tMat = new RedStandardMaterial(redGPU, '../assets/Brick03_col.jpg',);
 		let tMat2 = new RedStandardMaterial(redGPU, '../assets/Brick03_col.jpg', '../assets/Brick03_nrm.jpg');
 		let tMat3 = new RedBitmapMaterial(redGPU, '../assets/UV_Grid_Sm.jpg');
+
 		// setInterval(function () {
 		// 	i = MAX;
 		// 	if (i > 2000) i = 2000;
