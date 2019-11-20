@@ -18,7 +18,7 @@ import RedBitmapTexture from "./src/resources/RedBitmapTexture.js";
 	let redGPU = new RedGPU(cvs, glslang);
 	redGPU.camera = new RedCamera();
 	requestAnimationFrame(function () {
-		let MAX = 100;
+		let MAX = 250;
 		let i = MAX;
 		let testTextureList = [
 			new RedBitmapTexture(redGPU, '../assets/UV_Grid_Sm.jpg'),
