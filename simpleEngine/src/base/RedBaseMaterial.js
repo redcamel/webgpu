@@ -42,7 +42,7 @@ export default class RedBaseMaterial {
 		this.vShaderModule = vShaderModule;
 		this.fShaderModule = fShaderModule;
 
-		this.sampler = new RedSampler(redGPU).sampler;
+		this.sampler = new RedSampler(redGPU);
 	}
 
 	checkTexture(texture, textureName) {

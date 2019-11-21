@@ -13,8 +13,8 @@ export default class RedBaseObject3D {
 	#dirtyTransform = true;
 
 	constructor() {
-		this.localNormalMatrix = mat4.create()
-		this.localMatrix = mat4.create()
+		this.normalMatrix = mat4.create()
+		this.matrix = mat4.create()
 	}
 
 	get dirtyTransform() {
@@ -107,10 +107,10 @@ export default class RedBaseObject3D {
 	}
 
 	getNormalTransform() {
-		let tLocalNormalMatrix = mat4.clone(this.localMatrix);
+		let tLocalNormalMatrix = mat4.clone(this.matrix);
 		mat4.invert(tLocalNormalMatrix, tLocalNormalMatrix)
 		mat4.transpose(tLocalNormalMatrix, tLocalNormalMatrix)
-		return this.localNormalMatrix = tLocalNormalMatrix;
+		return this.normalMatrix = tLocalNormalMatrix;
 	}
 
 	updateUniformBuffer() {
@@ -120,7 +120,7 @@ export default class RedBaseObject3D {
 	}
 
 	getTransform() {
-		let tLocalMatrix = this.localMatrix;
+		let tLocalMatrix = this.matrix;
 		let aSx, aSy, aSz, aCx, aCy, aCz, aX, aY, aZ,
 			a00, a01, a02, a03, a10, a11, a12, a13, a20, a21, a22, a23, a30, a31, a32, a33,
 			b0, b1, b2, b3,
@@ -183,7 +183,7 @@ export default class RedBaseObject3D {
 			tLocalMatrix[9] = (a01 * b20 + a11 * b21 + a21 * b22) * aZ,
 			tLocalMatrix[10] = (a02 * b20 + a12 * b21 + a22 * b22) * aZ,
 			tLocalMatrix[11] = tLocalMatrix[11] * aZ;
-		return this.localMatrix = tLocalMatrix
+		return this.matrix = tLocalMatrix
 	}
 
 }

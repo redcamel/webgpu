@@ -133,8 +133,8 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 		size: RedTypeSize.mat4 * 2,
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 		redStruct: [
-			{offset: 0, valueName: 'localMatrix'},
-			{offset: RedTypeSize.mat4, valueName: 'localNormalMatrix'}
+			{offset: 0, valueName: 'matrix'},
+			{offset: RedTypeSize.mat4, valueName: 'normalMatrix'}
 		]
 	}
 	#redGPU;
@@ -205,7 +205,7 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 			},
 			{
 				binding: 1,
-				resource: this.sampler,
+				resource: this.sampler.GPUSampler,
 			},
 			{
 				binding: 2,

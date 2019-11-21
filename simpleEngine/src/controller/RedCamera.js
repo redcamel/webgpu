@@ -8,6 +8,6 @@ export default class RedCamera extends RedBaseObject3D {
 	}
 
 	lookAt(x, y, z) {
-		mat4.lookAt(this.localMatrix, [this.x, this.y, this.z], [x, y, z], this.#up);
+		mat4.lookAt(this.matrix, [this.x, this.y, this.z], [x, y, z], this.#up);
 	}
 }

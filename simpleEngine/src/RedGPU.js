@@ -57,7 +57,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 	updateSystemUniform(passEncoder) {
 		passEncoder.setBindGroup(0, this.systemUniformInfo.uniformBindGroup);
 		this.systemUniformInfo.uniformBuffer.setSubData(0, this.systemUniformInfo.data.projectionMatrix);
-		this.systemUniformInfo.uniformBuffer.setSubData(4 * 4 * Float32Array.BYTES_PER_ELEMENT, this.camera ? this.camera.localMatrix : mat4.create());
+		this.systemUniformInfo.uniformBuffer.setSubData(4 * 4 * Float32Array.BYTES_PER_ELEMENT, this.camera ? this.camera.matrix : mat4.create());
 	}
 
 	constructor(canvas, glslang) {
