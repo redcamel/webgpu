@@ -76,10 +76,10 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 			if(texture.GPUTexture){
 				switch (textureName) {
 					case 'diffuseTexture' :
-						this.#diffuseTexture = texture.GPUTexture
+						this.#diffuseTexture = texture.GPUTextureView
 						break
 				}
-				console.log(textureName, texture.GPUTexture);
+				console.log(textureName, texture.GPUTextureView);
 				this.resetBindingInfo()
 			}else{
 				texture.addUpdateTarget(this, textureName)
@@ -117,7 +117,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 			},
 			{
 				binding: 2,
-				resource: this.#diffuseTexture ? this.#diffuseTexture.createView() : this.#redGPU.state.emptyTextureView,
+				resource: this.#diffuseTexture ? this.#diffuseTexture : this.#redGPU.state.emptyTextureView,
 			}
 		];
 		this.setUniformBindGroupDescriptor()

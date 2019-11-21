@@ -156,10 +156,10 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 			if(texture.GPUTexture){
 				switch (textureName) {
 					case 'diffuseTexture' :
-						this.#diffuseTexture = texture.GPUTexture
+						this.#diffuseTexture = texture.GPUTextureView
 						break
 					case 'normalTexture' :
-						this.#normalTexture = texture.GPUTexture
+						this.#normalTexture = texture.GPUTextureView
 						break
 				}
 				console.log(textureName, texture.GPUTexture);
@@ -209,11 +209,11 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 			},
 			{
 				binding: 2,
-				resource: this.#diffuseTexture ? this.#diffuseTexture.createView() : this.#redGPU.state.emptyTextureView,
+				resource: this.#diffuseTexture ? this.#diffuseTexture : this.#redGPU.state.emptyTextureView,
 			},
 			{
 				binding: 3,
-				resource: this.#normalTexture ? this.#normalTexture.createView() : this.#redGPU.state.emptyTextureView,
+				resource: this.#normalTexture ? this.#normalTexture : this.#redGPU.state.emptyTextureView,
 			}
 		];
 		this.setUniformBindGroupDescriptor()
