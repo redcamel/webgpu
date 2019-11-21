@@ -4,7 +4,7 @@ export default class RedRender {
 	constructor() {
 	}
 
-	render(time, redGPU, depthTextureView) {
+	render(time, redGPU) {
 		const swapChainTexture = redGPU.swapChain.getCurrentTexture();
 		const commandEncoder = redGPU.device.createCommandEncoder();
 		const textureView = swapChainTexture.createView();
@@ -12,10 +12,10 @@ export default class RedRender {
 		const renderPassDescriptor = {
 			colorAttachments: [{
 				attachment: textureView,
-				loadValue: {r: 1, g: 1, b: 0.0, a: 1.0}
+				loadValue: {r: 0.0, g: 0.0, b: 0.0, a: 1.0}
 			}],
 			depthStencilAttachment: {
-				attachment: depthTextureView,
+				attachment: redGPU.depthTextureView,
 				depthLoadValue: 1.0,
 				depthStoreOp: "store",
 				stencilLoadValue: 0,

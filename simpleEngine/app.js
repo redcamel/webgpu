@@ -60,16 +60,7 @@ import RedBitmapTexture from "./src/resources/RedBitmapTexture.js";
 			redGPU.addChild(testMesh)
 
 		}
-		const depthTexture = redGPU.device.createTexture({
-			size: {
-				width: cvs.width,
-				height: cvs.height,
-				depth: 1
-			},
-			format: "depth24plus-stencil8",
-			usage: GPUTextureUsage.OUTPUT_ATTACHMENT
-		});
-		const depthTextureView = depthTexture.createView()
+
 		let renderer = new RedRender();
 		let render = function (time) {
 
@@ -77,7 +68,7 @@ import RedBitmapTexture from "./src/resources/RedBitmapTexture.js";
 			redGPU.camera.y = Math.cos(time / 4000) * 20;
 			redGPU.camera.z = Math.cos(time / 3000) * 20;
 			redGPU.camera.lookAt(0, 0, 0);
-			renderer.render(time, redGPU, depthTextureView);
+			renderer.render(time, redGPU);
 			let i = MAX / 5;
 			while (i--) {
 				redGPU.children[i].rotationX += 1

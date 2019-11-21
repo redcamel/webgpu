@@ -4,7 +4,7 @@ import RedBaseObjectContainer from "./base/RedBaseObjectContainer.js";
 let redGPUList = new Set();
 let setGlobalResizeEvent = function () {
 	window.addEventListener('resize', _ => {
-		// for (const redGPU of redGPUList) redGPU.setSize()
+		for (const redGPU of redGPUList) redGPU.setSize()
 	})
 };
 export default class RedGPU extends RedBaseObjectContainer {
@@ -52,6 +52,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 				projectionMatrix: projectionMatrix
 			}
 		}
+
 	};
 
 	updateSystemUniform(passEncoder) {
@@ -86,10 +87,19 @@ export default class RedGPU extends RedBaseObjectContainer {
 						format: "rgba8unorm",
 						usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED,
 					}).createView()
-					// shaderModule :
 				};
-
-
+				/////
+				this.depthTexture = device.createTexture({
+					size: {
+						width: canvas.width,
+						height: canvas.height,
+						depth: 1
+					},
+					format: "depth24plus-stencil8",
+					usage: GPUTextureUsage.OUTPUT_ATTACHMENT
+				});
+				this.depthTextureView = this.depthTexture.createView();
+				///////
 				this.setSize('100%', '100%');
 				if (!redGPUList.size) setGlobalResizeEvent();
 				redGPUList.add(this);
@@ -117,6 +127,17 @@ export default class RedGPU extends RedBaseObjectContainer {
 		this.canvas.style.width = tW + 'px';
 		this.canvas.style.height = tH + 'px';
 
+		this.depthTexture = this.device.createTexture({
+			size: {
+				width: tW,
+				height: tH,
+				depth: 1
+			},
+			format: "depth24plus-stencil8",
+			usage: GPUTextureUsage.OUTPUT_ATTACHMENT
+		});
+		this.depthTextureView = this.depthTexture.createView();
+
 		let aspect = Math.abs(this.canvas.width / this.canvas.height);
 		mat4.perspective(this.systemUniformInfo.data.projectionMatrix, (Math.PI / 180) * 60, aspect, 0.01, 10000.0);
 		requestAnimationFrame(_ => {
@@ -127,7 +148,7 @@ export default class RedGPU extends RedBaseObjectContainer {
 			const passEncoder = commandEncoder.beginRenderPass({
 				colorAttachments: [{
 					attachment: textureView,
-					loadValue: {r: 1, g: 0, b: 0.0, a: 1.0}
+					loadValue: {r: 0, g: 0, b: 0.0, a: 0.0}
 				}]
 			});
 			console.log(`setSize - input : ${w},${h} / result : ${tW}, ${tH}`);
