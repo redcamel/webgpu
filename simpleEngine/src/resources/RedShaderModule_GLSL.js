@@ -1,4 +1,9 @@
 export default class RedShaderModule_GLSL {
+	#redGPU;
+	type;
+	sourceMap;
+	shaderModuleMap;
+
 	constructor(redGPU, type, materialClass, source, programOptionList = []) {
 		let tSourceMap = new Map();
 		programOptionList.sort()
@@ -21,7 +26,7 @@ export default class RedShaderModule_GLSL {
 		};
 		parseSource(programOptionList);
 		tSourceMap.set(materialClass.name, source);
-		this.redGPU = redGPU;
+		this.#redGPU = redGPU;
 		this.type = type;
 		this.sourceMap = tSourceMap;
 		this.shaderModuleMap = new Map();
@@ -35,12 +40,12 @@ export default class RedShaderModule_GLSL {
 			this.shaderModule = this.shaderModuleMap.get(key);
 			return this.shaderModule
 		} else {
-			 this.shaderModuleDescriptor = {
+			this.shaderModuleDescriptor = {
 				key: key,
-				code: this.redGPU.glslang.compileGLSL(this.sourceMap.get(key), this.type),
+				code: await this.#redGPU.glslang.compileGLSL(this.sourceMap.get(key), this.type),
 				source: this.sourceMap.get(key)
 			};
-			this.shaderModule = await this.redGPU.device.createShaderModule(this.shaderModuleDescriptor);
+			this.shaderModule = await this.#redGPU.device.createShaderModule(this.shaderModuleDescriptor);
 			this.shaderModuleMap.set(key, this.shaderModule)
 			console.log(key, this.shaderModuleMap.get(key))
 		}

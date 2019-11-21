@@ -1,6 +1,6 @@
 "use strict";
 import RedBitmapTexture from '../resources/RedBitmapTexture.js'
-import RedTypeSize from "../RedTypeSize.js";
+import RedTypeSize from "../resources/RedTypeSize.js";
 import RedBaseMaterial from "../base/RedBaseMaterial.js";
 
 const vertexShaderGLSL = `
@@ -129,7 +129,7 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 			}
 		]
 	};
-	static uniformBufferDescripter = {
+	static uniformBufferDescriptor = {
 		size: RedTypeSize.mat4 * 2,
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 		redStruct: [
@@ -200,7 +200,7 @@ export default class RedStandardMaterial extends RedBaseMaterial {
 				resource: {
 					buffer: null,
 					offset: 0,
-					size: this.uniformBufferDescripter.size
+					size: this.uniformBufferDescriptor.size
 				}
 			},
 			{

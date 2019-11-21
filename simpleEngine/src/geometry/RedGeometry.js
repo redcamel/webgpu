@@ -1,5 +1,9 @@
 "use strict";
 export default class RedGeometry {
+	interleaveBuffer;
+	indexBuffer;
+	vertexState;
+
 	constructor(redGPU, interleaveBuffer, indexBuffer) {
 		this.interleaveBuffer = interleaveBuffer;
 		this.indexBuffer = indexBuffer;

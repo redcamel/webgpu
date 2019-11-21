@@ -114,8 +114,8 @@ export default class RedBaseObject3D {
 	}
 
 	updateUniformBuffer() {
-		for (const data of this.material.uniformBufferDescripter.redStruct) {
-			this.uniformBuffer.setSubData(data['offset'], this[data.valueName]);
+		for (const data of this.material.uniformBufferDescriptor.redStruct) {
+			this.uniformBuffer.GPUBuffer.setSubData(data['offset'], this[data.valueName]);
 		}
 	}
 

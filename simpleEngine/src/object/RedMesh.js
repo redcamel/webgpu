@@ -1,17 +1,19 @@
 "use strict";
 import RedBaseObjectContainer from "../base/RedBaseObjectContainer.js";
+import RedUniformBuffer from "../buffer/RedUniformBuffer.js";
 
 export default class RedMesh extends RedBaseObjectContainer {
 	#material;
 	#geometry;
 	#redGPU;
-
+	uniformBuffer;
 	constructor(redGPU, geometry, material) {
 		super();
 		this.#redGPU = redGPU;
-		console.log(this);
+		this.uniformBuffer = new RedUniformBuffer(redGPU)
 		this.geometry = geometry;
 		this.material = material;
+
 	}
 
 	get geometry() {
@@ -30,9 +32,7 @@ export default class RedMesh extends RedBaseObjectContainer {
 
 	set material(v) {
 		this.#material = v;
-		if (this.uniformBuffer) this.uniformBuffer.destroy();
-		this.uniformBuffer = this.#redGPU.device.createBuffer(v.uniformBufferDescripter);
-		this.uniformBuffer.uniformBufferDescripter = v.uniformBufferDescripter
+		this.uniformBuffer.setBuffer(v.uniformBufferDescriptor)
 		this.pipeline = null;
 		this.dirtyTransform = true
 	}

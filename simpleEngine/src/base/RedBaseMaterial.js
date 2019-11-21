@@ -18,26 +18,29 @@ export default class RedBaseMaterial {
         mat4 cameraMTX;
     } systemUniforms;
     `;
+
+	uniformBufferDescriptor;
+	uniformsBindGroupLayout;
 	vShaderModule;
 	fShaderModule;
-	uniformsBindGroupLayout;
 	vertexStage;
 	fragmentStage;
 	sampler;
+	bindings;
 
 	constructor(redGPU, materialClass, vertexGLSL, fragmentGLSL) {
 		let vShaderModule, fShaderModule;
-		let programOptionList = materialClass.PROGRAM_OPTION_LIST || []
+		let programOptionList = materialClass.PROGRAM_OPTION_LIST || [];
 		if (!(vShaderModule = TABLE.get(vertexGLSL))) TABLE.set(vertexGLSL, vShaderModule = new RedShaderModule_GLSL(redGPU, 'vertex', materialClass, vertexGLSL, programOptionList));
 		if (!(fShaderModule = TABLE.get(fragmentGLSL))) TABLE.set(fragmentGLSL, fShaderModule = new RedShaderModule_GLSL(redGPU, 'fragment', materialClass, fragmentGLSL, programOptionList));
 
-		if (!materialClass.uniformBufferDescripter) throw new Error(`${materialClass.name} : uniformBufferDescripter 를 정의해야함`)
-		if (!materialClass.uniformsBindGroupLayoutDescriptor) throw  new Error(`${materialClass.name} : uniformsBindGroupLayoutDescriptor 를  정의해야함`)
+		if (!materialClass.uniformBufferDescriptor) throw new Error(`${materialClass.name} : uniformBufferDescriptor 를 정의해야함`);
+		if (!materialClass.uniformsBindGroupLayoutDescriptor) throw  new Error(`${materialClass.name} : uniformsBindGroupLayoutDescriptor 를  정의해야함`);
 
-		this.uniformBufferDescripter = materialClass.uniformBufferDescripter;
+		this.uniformBufferDescriptor = materialClass.uniformBufferDescriptor;
 		this.uniformsBindGroupLayout = makeUniformBindLayout(redGPU, materialClass.uniformsBindGroupLayoutDescriptor);
-		this.vShaderModule = vShaderModule
-		this.fShaderModule = fShaderModule
+		this.vShaderModule = vShaderModule;
+		this.fShaderModule = fShaderModule;
 
 		this.sampler = new RedSampler(redGPU).sampler;
 	}
@@ -51,14 +54,14 @@ export default class RedBaseMaterial {
 	}
 
 	searchModules() {
-		let tKey = [this.constructor.name]
+		let tKey = [this.constructor.name];
 		this.constructor.PROGRAM_OPTION_LIST.forEach(key => {
-			if (this[key]) tKey.push(key)
+			if (this[key]) tKey.push(key);
 		});
-		this.vShaderModule.searchShaderModule(tKey.join('_'))
-		this.fShaderModule.searchShaderModule(tKey.join('_'))
-		console.log(this.vShaderModule)
-		console.log(this.fShaderModule)
+		this.vShaderModule.searchShaderModule(tKey.join('_'));
+		this.fShaderModule.searchShaderModule(tKey.join('_'));
+		console.log(this.vShaderModule);
+		console.log(this.fShaderModule);
 	}
 
 	setUniformBindGroupDescriptor() {

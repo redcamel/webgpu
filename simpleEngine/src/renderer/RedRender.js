@@ -1,4 +1,4 @@
-import RedTypeSize from "../RedTypeSize.js";
+import RedTypeSize from "../resources/RedTypeSize.js";
 
 export default class RedRender {
 	constructor() {
@@ -49,12 +49,12 @@ export default class RedRender {
 			if (!tMesh.pipeline || tMesh._prevBindings != tMaterial.bindings) tMesh.createPipeline(redGPU);
 
 			if (prevPipeline != tMesh.pipeline) passEncoder.setPipeline(prevPipeline = tMesh.pipeline);
-			if (prevVertexBuffer != tMesh.geometry.interleaveBuffer) passEncoder.setVertexBuffer(0, prevVertexBuffer = tMesh.geometry.interleaveBuffer.buffer);
-			if (prevIndexBuffer != tMesh.geometry.indexBuffer) passEncoder.setIndexBuffer(prevIndexBuffer = tMesh.geometry.indexBuffer.buffer);
+			if (prevVertexBuffer != tMesh.geometry.interleaveBuffer) passEncoder.setVertexBuffer(0, prevVertexBuffer = tMesh.geometry.interleaveBuffer.GPUBuffer);
+			if (prevIndexBuffer != tMesh.geometry.indexBuffer) passEncoder.setIndexBuffer(prevIndexBuffer = tMesh.geometry.indexBuffer.GPUBuffer);
 
 			if (tMaterial.bindings) {
 				if (!tMesh.uniformBindGroup) {
-					tMaterial.bindings[0]['resource']['buffer'] = tMesh.uniformBuffer;
+					tMaterial.bindings[0]['resource']['buffer'] = tMesh.uniformBuffer.GPUBuffer;
 					tMesh.uniformBindGroup = redGPU.device.createBindGroup(tMaterial.uniformBindGroupDescriptor)
 				}
 				if (prevBindBuffer != tMesh.uniformBindGroup) passEncoder.setBindGroup(1, prevBindBuffer = tMesh.uniformBindGroup);

@@ -23,8 +23,8 @@ export default class RedBuffer {
 			usage: tUsage
 		};
 		this.originData = data;
-		this.buffer = redGPU.device.createBuffer(this.bufferDescriptor);
-		this.buffer.setSubData(0, data);
+		this.GPUBuffer = redGPU.device.createBuffer(this.bufferDescriptor);
+		this.GPUBuffer.setSubData(0, data);
 		redGPU.state.RedBuffer[bufferType].set(typeKey, this);
 		console.log(this);
 	}

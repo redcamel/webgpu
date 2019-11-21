@@ -1,6 +1,5 @@
 "use strict";
-import RedBitmapTexture from '../resources/RedBitmapTexture.js'
-import RedTypeSize from "../RedTypeSize.js";
+import RedTypeSize from "../resources/RedTypeSize.js";
 import RedBaseMaterial from "../base/RedBaseMaterial.js";
 
 const vertexShaderGLSL = `
@@ -54,7 +53,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 			},
 		]
 	};
-	static uniformBufferDescripter = {
+	static uniformBufferDescriptor = {
 		size: RedTypeSize.mat4,
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 		redStruct: [
@@ -73,7 +72,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 	checkTexture(texture, textureName) {
 		this.bindings = null
 		if (texture) {
-			if(texture.GPUTexture){
+			if (texture.GPUTexture) {
 				switch (textureName) {
 					case 'diffuseTexture' :
 						this.#diffuseTexture = texture.GPUTextureView
@@ -81,7 +80,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 				}
 				console.log(textureName, texture.GPUTextureView);
 				this.resetBindingInfo()
-			}else{
+			} else {
 				texture.addUpdateTarget(this, textureName)
 			}
 
@@ -92,7 +91,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 
 	set diffuseTexture(texture) {
 		this.#diffuseTexture = null;
-		this.checkTexture(texture, 'diffuseTexture')
+		this.checkTexture(texture, 'diffuseTexture');
 	}
 
 	get diffuseTexture() {
@@ -108,7 +107,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 				resource: {
 					buffer: null,
 					offset: 0,
-					size: this.uniformBufferDescripter.size
+					size: this.uniformBufferDescriptor.size
 				}
 			},
 			{
@@ -120,7 +119,7 @@ export default class RedBitmapMaterial extends RedBaseMaterial {
 				resource: this.#diffuseTexture ? this.#diffuseTexture : this.#redGPU.state.emptyTextureView,
 			}
 		];
-		this.setUniformBindGroupDescriptor()
-		console.log(this.#diffuseTexture)
+		this.setUniformBindGroupDescriptor();
+		console.log(this.#diffuseTexture);
 	}
 }
