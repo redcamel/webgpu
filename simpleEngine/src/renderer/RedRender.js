@@ -53,15 +53,15 @@ export default class RedRender {
 			if (prevIndexBuffer != tMesh.geometry.indexBuffer) passEncoder.setIndexBuffer(prevIndexBuffer = tMesh.geometry.indexBuffer.GPUBuffer);
 
 			if (tMaterial.bindings) {
-				if (!tMesh.uniformBindGroup) {
+				if (!tMesh.GPUBindGroup) {
 					tMaterial.bindings[0]['resource']['buffer'] = tMesh.uniformBuffer.GPUBuffer;
-					tMesh.uniformBindGroup = redGPU.device.createBindGroup(tMaterial.uniformBindGroupDescriptor)
+					tMesh.GPUBindGroup = redGPU.device.createBindGroup(tMaterial.uniformBindGroupDescriptor)
 				}
-				if (prevBindBuffer != tMesh.uniformBindGroup) passEncoder.setBindGroup(1, prevBindBuffer = tMesh.uniformBindGroup);
+				if (prevBindBuffer != tMesh.GPUBindGroup) passEncoder.setBindGroup(1, prevBindBuffer = tMesh.GPUBindGroup);
 				passEncoder.drawIndexed(tMesh.geometry.indexBuffer.indexNum, 1, 0, 0, 0);
 
 			} else {
-				tMesh.uniformBindGroup = null
+				tMesh.GPUBindGroup = null
 				tMesh.pipeline = null
 			}
 			tMesh._prevBindings = tMaterial.bindings

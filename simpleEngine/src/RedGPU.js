@@ -45,9 +45,9 @@ export default class RedGPU extends RedBaseObjectContainer {
 		let uniformBindGroup = device.createBindGroup(bindGroupDescriptor);
 		let projectionMatrix = mat4.create();
 		return {
-			uniformBuffer: uniformBuffer,
-			uniformBindGroupLayout: uniformBindGroupLayout,
-			uniformBindGroup: uniformBindGroup,
+			GPUBuffer: uniformBuffer,
+			GPUBindGroupLayout: uniformBindGroupLayout,
+			GPUBindGroup: uniformBindGroup,
 			data: {
 				projectionMatrix: projectionMatrix
 			}
@@ -55,9 +55,9 @@ export default class RedGPU extends RedBaseObjectContainer {
 	};
 
 	updateSystemUniform(passEncoder) {
-		passEncoder.setBindGroup(0, this.systemUniformInfo.uniformBindGroup);
-		this.systemUniformInfo.uniformBuffer.setSubData(0, this.systemUniformInfo.data.projectionMatrix);
-		this.systemUniformInfo.uniformBuffer.setSubData(4 * 4 * Float32Array.BYTES_PER_ELEMENT, this.camera ? this.camera.matrix : mat4.create());
+		passEncoder.setBindGroup(0, this.systemUniformInfo.GPUBindGroup);
+		this.systemUniformInfo.GPUBuffer.setSubData(0, this.systemUniformInfo.data.projectionMatrix);
+		this.systemUniformInfo.GPUBuffer.setSubData(4 * 4 * Float32Array.BYTES_PER_ELEMENT, this.camera ? this.camera.matrix : mat4.create());
 	}
 
 	constructor(canvas, glslang) {

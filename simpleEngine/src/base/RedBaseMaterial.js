@@ -20,7 +20,7 @@ export default class RedBaseMaterial {
     `;
 
 	uniformBufferDescriptor;
-	uniformsBindGroupLayout;
+	GPUBindGroupLayout;
 	vShaderModule;
 	fShaderModule;
 	vertexStage;
@@ -38,7 +38,7 @@ export default class RedBaseMaterial {
 		if (!materialClass.uniformsBindGroupLayoutDescriptor) throw  new Error(`${materialClass.name} : uniformsBindGroupLayoutDescriptor 를  정의해야함`);
 
 		this.uniformBufferDescriptor = materialClass.uniformBufferDescriptor;
-		this.uniformsBindGroupLayout = makeUniformBindLayout(redGPU, materialClass.uniformsBindGroupLayoutDescriptor);
+		this.GPUBindGroupLayout = makeUniformBindLayout(redGPU, materialClass.uniformsBindGroupLayoutDescriptor);
 		this.vShaderModule = vShaderModule;
 		this.fShaderModule = fShaderModule;
 
@@ -66,7 +66,7 @@ export default class RedBaseMaterial {
 
 	setUniformBindGroupDescriptor() {
 		this.uniformBindGroupDescriptor = {
-			layout: this.uniformsBindGroupLayout,
+			layout: this.GPUBindGroupLayout,
 			bindings: this.bindings
 		};
 	}

@@ -38,25 +38,25 @@ export default class RedMesh extends RedBaseObjectContainer {
 	}
 
 	createPipeline(redGPU) {
-		this.uniformBindGroup = null;
+		this.GPUBindGroup = null;
 		const device = redGPU.device;
 		const descriptor = {
 			// 레이아웃은 재질이 알고있으니 들고옴
 			layout: device.createPipelineLayout(
 				{
 					bindGroupLayouts: [
-						redGPU.systemUniformInfo.uniformBindGroupLayout,
-						this.#material.uniformsBindGroupLayout
+						redGPU.systemUniformInfo.GPUBindGroupLayout,
+						this.#material.GPUBindGroupLayout
 					]
 				}
 			),
 			// 버텍스와 프레그먼트는 재질에서 들고온다.
 			vertexStage: {
-				module: this.#material.vShaderModule.shaderModule,
+				module: this.#material.vShaderModule.GPUShaderModule,
 				entryPoint: 'main'
 			},
 			fragmentStage: {
-				module: this.#material.fShaderModule.shaderModule,
+				module: this.#material.fShaderModule.GPUShaderModule,
 				entryPoint: 'main'
 			},
 			// 버텍스 상태는 지오메트리가 알고있음으로 들고옴
