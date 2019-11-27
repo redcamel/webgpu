@@ -110,7 +110,7 @@ async function init(glslang) {
 	/**
 	 * 텍스쳐를 만들어보자
 	 */
-	const testTexture = await createTextureFromImage(device, '../assets/crate.png', GPUTextureUsage.SAMPLED);
+	const testTexture = await createTextureFromImage(device, '../assets/UV_Grid_Sm.jpg', GPUTextureUsage.SAMPLED);
 	const testSampler = device.createSampler({
 		magFilter: "linear",
 		minFilter: "linear",
@@ -393,7 +393,7 @@ async function createTextureFromImage(device, src, usage) {
 		const commandEncoder = device.createCommandEncoder({});
 		commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
 		device.defaultQueue.submit([commandEncoder.finish()]);
-
+		textureDataBuffer.destroy()
 		console.log('mip', mip, 'width', width, 'height', height)
 	}
 	let i = 1, len = mipMaps
@@ -405,6 +405,7 @@ async function createTextureFromImage(device, src, usage) {
 		faceHeight = Math.max(Math.floor(faceHeight / 2), 1);
 		updateTexture(i, faceHeight, faceHeight)
 	}
+
 	texture.mipmaps = mipMaps + 1
 
 	return texture;

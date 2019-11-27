@@ -63,21 +63,22 @@ const fragmentShaderGLSL_quad = `
         for(int i=0;i<cPOINT_MAX;i++){
            L =  -lightUniforms.lightPosition[i].xyz + positionColor.xyz;
            distanceLength = abs(length(L));
-           if(lightUniforms.lightPosition[i].w >  distanceLength){
-               attenuation = 1.0 / (1.0  + 0.1 * distanceLength  + 0.5 * distanceLength * distanceLength )  ;
-        
+           float radius = lightUniforms.lightPosition[i].w;
+           if(radius>  distanceLength){
+                attenuation = clamp(1.0 - distanceLength*distanceLength/(radius*radius), 0.0, 1.0) ;
+        		 attenuation*=attenuation;
                L = normalize(L);
                lambertTerm = dot(N,-L);
                if(lambertTerm > 0.0){
 	               ld += lightUniforms.lightColor[i] * diffuseColor * lambertTerm * attenuation * 1.0 ;
-	               specular = pow( max(dot( reflect(L, N), -N), 0.2), shininess) * specularPower * attenuation;
-	               ls +=  specularLightColor * specular  ;
+	               specular = pow( max(dot( reflect(L, N), -N), 0.2), shininess) * specularPower ;
+	               ls +=  specularLightColor * specular* attenuation  ;
                }
            }
         }
         	    
 	    vec4 finalColor = ld + ls;	    
-		outColor = mix(diffuseColor,finalColor,0.7);
+		outColor = finalColor;
 		
 	}
 `;
@@ -125,7 +126,7 @@ const fragmentShaderGLSL = `
 
 	void main() {
 		outDiffuse = texture(sampler2D(uDiffuseTexture, uSampler), vUV) ;
-		outNormal = vec4(applyNormalMap(vNormal.xyz, texture(sampler2D(uNormalTexture, uSampler), vUV).rgb), 1);
+		outNormal = vec4(applyNormalMap(normalize(vNormal.xyz), texture(sampler2D(uNormalTexture, uSampler), vUV).rgb), 1);
 		outPosition = vPosition;
 	}
 `;
@@ -287,9 +288,9 @@ async function init(glslang) {
 		magFilter: "linear",
 		minFilter: "linear",
 		mipmapFilter: "linear",
-		addressModeU: "mirror-repeat",
-		addressModeV: "mirror-repeat",
-		addressModeW: "mirror-repeat"
+		addressModeU: "repeat",
+		addressModeV: "repeat",
+		addressModeW: "repeat"
 		// 	enum GPUAddressMode {
 		// 	    "clamp-to-edge",
 		// 		"repeat",
@@ -648,7 +649,7 @@ async function init(glslang) {
 		lightList.push({
 			position: [Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50],
 			color: new Float32Array([Math.random(), Math.random(), Math.random(), 1.0]),
-			radius: new Float32Array([Math.random() * 50])
+			radius: new Float32Array([Math.random() * 30])
 		})
 	}
 	let lightDataList = new Float32Array(8 * LIGHT_MAX)
@@ -851,65 +852,114 @@ async function createTextureFromImage(device, src, usage) {
 	img.src = src;
 	await img.decode();
 
-	const imageCanvas = document.createElement('canvas');
-	imageCanvas.width = img.width;
-	imageCanvas.height = img.height;
 
-	const imageCanvasContext = imageCanvas.getContext('2d');
-	imageCanvasContext.translate(0, img.height);
-	imageCanvasContext.scale(1, -1);
-	imageCanvasContext.drawImage(img, 0, 0, img.width, img.height);
-	const imageData = imageCanvasContext.getImageData(0, 0, img.width, img.height);
+	let mipMaps = Math.log2(Math.max(img.width, img.height));
+	mipMaps = Math.floor(mipMaps);
+	console.log('mipMaps', mipMaps)
 
-	let data = null;
 
-	const rowPitch = Math.ceil(img.width * 4 / 256) * 256;
-	if (rowPitch == img.width * 4) {
-		data = imageData.data;
-	} else {
-		data = new Uint8Array(rowPitch * img.height);
-		for (let y = 0; y < img.height; ++y) {
-			for (let x = 0; x < img.width; ++x) {
-				let i = x * 4 + y * rowPitch;
-				data[i] = imageData.data[i];
-				data[i + 1] = imageData.data[i + 1];
-				data[i + 2] = imageData.data[i + 2];
-				data[i + 3] = imageData.data[i + 3];
-			}
-		}
-	}
-
-	const texture = device.createTexture({
-		size: {
-			width: img.width,
-			height: img.height,
-			depth: 1,
-		},
-		format: "rgba8unorm",
-		usage: GPUTextureUsage.COPY_DST | usage,
-	});
-
-	const textureDataBuffer = device.createBuffer({
-		size: data.byteLength,
-		usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
-	});
-
-	textureDataBuffer.setSubData(0, data);
-
-	const commandEncoder = device.createCommandEncoder({});
-	commandEncoder.copyBufferToTexture({
-		buffer: textureDataBuffer,
-		rowPitch: rowPitch,
-		imageHeight: 0,
-	}, {
-		texture: texture,
-	}, {
+	const textureExtent = {
 		width: img.width,
 		height: img.height,
-		depth: 1,
-	});
+		depth: 1
+	};
 
-	device.defaultQueue.submit([commandEncoder.finish()]);
+	const textureDescriptor = {
+		dimension: '2d',
+		format: 'rgba8unorm',
+		arrayLayerCount: 1,
+		mipLevelCount: mipMaps + 1,
+		sampleCount: 1,
+		size: textureExtent,
+		usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED
+	};
+
+
+	const texture = device.createTexture(textureDescriptor);
+
+
+	function updateTexture(mip, width, height, face = -1) {
+		const imageCanvas = document.createElement('canvas');
+		document.body.appendChild(imageCanvas)
+		imageCanvas.width = width;
+		imageCanvas.height = height;
+		const imageCanvasContext = imageCanvas.getContext('2d');
+		imageCanvasContext.translate(0, height);
+		imageCanvasContext.scale(1, -1);
+		imageCanvasContext.drawImage(img, 0, 0, width, height);
+		const imageData = imageCanvasContext.getImageData(0, 0, width, height);
+		console.log('imageData', imageData)
+		let data = null;
+		const rowPitch = Math.ceil(width * 4 / 256) * 256;
+		if (rowPitch == width * 4) {
+			data = imageData.data;
+			console.log('여기냐', width, data)
+		} else {
+
+			// data = new Uint8Array(rowPitch * img.height);
+			// for (let y = 0; y < img.height; ++y) {
+			// 	for (let x = 0; x < img.width; ++x) {
+			// 		let i = x * 4 + y * rowPitch;
+			// 		data[i] = imageData.data[i];
+			// 		data[i + 1] = imageData.data[i + 1];
+			// 		data[i + 2] = imageData.data[i + 2];
+			// 		data[i + 3] = imageData.data[i + 3];
+			// 	}
+			// }
+			data = new Uint8Array(rowPitch * height);
+			let pixelsIndex = 0;
+			for (let y = 0; y < height; ++y) {
+				for (let x = 0; x < width; ++x) {
+					let i = x * 4 + y * rowPitch;
+					data[i] = imageData.data[pixelsIndex];
+					data[i + 1] = imageData.data[pixelsIndex + 1];
+					data[i + 2] = imageData.data[pixelsIndex + 2];
+					data[i + 3] = imageData.data[pixelsIndex + 3];
+					pixelsIndex += 4;
+				}
+			}
+			console.log('여기냐2', width, data)
+		}
+
+		console.log('GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC', GPUBufferUsage.COPY_DST, GPUBufferUsage.COPY_SRC)
+		const textureDataBuffer = device.createBuffer({
+			size: data.byteLength,
+			usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+		});
+		textureDataBuffer.setSubData(0, data);
+		const bufferView = {
+			buffer: textureDataBuffer,
+			rowPitch: rowPitch,
+			imageHeight: height,
+		};
+		const textureView = {
+			texture: texture,
+			mipLevel: mip,
+			arrayLayer: Math.max(face, 0),
+		};
+
+		const textureExtent = {
+			width,
+			height,
+			depth: 1
+		};
+		const commandEncoder = device.createCommandEncoder({});
+		commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
+		device.defaultQueue.submit([commandEncoder.finish()]);
+		textureDataBuffer.destroy()
+		console.log('mip', mip, 'width', width, 'height', height)
+	}
+	let i = 1, len = mipMaps
+	let faceWidth = img.width
+	let faceHeight = img.height
+	updateTexture(0, faceHeight, faceHeight)
+	for (i; i <= len; i++) {
+		faceWidth = Math.max(Math.floor(faceWidth / 2), 1);
+		faceHeight = Math.max(Math.floor(faceHeight / 2), 1);
+		updateTexture(i, faceHeight, faceHeight)
+	}
+
+	texture.mipmaps = mipMaps + 1
 
 	return texture;
 }
