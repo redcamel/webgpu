@@ -22,10 +22,10 @@ const fragmentShaderGLSL = `
 	layout(location = 0) in vec4 vColor;
 	layout(location = 1) in vec2 vUV;
 	layout(set = 0, binding = 1) uniform sampler uSampler;
-	layout(set = 0, binding = 2) uniform samplerCube uTexture;
+	layout(set = 0, binding = 2) uniform textureCube uTexture;
 	layout(location = 0) out vec4 outColor;
 	void main() {
-		outColor = texture(uTexture, vec3(vUV,1.0)) ;
+		outColor = texture(samplerCube(uTexture,uSampler), vec3(vUV,1.0)) ;
 		// outColor = vec4(1.0, 0,0,1);
 	}
 `;
@@ -50,7 +50,7 @@ async function init(glslang) {
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent');
 
-	const swapChainFormat = "rgba8unorm";
+	const swapChainFormat = "bgra8unorm";
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
 	console.log('ctx', ctx);
 	console.log('swapChain', swapChain);
@@ -162,12 +162,9 @@ async function init(glslang) {
 			'../assets/crate.png',
 			'../assets/crate.png'
 		], GPUTextureUsage.SAMPLED);
-	console.log('testTexture',testTexture)
-	const testSampler = device.createSampler({
-		magFilter: "linear",
-		minFilter: "linear",
-		mipmapFilter: "linear",
-	});
+	console.log('testTexture', testTexture)
+	console.log(testTexture.createView())
+	const testSampler = device.createSampler({});
 
 	const uniformBindGroupDescriptor = {
 		layout: uniformsBindGroupLayout,
@@ -187,13 +184,13 @@ async function init(glslang) {
 			{
 				binding: 2,
 				resource: testTexture.createView({
-					arrayLayerCount: 6,
+					format: 'bgra8unorm',
 					dimension: 'cube',
-					format: 'rgba8unorm',
+					aspect: 'all',
+					baseMipLevel: 0,
 					mipLevelCount: testTexture.mipMaps + 1,
 					baseArrayLayer: 0,
-					baseMipLevel: 0,
-					aspect: 'all'
+					arrayLayerCount: 6
 				}),
 			}
 		]
@@ -253,8 +250,13 @@ async function init(glslang) {
 					dstFactor: "one-minus-src-alpha",
 					operation: "add"
 				}
-			}
+			},
 		],
+		depthStencilState: {
+			depthWriteEnabled: true,
+			depthCompare: "less",
+			format: "depth24plus-stencil8",
+		},
 		// 드로잉 방법을 결정함
 		primitiveTopology: 'triangle-list',
 		/*
@@ -271,7 +273,15 @@ async function init(glslang) {
 	let modelMatrix = mat4.create();
 	let aspect = Math.abs(cvs.width / cvs.height);
 	mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
-
+	const depthTexture = device.createTexture({
+		size: {
+			width: cvs.width,
+			height: cvs.height,
+			depth: 1
+		},
+		format: "depth24plus-stencil8",
+		usage: GPUTextureUsage.OUTPUT_ATTACHMENT
+	});
 	let render = async function (time) {
 		const renderData = {
 			pipeline: pipeline,
@@ -287,7 +297,14 @@ async function init(glslang) {
 			colorAttachments: [{
 				attachment: textureView,
 				loadValue: {r: 1, g: 1, b: 0.0, a: 1.0},
-			}]
+			}],
+			depthStencilAttachment: {
+				attachment: depthTexture.createView(),
+				depthLoadValue: 1.0,
+				depthStoreOp: "store",
+				stencilLoadValue: 0,
+				stencilStoreOp: "store",
+			}
 		};
 		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 		passEncoder.setVertexBuffer(0, renderData['vertexBuffer']);
@@ -302,8 +319,6 @@ async function init(glslang) {
 		passEncoder.setBindGroup(0, renderData['uniformBindGroup']);
 		renderData['uniformBuffer'].setSubData(0, projectionMatrix);
 		renderData['uniformBuffer'].setSubData(4 * 16, modelMatrix);
-
-
 		passEncoder.draw(36, 1, 0, 0);
 		passEncoder.endPass();
 		const test = commandEncoder.finish();
@@ -366,19 +381,21 @@ async function createTextureFromImage(device, srcList, usage) {
 
 	const textureDescriptor = {
 		dimension: '2d',
-		format: 'rgba8unorm',
+		format: 'bgra8unorm',
 		arrayLayerCount: 6,
 		mipLevelCount: mipMaps + 1,
 		sampleCount: 1,
 		size: textureExtent,
-		usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED
+		usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED | GPUTextureUsage.COPY_SRC
 	};
-	const cubeTexture =  device.createTexture(textureDescriptor);
-	await srcList.forEach(async (src, face) => {
-		console.log('face',face)
-		const img = document.createElement('img');
-		img.src = src;
-		await img.decode();
+	const cubeTexture = device.createTexture(textureDescriptor);
+	const img = new Image()
+
+	img.src = srcList[0];
+	await img.decode();
+
+	const faces = [0, 1, 2, 3, 4, 5];
+	for (let face of faces) {
 		let i = 1, len = mipMaps
 		let faceWidth = img.width
 		let faceHeight = img.height
@@ -388,7 +405,8 @@ async function createTextureFromImage(device, srcList, usage) {
 			faceHeight = Math.max(Math.floor(faceHeight / 2), 1);
 			updateTexture(img, faceHeight, faceHeight, i, face)
 		}
-	})
+	}
+
 
 	function updateTexture(img, width, height, mip, face = -1) {
 		const imageCanvas = document.createElement('canvas');
@@ -433,9 +451,8 @@ async function createTextureFromImage(device, srcList, usage) {
 			console.log('여기냐2', width, data)
 		}
 
-		console.log('GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC', GPUBufferUsage.COPY_DST, GPUBufferUsage.COPY_SRC)
 		const textureDataBuffer = device.createBuffer({
-			size: data.byteLength +data.byteLength%4,
+			size: data.byteLength + data.byteLength % 4,
 			usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
 		});
 		textureDataBuffer.setSubData(0, data);
@@ -451,14 +468,14 @@ async function createTextureFromImage(device, srcList, usage) {
 		};
 
 		const textureExtent = {
-			width,
-			height,
+			width: width,
+			height: height,
 			depth: 1
 		};
 		const commandEncoder = device.createCommandEncoder({});
 		commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
 		device.defaultQueue.submit([commandEncoder.finish()]);
-		textureDataBuffer.destroy()
+		// textureDataBuffer.destroy()
 
 		console.log('mip', mip, 'width', width, 'height', height)
 	}

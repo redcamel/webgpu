@@ -15,6 +15,7 @@ These study samples run in Chrome Canary() behind the flag --enable-unsafe-webgp
         - [mirror-repeat](https://redcamel.github.io/webgpu/004_texture/mirror-repeat)
         - [repeat](https://redcamel.github.io/webgpu/004_texture/repeat)
         - [generateMipmap](https://redcamel.github.io/webgpu/012_mipmap)
+        - [generateCubeMap](https://redcamel.github.io/webgpu/013_cubemap)
  - ## multiple draw     
     - [draw multiple object - one buffer](https://redcamel.github.io/webgpu/005_multiObject)
     - [draw multiple object - individual buffer](https://redcamel.github.io/webgpu/005_multiObject2)
