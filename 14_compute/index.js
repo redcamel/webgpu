@@ -4,7 +4,8 @@ const vertexShaderGLSL = `
 	#version 450
 	layout(location = 0) in vec2 a_particlePos;
 	layout(location = 1) in vec2 a_particleVel;
-    layout(location = 2) in vec4 a_pos;
+	layout(location = 2) in vec4 test;
+    layout(location = 3) in vec4 a_pos;
     layout(location = 0) out float tAlpha;
 	void main() {
 		gl_Position = vec4(a_pos.xy + a_particlePos, 0, 1);
@@ -16,10 +17,11 @@ const fragmentShaderGLSL = `
     layout(location = 0) in float tAlpha;
 	layout(location = 0) out vec4 outColor;
 	void main() {
-		outColor = vec4(0,0,0, tAlpha);
+		outColor = vec4(tan(tAlpha), sin(tAlpha), cos(tAlpha), tAlpha);
+		if(tAlpha==0.0) discard;
 	}
 `;
-const PARTICLE_NUM = 1000
+const PARTICLE_NUM = 50000
 const computeShader = `
 	#version 450
 	// 파티클 구조체 선언
@@ -55,27 +57,42 @@ const computeShader = `
 		
 		vec2 vPos = particlesA.particles[index].pos;
 		vec4 movementInfo = particlesA.particles[index].movementInfo;
-		vec2 vVel = particlesA.particles[index].vel;
+		float alpha = particlesA.particles[index].vel.y;
 	
 		// kinematic update
 		float movementX = movementInfo.x;
 		float speedMovementX =  movementInfo.y;
-		float movementY =  movementInfo.z;
+		float movementY =  movementInfo.z ;
 		float speedMovementY =  movementInfo.w;
-		vPos.x += (particlesB.particles[index].pos.x - movementX) * speedMovementX;
-		vPos.y += (particlesB.particles[index].pos.y - movementY) * speedMovementY;
-		vVel.y += -0.001;
+		vPos.x += (vPos.x + movementX) * speedMovementX;
+		vPos.y += (vPos.y + movementY) * speedMovementY;
+		alpha -= 0.0016*5;
+		if(alpha<0) alpha = 0;
 		
 		// Wrap around boundary
-		if (vPos.x < -1.0) vPos.x = 0;
-		if (vPos.x > 1.0) vPos.x = 0;
-		if (vPos.y < -1.0) vPos.y = 0;
-		if (vPos.y > 1.0) vPos.y = 0;
-		
-		particlesB.particles[index].pos = vPos;
-		if(vVel.y <= 0.0) vVel.y = 1.0;		
-		// Write back
-		particlesB.particles[index].vel = vVel;
+		if (vPos.x < -2.0) {
+			vPos.x = 0;
+			vPos.y = 0;
+			alpha = 1;
+		}
+		if (vPos.x > 2.0) {
+			vPos.x = 0;
+			vPos.y = 0;
+			alpha = 1;
+		}
+		if (vPos.y < -2.0) {
+			vPos.x = 0;
+			vPos.y = 0;
+			alpha = 1;
+		}
+		if (vPos.y > 2.0) {
+			vPos.x = 0;
+			vPos.y = 0;
+			alpha = 1;
+		}
+				
+		particlesB.particles[index].pos = vPos;				
+		particlesB.particles[index].vel = vec2(alpha);
 	}
 `
 
@@ -126,20 +143,19 @@ async function init(glslang) {
 	);
 	const initialParticleData = new Float32Array(PARTICLE_NUM * 8);
 	for (let i = 0; i < PARTICLE_NUM; ++i) {
-		initialParticleData[8 * i + 0] = 2 * (Math.random() - 0.5);
-		initialParticleData[8 * i + 1] = 2 * (Math.random() - 0.5);
-		initialParticleData[8 * i + 2] = 2 * (Math.random() - 0.5);
-		initialParticleData[8 * i + 3] = 0
+		initialParticleData[8 * i + 0] = Math.random() * 2 - 1; //x
+		initialParticleData[8 * i + 1] = Math.random() * 2 - 1; //y
+		initialParticleData[8 * i + 2] = Math.random(); //
+		initialParticleData[8 * i + 3] = Math.random() // alpha
 
-		initialParticleData[8 * i + 4] = 0.001
-		initialParticleData[8 * i + 5] = 0.1
-		initialParticleData[8 * i + 6] = 0.001
-		initialParticleData[8 * i + 7] = 0.1
-
+		initialParticleData[8 * i + 4] = Math.random() > 0.5 ? 0.001 * Math.random() : -0.001 * Math.random() //moveX
+		initialParticleData[8 * i + 5] = Math.random() * 0.2
+		initialParticleData[8 * i + 6] = Math.random() > 0.5 ? 0.001 * Math.random() : -0.001 * Math.random() //moveY
+		initialParticleData[8 * i + 7] = Math.random() * 0.2
 	}
 
 	// 쉐이더 모듈을 만들었으니  버퍼를 만들어야함
-	let tScale = 0.01
+	let tScale = 0.003
 	let vertexBuffer = makeVertexBuffer(
 		device,
 		new Float32Array(
@@ -190,21 +206,21 @@ async function init(glslang) {
 				},
 			},
 				{
-				binding: 1,
-				resource: {
-					buffer: particleBuffers[i],
-					offset: 0,
-					size: initialParticleData.byteLength,
+					binding: 1,
+					resource: {
+						buffer: particleBuffers[i],
+						offset: 0,
+						size: initialParticleData.byteLength,
+					},
 				},
-			},
 				{
-				binding: 2,
-				resource: {
-					buffer: particleBuffers[(i + 1) % 2],
-					offset: 0,
-					size: initialParticleData.byteLength,
-				},
-			}],
+					binding: 2,
+					resource: {
+						buffer: particleBuffers[(i + 1) % 2],
+						offset: 0,
+						size: initialParticleData.byteLength,
+					},
+				}],
 		});
 	}
 
@@ -245,7 +261,7 @@ async function init(glslang) {
 			vertexBuffers: [
 				{
 					// instanced particles buffer
-					arrayStride: 4 * 4,
+					arrayStride: 8 * 4,
 					stepMode: "instance",
 					attributes: [
 						{
@@ -259,8 +275,13 @@ async function init(glslang) {
 							shaderLocation: 1,
 							offset: 2 * 4,
 							format: "float2"
+						},
+						{
+							// instance vel
+							shaderLocation: 2,
+							offset: 4 * 4,
+							format: "float4"
 						}
-
 					],
 				},
 				{
@@ -270,7 +291,7 @@ async function init(glslang) {
 					attributes: [
 						{
 							// vertex positions
-							shaderLocation: 2,
+							shaderLocation: 3,
 							offset: 0,
 							format: "float4"
 						}
@@ -281,6 +302,16 @@ async function init(glslang) {
 
 		colorStates: [{
 			format: "rgba8unorm",
+			colorBlend: {
+				srcFactor: 'src-alpha',
+				dstFactor: 'one-minus-src-alpha',
+				operation: "add"
+			},
+			alphaBlend: {
+				srcFactor: 'src-alpha',
+				dstFactor: 'one-minus-src-alpha',
+				operation: "add"
+			}
 		}],
 	});
 
