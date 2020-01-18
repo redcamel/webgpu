@@ -447,7 +447,7 @@ async function init(glslang) {
 				height: cvs.height,
 				depth: 1
 			},
-			format: "bgra8unorm",
+			format: "rgba8unorm",
 			usage: GPUTextureUsage.OUTPUT_ATTACHMENT | GPUTextureUsage.SAMPLED
 		}),
 		device.createTexture({
