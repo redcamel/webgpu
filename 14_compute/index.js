@@ -11,7 +11,7 @@ const vertexShaderGLSL = `
     layout(location = 0) out float tAlpha;
     layout(location = 1) out vec2 tUV;
 	void main() {
-		gl_Position = vec4(a_pos.xy*a_particleScale + a_particlePos, 0, 1);
+		gl_Position = vec4(a_pos.xy * a_particleScale + a_particlePos, 0, 1);
 		tAlpha = a_particleAlpha;
 		tUV = a_uv;
 	}
@@ -25,10 +25,10 @@ const fragmentShaderGLSL = `
 	layout(location = 0) out vec4 outColor;
 	void main() {
 		outColor =  texture(sampler2D(uTexture, uSampler), tUV);
-		outColor.a = tAlpha;
+		outColor.a *= tAlpha;
 	}
 `;
-const PARTICLE_NUM = 1000
+const PARTICLE_NUM = 10000
 const computeShader = `
 	#version 450
 	// 파티클 구조체 선언
@@ -126,7 +126,7 @@ async function init(glslang) {
 	// 화면에 표시하기 위해서 캔버스 컨텍스트를 가져오고
 	// 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
 	const cvs = document.createElement('canvas');
-	cvs.width = 1024;
+	cvs.width = 768;
 	cvs.height = 768;
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent');
@@ -170,7 +170,7 @@ async function init(glslang) {
 	}
 
 	// 쉐이더 모듈을 만들었으니  버퍼를 만들어야함
-	let tScale = 0.003
+	let tScale = 0.005
 	let vertexBuffer = makeVertexBuffer(
 		device,
 		new Float32Array(
@@ -183,7 +183,6 @@ async function init(glslang) {
 				-tScale, tScale, 0.0, 1, 1.0, 0.0,
 				tScale, -tScale, 0.0, 1, 0.0, 1.0,
 				tScale, tScale, 0.0, 1, 1.0, 1.0
-
 			]
 		)
 	);
@@ -415,7 +414,8 @@ async function init(glslang) {
 		}
 		{
 			const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-			passEncoder.setScissorRect(0, 0, 1024, 768);
+			passEncoder.setViewport(0, 0, 768, 768,0,1);
+			passEncoder.setScissorRect(0, 0, 768, 768);
 			passEncoder.setPipeline(renderPipeline);
 			passEncoder.setVertexBuffer(0, particleBuffers[(t + 1) % 2]);
 			passEncoder.setVertexBuffer(1, vertexBuffer);
