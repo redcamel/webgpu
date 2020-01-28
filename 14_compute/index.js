@@ -10,13 +10,15 @@ const vertexShaderGLSL = `
     layout(location = 0) out vec2 tUV;
     layout(location = 1) out float vAlpha;
 	void main() {
+		float ratio = 976.0/1920.0; 
 		mat4 scaleMTX = mat4(
 			scale.x, 0, 0, 0,
-			0, scale.y, 0, 0,
+			0, scale.y , 0, 0,
 			0, 0, scale.z, 0,
 			position, 1
 		);
-		gl_Position = scaleMTX * vec4(a_pos.xyz , 1);
+		
+		gl_Position = scaleMTX * vec4(a_pos.x, a_pos.y/ratio, a_pos.z , 1);
 		tUV = a_uv;
 		vAlpha = alpha;
 	}
@@ -34,7 +36,7 @@ const fragmentShaderGLSL = `
 		outColor.a *= vAlpha;
 	}
 `;
-const PARTICLE_NUM = 50000
+const PARTICLE_NUM = 60000
 const computeShader = `
 	#version 450
 	// 파티클 구조체 선언
@@ -71,10 +73,7 @@ const computeShader = `
 	    Particle particles[${PARTICLE_NUM}];
 	} particlesA;
 	
-	// 여기다 쓰곘다는건가
-	layout(std140, set = 0, binding = 2) buffer ParticlesB {
-	    Particle particles[${PARTICLE_NUM}];
-	} particlesB;
+	
 
 	float rand(vec2 co)
 	{
@@ -212,8 +211,8 @@ async function init(glslang) {
 	// 화면에 표시하기 위해서 캔버스 컨텍스트를 가져오고
 	// 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
 	const cvs = document.createElement('canvas');
-	cvs.width = 1280;
-	cvs.height = 1280;
+	cvs.width = 1920;
+	cvs.height = 976;
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent');
 
@@ -230,7 +229,7 @@ async function init(glslang) {
 	let simParamData = new Float32Array(
 		[
 			performance.now(), // startTime time
-			2000, 20000 // lifeRange
+			2000, 10000 // lifeRange
 		]
 	)
 
@@ -242,7 +241,7 @@ async function init(glslang) {
 	const initialParticleData = new Float32Array(PARTICLE_NUM * PROPERTY_NUM);
 	const currentTime = performance.now();
 	for (let i = 0; i < PARTICLE_NUM; ++i) {
-		let life = Math.random() * 18000 + 2000;
+		let life = Math.random() * 8000 + 2000;
 		let age = Math.random() * life;
 		initialParticleData[PROPERTY_NUM * i + 0] = currentTime - age // start time
 		initialParticleData[PROPERTY_NUM * i + 1] = life; // life
@@ -259,31 +258,32 @@ async function init(glslang) {
 		// x
 		initialParticleData[PROPERTY_NUM * i + 12] = 0; // startValue
 		initialParticleData[PROPERTY_NUM * i + 13] = Math.random() * 2 - 1; // endValue
-		initialParticleData[PROPERTY_NUM * i + 14] = parseInt(Math.random()*27); // ease
+		initialParticleData[PROPERTY_NUM * i + 14] = parseInt(Math.random() * 27); // ease
 		// y
 		initialParticleData[PROPERTY_NUM * i + 16] = 0; // startValue
 		initialParticleData[PROPERTY_NUM * i + 17] = Math.random() * 2 - 1; // endValue
-		initialParticleData[PROPERTY_NUM * i + 18] = parseInt(Math.random()*27); // ease
+		initialParticleData[PROPERTY_NUM * i + 18] = parseInt(Math.random() * 27); // ease
 		// z
 		initialParticleData[PROPERTY_NUM * i + 20] = 0; // startValue
 		initialParticleData[PROPERTY_NUM * i + 21] = Math.random() * 2 - 1; // endValue
-		initialParticleData[PROPERTY_NUM * i + 22] = parseInt(Math.random()*27); // ease
+		initialParticleData[PROPERTY_NUM * i + 22] = parseInt(Math.random() * 27); // ease
 		// scaleX
+		let tScale = Math.random() * 12
 		initialParticleData[PROPERTY_NUM * i + 24] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 25] = 10; // endValue
+		initialParticleData[PROPERTY_NUM * i + 25] = tScale; // endValue
 		initialParticleData[PROPERTY_NUM * i + 26] = 0; // ease
 		// scaleY
 		initialParticleData[PROPERTY_NUM * i + 28] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 29] = 10; // endValue
+		initialParticleData[PROPERTY_NUM * i + 29] = tScale; // endValue
 		initialParticleData[PROPERTY_NUM * i + 30] = 0; // ease
 		// scaleZ
 		initialParticleData[PROPERTY_NUM * i + 32] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 33] = 10; // endValue
+		initialParticleData[PROPERTY_NUM * i + 33] = tScale; // endValue
 		initialParticleData[PROPERTY_NUM * i + 34] = 0; // ease
 		// alpha
-		initialParticleData[PROPERTY_NUM * i + 36] = 1; // startValue
+		initialParticleData[PROPERTY_NUM * i + 36] = Math.min(Math.random()); // startValue
 		initialParticleData[PROPERTY_NUM * i + 37] = 0; // endValue
-		initialParticleData[PROPERTY_NUM * i + 38] = parseInt(Math.random()*27); // ease
+		initialParticleData[PROPERTY_NUM * i + 38] = parseInt(Math.random() * 27); // ease
 		initialParticleData[PROPERTY_NUM * i + 39] = 0; // value
 
 	}
@@ -306,21 +306,16 @@ async function init(glslang) {
 		)
 	);
 
-	const particleBuffers = new Array(2);
-	const particleBindGroups = new Array(2);
-	for (let i = 0; i < 2; ++i) {
-		particleBuffers[i] = device.createBuffer({
-			size: initialParticleData.byteLength,
-			usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE
-		});
-		particleBuffers[i].setSubData(0, initialParticleData);
-	}
+	const particleBuffer = device.createBuffer({
+		size: initialParticleData.byteLength,
+		usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE
+	});
+	particleBuffer.setSubData(0, initialParticleData);
 
 	const computeBindGroupLayout = device.createBindGroupLayout({
 		bindings: [
 			{binding: 0, visibility: GPUShaderStage.COMPUTE, type: "uniform-buffer"},
-			{binding: 1, visibility: GPUShaderStage.COMPUTE, type: "storage-buffer"},
-			{binding: 2, visibility: GPUShaderStage.COMPUTE, type: "storage-buffer"},
+			{binding: 1, visibility: GPUShaderStage.COMPUTE, type: "storage-buffer"}
 		],
 	});
 
@@ -328,10 +323,10 @@ async function init(glslang) {
 		bindGroupLayouts: [computeBindGroupLayout],
 	});
 
-	for (let i = 0; i < 2; ++i) {
-		particleBindGroups[i] = device.createBindGroup({
-			layout: computeBindGroupLayout,
-			bindings: [{
+	const particleBindGroup = device.createBindGroup({
+		layout: computeBindGroupLayout,
+		bindings: [
+			{
 				binding: 0,
 				resource: {
 					buffer: simParamBuffer,
@@ -339,24 +334,16 @@ async function init(glslang) {
 					size: simParamData.byteLength
 				},
 			},
-				{
-					binding: 1,
-					resource: {
-						buffer: particleBuffers[i],
-						offset: 0,
-						size: initialParticleData.byteLength,
-					},
+			{
+				binding: 1,
+				resource: {
+					buffer: particleBuffer,
+					offset: 0,
+					size: initialParticleData.byteLength,
 				},
-				{
-					binding: 2,
-					resource: {
-						buffer: particleBuffers[(i + 1) % 2],
-						offset: 0,
-						size: initialParticleData.byteLength,
-					},
-				}],
-		});
-	}
+			}
+		],
+	});
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -518,16 +505,16 @@ async function init(glslang) {
 		{
 			const passEncoder = commandEncoder.beginComputePass();
 			passEncoder.setPipeline(computePipeline);
-			passEncoder.setBindGroup(0, particleBindGroups[0]);
+			passEncoder.setBindGroup(0, particleBindGroup);
 			passEncoder.dispatch(PARTICLE_NUM);
 			passEncoder.endPass();
 		}
 		{
 			const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-			passEncoder.setViewport(0, 0, 1280, 1280, 0, 1);
-			passEncoder.setScissorRect(0, 0, 1280, 1280);
+			// passEncoder.setViewport(0, 0, 976, 976, 0, 1);
+			// passEncoder.setScissorRect(0, 0, 976, 976);
 			passEncoder.setPipeline(renderPipeline);
-			passEncoder.setVertexBuffer(0, particleBuffers[0]);
+			passEncoder.setVertexBuffer(0, particleBuffer);
 			passEncoder.setVertexBuffer(1, vertexBuffer);
 			passEncoder.setBindGroup(0, uniformBindGroup);
 			passEncoder.draw(6, PARTICLE_NUM, 0, 0);
