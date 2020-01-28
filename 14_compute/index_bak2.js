@@ -2,21 +2,25 @@ const ready = glslang();
 ready.then(init);
 const vertexShaderGLSL = `
 	#version 450
-    layout(location = 0) in vec3 position;
-    layout(location = 1) in vec3 scale;
-    layout(location = 2) in float alpha;
-    layout(location = 3) in vec4 a_pos;
-    layout(location = 4) in vec2 a_uv;
+	layout(location = 0) in float startTime;
+	layout(location = 1) in float easeType;
+    layout(location = 2) in float life;
+    layout(location = 3) in float age;
+    layout(location = 4) in float particleX;
+    layout(location = 5) in float particleY;
+    layout(location = 6) in float particleZ;
+    layout(location = 7) in float movementX;
+    layout(location = 8) in float movementY;
+    layout(location = 9) in float movementZ;
+    layout(location = 10) in float alpha;
+    layout(location = 11) in float alphaEnd;
+    layout(location = 12) in vec3 scaleInfo;
+    layout(location = 13) in vec4 a_pos;
+    layout(location = 14) in vec2 a_uv;
     layout(location = 0) out vec2 tUV;
     layout(location = 1) out float vAlpha;
 	void main() {
-		mat4 scaleMTX = mat4(
-			scale.x, 0, 0, 0,
-			0, scale.y, 0, 0,
-			0, 0, scale.z, 0,
-			position, 1
-		);
-		gl_Position = scaleMTX * vec4(a_pos.xyz , 1);
+		gl_Position = vec4(a_pos.xyz * scaleInfo.x  + vec3(particleX, particleY, particleZ), 1);
 		tUV = a_uv;
 		vAlpha = alpha;
 	}
@@ -33,36 +37,40 @@ const fragmentShaderGLSL = `
 		outColor.a *= vAlpha;
 	}
 `;
-const PARTICLE_NUM = 10000
+const PARTICLE_NUM = 1000
 const computeShader = `
 	#version 450
 	// 파티클 구조체 선언
-	struct Info {
-		float startValue;
-		float endValue;
-		float easeType;
-		float value;
-	};
-	struct InfoGroup {
-		Info infoX;
-		Info infoY;
-		Info infoZ;
-	};
 	struct Particle {
 		float startTime;
+	    float easeType;
 	    float life;
-	    vec4 valuePosition;
-	    vec4 valueScale;
-	    InfoGroup infoPosition;
-	    InfoGroup infoScale;
-	    Info infoAlpha;
+	    float age;
+	    float particleX;
+	    float particleY;
+	    float particleZ;
+	    float movementX;
+	    float movementY;
+	    float movementZ;
+	    float alpha;
+	    float alphaEnd;
+	    vec3 scaleInfo;
 	};
 	
 	// 이건 설정값인듯 하고
 	layout(std140, set = 0, binding = 0) uniform SimParams {
 	    float time;
-	    float minLife;
-	    float maxLife;
+	    float easeType;
+	    float life;
+	    float age;
+	    float particleX;
+	    float particleY;
+	    float particleZ;
+	    float movementX;
+	    float movementY;
+	    float movementZ;
+	    float alpha;
+	    float alphaEnd;
 	} params;
 	
 	// 여기다 쓰곘다는건가	
@@ -75,37 +83,30 @@ const computeShader = `
 	    Particle particles[${PARTICLE_NUM}];
 	} particlesB;
 
-	float rand(vec2 co)
-	{
-	    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-	}
 	void main() {
 		uint index = gl_GlobalInvocationID.x;
 		Particle targetParticle = particlesA.particles[index];
 	
+		vec3 movement = vec3(
+			targetParticle.movementX,
+			targetParticle.movementY,
+			targetParticle.movementZ
+		);
 		float n;
 		float age = params.time - targetParticle.startTime;
 		float lifeRatio = age/targetParticle.life;
 		if(lifeRatio>=1) {
 			particlesA.particles[index].startTime = params.time;
-			float t0 = rand(vec2(params.minLife,params.maxLife)+params.time)*params.maxLife;
-			t0 = max(params.minLife,t0);
-			particlesA.particles[index].life = t0;
 			lifeRatio = 0;
 		}
 		n = lifeRatio;
 		n =  ((n = n * 2) < 1) ? n * n * n * n * n * 0.5 : 0.5 * ((n -= 2) * n * n * n * n + 2);	
-		
-		particlesA.particles[index].valuePosition.x = targetParticle.infoPosition.infoX.startValue +  (targetParticle.infoPosition.infoX.endValue - targetParticle.infoPosition.infoX.startValue) * n;
-		particlesA.particles[index].valuePosition.y = targetParticle.infoPosition.infoX.startValue +  (targetParticle.infoPosition.infoY.endValue - targetParticle.infoPosition.infoY.startValue) * n;
-		particlesA.particles[index].valuePosition.z = targetParticle.infoPosition.infoX.startValue +  (targetParticle.infoPosition.infoZ.endValue - targetParticle.infoPosition.infoZ.startValue) * n;
-		
-		particlesA.particles[index].valueScale.x = targetParticle.infoScale.infoX.startValue + (targetParticle.infoScale.infoX.endValue - targetParticle.infoScale.infoX.startValue) * n;
-		particlesA.particles[index].valueScale.y = targetParticle.infoScale.infoY.startValue + (targetParticle.infoScale.infoY.endValue - targetParticle.infoScale.infoY.startValue) * n;
-		particlesA.particles[index].valueScale.z = targetParticle.infoScale.infoZ.startValue +  (targetParticle.infoScale.infoZ.endValue - targetParticle.infoScale.infoZ.startValue) * n;
-		
-		particlesA.particles[index].infoAlpha.value = targetParticle.infoAlpha.startValue +  (targetParticle.infoAlpha.endValue - targetParticle.infoAlpha.startValue) * n;
-
+		particlesA.particles[index].particleX = movement.x * n;
+		particlesA.particles[index].particleY = movement.y * n;
+		particlesA.particles[index].particleZ = movement.z * n;
+		particlesA.particles[index].scaleInfo.x = targetParticle.scaleInfo.y + (targetParticle.scaleInfo.z-targetParticle.scaleInfo.y) * n;
+		particlesA.particles[index].alpha = 1-targetParticle.alphaEnd * n;
+	
 	}
 `
 
@@ -126,7 +127,6 @@ async function init(glslang) {
 	const cvs = document.createElement('canvas');
 	cvs.width = 768;
 	cvs.height = 768;
-	cvs.style.cssText = 'width:768px;height:768px'
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent');
 
@@ -143,7 +143,15 @@ async function init(glslang) {
 	let simParamData = new Float32Array(
 		[
 			performance.now(), // startTime time
-			2000, 20000 // lifeRange
+			0, // type of ease
+			2000, // life
+			0, // age
+			0, // x
+			0, // y
+			0, // z
+			0.01, // movementX
+			0.01, // movementY
+			0.01 // movementZ
 		]
 	)
 
@@ -151,53 +159,30 @@ async function init(glslang) {
 		device,
 		simParamData
 	);
-	const PROPERTY_NUM = 40
+	const PROPERTY_NUM = 16
 	const initialParticleData = new Float32Array(PARTICLE_NUM * PROPERTY_NUM);
 	const currentTime = performance.now();
 	for (let i = 0; i < PARTICLE_NUM; ++i) {
-		let life = Math.random() * 18000 + 2000;
+		let life = Math.random() * 7000 + 2000;
 		let age = Math.random() * life;
 		initialParticleData[PROPERTY_NUM * i + 0] = currentTime - age // start time
-		initialParticleData[PROPERTY_NUM * i + 1] = life; // life
-		// position
+		initialParticleData[PROPERTY_NUM * i + 1] = 0 // typeof ease
+		initialParticleData[PROPERTY_NUM * i + 2] = life; // life
+		initialParticleData[PROPERTY_NUM * i + 3] = age; // age of particle;
+		//
 		initialParticleData[PROPERTY_NUM * i + 4] = Math.random() * 2 - 1; // x
 		initialParticleData[PROPERTY_NUM * i + 5] = Math.random() * 2 - 1; // y
 		initialParticleData[PROPERTY_NUM * i + 6] = Math.random() * 2 - 1; // z
-		initialParticleData[PROPERTY_NUM * i + 7] = 0;
-		// scale
-		initialParticleData[PROPERTY_NUM * i + 8] = 0; // scaleX
-		initialParticleData[PROPERTY_NUM * i + 9] = 0; // scaleY
-		initialParticleData[PROPERTY_NUM * i + 10] = 0; // scaleZ
-		initialParticleData[PROPERTY_NUM * i + 11] = 0;
-		// x
-		initialParticleData[PROPERTY_NUM * i + 12] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 13] = Math.random() * 2 - 1; // endValue
-		initialParticleData[PROPERTY_NUM * i + 14] = 0; // ease
-		// y
-		initialParticleData[PROPERTY_NUM * i + 16] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 17] = Math.random() * 2 - 1; // endValue
-		initialParticleData[PROPERTY_NUM * i + 18] = 0; // ease
-		// z
-		initialParticleData[PROPERTY_NUM * i + 20] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 21] = Math.random() * 2 - 1; // endValue
-		initialParticleData[PROPERTY_NUM * i + 22] = 0; // ease
-		// scaleX
-		initialParticleData[PROPERTY_NUM * i + 24] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 25] = 25; // endValue
-		initialParticleData[PROPERTY_NUM * i + 26] = 0; // ease
-		// scaleY
-		initialParticleData[PROPERTY_NUM * i + 28] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 29] = 25; // endValue
-		initialParticleData[PROPERTY_NUM * i + 30] = 0; // ease
-		// scaleZ
-		initialParticleData[PROPERTY_NUM * i + 32] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 33] = 25; // endValue
-		initialParticleData[PROPERTY_NUM * i + 34] = 0; // ease
-		// alpha
-		initialParticleData[PROPERTY_NUM * i + 36] = 1; // startValue
-		initialParticleData[PROPERTY_NUM * i + 37] = 0; // endValue
-		initialParticleData[PROPERTY_NUM * i + 38] = 0; // ease
-		initialParticleData[PROPERTY_NUM * i + 39] = 0; // value
+		initialParticleData[PROPERTY_NUM * i + 7] = Math.random() * 2 - 1; // movementX
+		initialParticleData[PROPERTY_NUM * i + 8] = Math.random() * 2 - 1; // movementY
+		initialParticleData[PROPERTY_NUM * i + 9] = Math.random() * 2 - 1; // movementZ
+		//
+		initialParticleData[PROPERTY_NUM * i + 10] = 1; // alpha
+		initialParticleData[PROPERTY_NUM * i + 11] = 1; // alpha change
+		//
+		initialParticleData[PROPERTY_NUM * i + 12] = 1; // scale
+		initialParticleData[PROPERTY_NUM * i + 13] = 10; // scaleStart
+		initialParticleData[PROPERTY_NUM * i + 14] = 50; // scaleEnd
 
 	}
 
@@ -308,7 +293,6 @@ async function init(glslang) {
 	 * 텍스쳐를 만들어보자
 	 */
 	const testTexture = await createTextureFromImage(device, '../assets/particle.png', GPUTextureUsage.SAMPLED);
-	// const testTexture = await createTextureFromImage(device, '../assets/crate.png', GPUTextureUsage.SAMPLED);
 	const testSampler = device.createSampler({
 		magFilter: "linear",
 		minFilter: "linear",
@@ -358,18 +342,57 @@ async function init(glslang) {
 					stepMode: "instance",
 					attributes: [
 						{
-							/* position*/
-							shaderLocation: 0, offset: 4 * 4, format: "float3"
+							/* startTime*/
+							shaderLocation: 0, offset: 0, format: "float"
 						},
 						{
-							/* scale*/
-							shaderLocation: 1, offset: 8 * 4, format: "float3"
+							/* easeType*/
+							shaderLocation: 1, offset: 1 * 4, format: "float"
+						},
+						{
+							/* life*/
+							shaderLocation: 2, offset: 2 * 4, format: "float"
+						},
+						{
+							/* age*/
+							shaderLocation: 3, offset: 3 * 4, format: "float"
+						},
+						{
+							/* particleX*/
+							shaderLocation: 4, offset: 4 * 4, format: "float"
+						},
+						{
+							/* particleY*/
+							shaderLocation: 5, offset: 5 * 4, format: "float"
+						},
+						{
+							/* particleZ*/
+							shaderLocation: 6, offset: 6 * 4, format: "float"
+						},
+						{
+							/* movementX*/
+							shaderLocation: 7, offset: 7 * 4, format: "float"
+						},
+						{
+							/* movementY*/
+							shaderLocation: 8, offset: 8 * 4, format: "float"
+						},
+						{
+							/* movementZ*/
+							shaderLocation: 9, offset: 9 * 4, format: "float"
 						},
 						{
 							/* alpha*/
-							shaderLocation: 2, offset: 39 * 4, format: "float"
+							shaderLocation: 10, offset: 10 * 4, format: "float"
+						},
+						{
+							/* alphaEnd*/
+							shaderLocation: 11, offset: 11 * 4, format: "float"
+						},
+						{
+							/* scale*/
+							shaderLocation: 12, offset: 12 * 4, format: "float3"
 						}
-
 					]
 				},
 				{
@@ -379,13 +402,13 @@ async function init(glslang) {
 					attributes: [
 						{
 							// vertex positions
-							shaderLocation: 3,
+							shaderLocation: 13,
 							offset: 0,
 							format: "float4",
 						},
 						{
 							// vertex uv
-							shaderLocation: 4,
+							shaderLocation: 14,
 							offset: 4 * 4,
 							format: "float2"
 						}
@@ -514,6 +537,7 @@ async function createTextureFromImage(device, src, usage) {
 	const imageCanvas = document.createElement('canvas');
 	imageCanvas.width = img.width;
 	imageCanvas.height = img.height;
+	imageCanvas.style.cssText = 'width:768px;height:768px'
 
 	const imageCanvasContext = imageCanvas.getContext('2d');
 	imageCanvasContext.translate(0, img.height);
