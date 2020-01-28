@@ -30,10 +30,11 @@ const fragmentShaderGLSL = `
 	layout(location = 0) out vec4 outColor;
 	void main() {
 		outColor =  texture(sampler2D(uTexture, uSampler), tUV);
+		outColor.rgb = mix(outColor.rgb,vec3(vAlpha,0,0),1-vAlpha);
 		outColor.a *= vAlpha;
 	}
 `;
-const PARTICLE_NUM = 10000
+const PARTICLE_NUM = 50000
 const computeShader = `
 	#version 450
 	// 파티클 구조체 선언
@@ -79,6 +80,79 @@ const computeShader = `
 	{
 	    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 	}
+	const float PI = 3.141592653589793;
+	const float HPI = PI * 0.5;
+	const float PI2 = PI * 2;
+	float calEasing(float n, float type){
+		switch( int(type) ){
+			// linear
+			case 0 : break;
+			// QuintIn
+			case 1 : n = n * n * n * n * n; break;
+			// QuintOut
+			case 2 : n = ((n -= 1) * n * n * n * n) + 1; break;
+			// QuintInOut
+			case 3 : n = ((n = n * 2) < 1) ? n * n * n * n * n * 0.5 : 0.5 * ((n -= 2) * n * n * n * n + 2); break;
+			////////////////////////
+			// BackIn
+			case 4 : n = n * n * (n * 1.70158 + n - 1.70158); break;
+			// BackOut
+			case 5 : n = (n -= 1) * n * (n * 1.70158 + n + 1.70158) + 1; break;
+			// BackInOut
+			case 6 : n = ((n = n * 2) < 1) ? 0.5 * n * n * (n * 1.70158 + n - 1.70158) : 0.5 * (n -= 2) * n * (n * 1.70158 + n + 1.70158) + 1; break;
+			////////////////////////
+			// CircIn
+			case 7 : n = -1 * (sqrt(1 - n * n) - 1); break;
+			// CircOut
+			case 8 : n = sqrt(1 - (n -= 1) * n); break;
+			// CircInOut
+			case 9 : n = ((n = n * 2) < 1) ? -0.5 * (sqrt(1 - n * n) - 1) : 0.5 * sqrt(1 - (n -= 2) * n) + 0.5; break;
+			////////////////////////
+			// CubicIn
+			case 10 : n = n * n * n; break;
+			// CubicOut
+			case 11 : n = ((n -= 1) * n * n) + 1; break;
+			// CubicInOut
+			case 12 : n = ((n = n * 2) < 1) ? n * n * n * 0.5 : 0.5 * ((n -= 2) * n * n + 2); break;
+			////////////////////////
+			// ExpoIn
+			case 13 : n = n == 0.0 ? 0.0 : pow(2, 10 * (n - 1)); break;
+			// ExpoOut
+			case 14 : n = n == 1.0 ? 1.0 : -pow(2, -10 * n) + 1; break;
+			// ExpoInOut
+			case 15 : n = ((n = n * 2) < 1) ? (n == 0.0 ? 0.0 : 0.5 * pow(2, 10 * (n - 1))) : (n == 2.0 ? 1.0 : -0.5 * pow(2, -10 * (n - 1)) + 1); break;
+			////////////////////////
+			// QuadIn
+			case 16 : n = n * n; break;
+			// QuadOut
+			case 17 : n = ((2 - n) * n); break;
+			// QuadInOut
+			case 18 : n = ((n = n * 2) < 1) ? n * n * 0.5 : 0.5 * ((2 - (n -= 1)) * n + 1); break;
+			////////////////////////
+			// QuartIn
+			case 19 : n = n * n * n * n; break;
+			// QuartOut
+			case 20 : n = 1 - ((n -= 1) * n * n * n); break;
+			// QuartInOut
+			case 21 : n = ((n = n * 2) < 1) ? n * n * n * n * 0.5 : 1 - ((n -= 2) * n * n * n * 0.5); break;
+			////////////////////////
+			// SineIn
+			case 22 : n = -cos(n * HPI) + 1; break;
+			// SineOut
+			case 23 : n = sin(n * HPI); break;
+			// SineInOut
+			case 24 : n = (-cos(n * PI) + 1) * 0.5; break;
+			////////////////////////
+			// ElasticIn
+			case 25 : n = n == 0.0 ? 0.0 : n == 1.0 ? 1.0 : -1 * pow(2, 10 * (n -= 1)) * sin((n - 0.075) * (PI2) / 0.3); break;
+			// ElasticOut
+			case 26 : n = n == 0.0 ? 0.0 : n == 1.0 ? 1.0 : pow(2, -10 * n) * sin((n - 0.075) * (PI2) / 0.3) + 1; break;
+			// ElasticInOut
+			case 27 : n =( (n == 0.0 ? 0.0 : (n == 1.0 ? 1.0 : n *= 2)), (n < 1) ? -0.5 * pow(2, 10 * (n -= 1)) * sin((n - 0.075) * (PI2) / 0.3) : 0.5 * pow(2, -10 * (n -= 1)) * sin((n - 0.075) * (PI2) / 0.3) + 1); break;
+		}
+		return n;
+	}
+	
 	void main() {
 		uint index = gl_GlobalInvocationID.x;
 		Particle targetParticle = particlesA.particles[index];
@@ -93,17 +167,31 @@ const computeShader = `
 			particlesA.particles[index].life = t0;
 			lifeRatio = 0;
 		}
+		// position
 		n = lifeRatio;
-		n =  ((n = n * 2) < 1) ? n * n * n * n * n * 0.5 : 0.5 * ((n -= 2) * n * n * n * n + 2);	
-		
+		n =  calEasing(n, targetParticle.infoPosition.infoX.easeType);
 		particlesA.particles[index].valuePosition.x = targetParticle.infoPosition.infoX.startValue +  (targetParticle.infoPosition.infoX.endValue - targetParticle.infoPosition.infoX.startValue) * n;
+		n = lifeRatio;
+		n =  calEasing(n, targetParticle.infoPosition.infoY.easeType);;
 		particlesA.particles[index].valuePosition.y = targetParticle.infoPosition.infoX.startValue +  (targetParticle.infoPosition.infoY.endValue - targetParticle.infoPosition.infoY.startValue) * n;
+		n = lifeRatio;
+		n =  calEasing(n, targetParticle.infoPosition.infoZ.easeType);;
 		particlesA.particles[index].valuePosition.z = targetParticle.infoPosition.infoX.startValue +  (targetParticle.infoPosition.infoZ.endValue - targetParticle.infoPosition.infoZ.startValue) * n;
 		
+		// scale
+		n = lifeRatio;
+		n =  calEasing(n, targetParticle.infoScale.infoX.easeType);;
 		particlesA.particles[index].valueScale.x = targetParticle.infoScale.infoX.startValue + (targetParticle.infoScale.infoX.endValue - targetParticle.infoScale.infoX.startValue) * n;
+		n = lifeRatio;
+		n =  calEasing(n, targetParticle.infoScale.infoY.easeType);;
 		particlesA.particles[index].valueScale.y = targetParticle.infoScale.infoY.startValue + (targetParticle.infoScale.infoY.endValue - targetParticle.infoScale.infoY.startValue) * n;
+		n = lifeRatio;
+		n =  calEasing(n, targetParticle.infoScale.infoZ.easeType);;
 		particlesA.particles[index].valueScale.z = targetParticle.infoScale.infoZ.startValue +  (targetParticle.infoScale.infoZ.endValue - targetParticle.infoScale.infoZ.startValue) * n;
 		
+		// alpha
+		n = lifeRatio;
+		n =  calEasing(n, targetParticle.infoAlpha.easeType);;
 		particlesA.particles[index].infoAlpha.value = targetParticle.infoAlpha.startValue +  (targetParticle.infoAlpha.endValue - targetParticle.infoAlpha.startValue) * n;
 
 	}
@@ -124,9 +212,8 @@ async function init(glslang) {
 	// 화면에 표시하기 위해서 캔버스 컨텍스트를 가져오고
 	// 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
 	const cvs = document.createElement('canvas');
-	cvs.width = 768;
-	cvs.height = 768;
-	cvs.style.cssText = 'width:768px;height:768px'
+	cvs.width = 1280;
+	cvs.height = 1280;
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent');
 
@@ -172,31 +259,31 @@ async function init(glslang) {
 		// x
 		initialParticleData[PROPERTY_NUM * i + 12] = 0; // startValue
 		initialParticleData[PROPERTY_NUM * i + 13] = Math.random() * 2 - 1; // endValue
-		initialParticleData[PROPERTY_NUM * i + 14] = 0; // ease
+		initialParticleData[PROPERTY_NUM * i + 14] = parseInt(Math.random()*27); // ease
 		// y
 		initialParticleData[PROPERTY_NUM * i + 16] = 0; // startValue
 		initialParticleData[PROPERTY_NUM * i + 17] = Math.random() * 2 - 1; // endValue
-		initialParticleData[PROPERTY_NUM * i + 18] = 0; // ease
+		initialParticleData[PROPERTY_NUM * i + 18] = parseInt(Math.random()*27); // ease
 		// z
 		initialParticleData[PROPERTY_NUM * i + 20] = 0; // startValue
 		initialParticleData[PROPERTY_NUM * i + 21] = Math.random() * 2 - 1; // endValue
-		initialParticleData[PROPERTY_NUM * i + 22] = 0; // ease
+		initialParticleData[PROPERTY_NUM * i + 22] = parseInt(Math.random()*27); // ease
 		// scaleX
 		initialParticleData[PROPERTY_NUM * i + 24] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 25] = 25; // endValue
+		initialParticleData[PROPERTY_NUM * i + 25] = 10; // endValue
 		initialParticleData[PROPERTY_NUM * i + 26] = 0; // ease
 		// scaleY
 		initialParticleData[PROPERTY_NUM * i + 28] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 29] = 25; // endValue
+		initialParticleData[PROPERTY_NUM * i + 29] = 10; // endValue
 		initialParticleData[PROPERTY_NUM * i + 30] = 0; // ease
 		// scaleZ
 		initialParticleData[PROPERTY_NUM * i + 32] = 0; // startValue
-		initialParticleData[PROPERTY_NUM * i + 33] = 25; // endValue
+		initialParticleData[PROPERTY_NUM * i + 33] = 10; // endValue
 		initialParticleData[PROPERTY_NUM * i + 34] = 0; // ease
 		// alpha
 		initialParticleData[PROPERTY_NUM * i + 36] = 1; // startValue
 		initialParticleData[PROPERTY_NUM * i + 37] = 0; // endValue
-		initialParticleData[PROPERTY_NUM * i + 38] = 0; // ease
+		initialParticleData[PROPERTY_NUM * i + 38] = parseInt(Math.random()*27); // ease
 		initialParticleData[PROPERTY_NUM * i + 39] = 0; // value
 
 	}
@@ -437,8 +524,8 @@ async function init(glslang) {
 		}
 		{
 			const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-			passEncoder.setViewport(0, 0, 768, 768, 0, 1);
-			passEncoder.setScissorRect(0, 0, 768, 768);
+			passEncoder.setViewport(0, 0, 1280, 1280, 0, 1);
+			passEncoder.setScissorRect(0, 0, 1280, 1280);
 			passEncoder.setPipeline(renderPipeline);
 			passEncoder.setVertexBuffer(0, particleBuffers[0]);
 			passEncoder.setVertexBuffer(1, vertexBuffer);
