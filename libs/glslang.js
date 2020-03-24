@@ -104,7 +104,7 @@ let glslang = undefined;
 /* harmony default export */ __webpack_exports__["default"] = (async function() {
 	if (glslang !== undefined) return glslang;
 	// @ts-ignore
-	const glslangModule = await import(/* webpackIgnore: true */ 'https://unpkg.com/@webgpu/glslang@0.0.9/dist/web-devel/glslang.js');
+	const glslangModule = await import(/* webpackIgnore: true */ 'https://unpkg.com/@webgpu/glslang@0.0.15/dist/web-devel/glslang.js');
 	glslang = await glslangModule.default();
 	return glslang;
 });

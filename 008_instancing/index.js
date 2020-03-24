@@ -1,6 +1,6 @@
 const ready = glslang();
 ready.then(init);
-const MAX = 200;
+const MAX = 1000;
 const vertexShaderGLSL = `
 	#version 450
 	#define MAX_NUM_INSTANCES ${MAX}

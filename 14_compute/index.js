@@ -17,7 +17,6 @@ const vertexShaderGLSL = `
 			0, 0, scale.z, 0,
 			position, 1
 		);
-		
 		gl_Position = scaleMTX * vec4(a_pos.x, a_pos.y/ratio, a_pos.z , 1);
 		tUV = a_uv;
 		vAlpha = alpha;
@@ -192,7 +191,6 @@ const computeShader = `
 		n = lifeRatio;
 		n =  calEasing(n, targetParticle.infoAlpha.easeType);;
 		particlesA.particles[index].infoAlpha.value = targetParticle.infoAlpha.startValue +  (targetParticle.infoAlpha.endValue - targetParticle.infoAlpha.startValue) * n;
-
 	}
 `
 
@@ -285,7 +283,6 @@ async function init(glslang) {
 		initialParticleData[PROPERTY_NUM * i + 37] = 0; // endValue
 		initialParticleData[PROPERTY_NUM * i + 38] = parseInt(Math.random() * 27); // ease
 		initialParticleData[PROPERTY_NUM * i + 39] = 0; // value
-
 	}
 
 	// 쉐이더 모듈을 만들었으니  버퍼를 만들어야함

@@ -34,8 +34,9 @@ async function init(glslang) {
 	cvs.height = 768;
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent');
-
-	const swapChainFormat = "bgra8unorm";
+	console.log(cvs)
+	console.log('ctx', ctx);
+	const swapChainFormat = "rgba8unorm";
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
 	console.log('ctx', ctx);
 	console.log('swapChain', swapChain);
@@ -130,8 +131,9 @@ async function init(glslang) {
 function configureSwapChain(device, swapChainFormat, context) {
 	const swapChainDescriptor = {
 		device: device,
-		format: swapChainFormat
+		format: swapChainFormat,
 	};
+	console.log(context)
 	console.log('swapChainDescriptor', swapChainDescriptor);
 	return context.configureSwapChain(swapChainDescriptor);
 }

@@ -29,5 +29,7 @@ These study samples run in Chrome Canary() behind the flag --enable-unsafe-webgp
     - [simple Deferred](https://redcamel.github.io/webgpu/011_simple_defferd)
  - ## PostEffect
     - [simple PostEffect](https://redcamel.github.io/webgpu/010_postEffect)
+- ## Compute
+    - [simple PostEffect](https://redcamel.github.io/webgpu/14_compute)
  - ## RedGPU engine Test
     - [RedGPU - github](https://github.com/redcamel/RedGPU)
