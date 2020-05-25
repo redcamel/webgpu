@@ -447,7 +447,7 @@ async function init(glslang) {
 				height: cvs.height,
 				depth: 1
 			},
-			format: "rgba8unorm",
+			format: "bgra8unorm",
 			usage: GPUTextureUsage.OUTPUT_ATTACHMENT | GPUTextureUsage.SAMPLED
 		}),
 		device.createTexture({
@@ -866,7 +866,7 @@ async function createTextureFromImage(device, src, usage) {
 
 	const textureDescriptor = {
 		dimension: '2d',
-		format: 'rgba8unorm',
+		format: 'bgra8unorm',
 		arrayLayerCount: 1,
 		mipLevelCount: mipMaps + 1,
 		sampleCount: 1,

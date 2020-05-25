@@ -131,7 +131,7 @@ async function init(glslang) {
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent');
 
-	const swapChainFormat = "rgba8unorm";
+	const swapChainFormat = "bgra8unorm";
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
 	console.log('ctx', ctx);
 	console.log('swapChain', swapChain);
@@ -374,7 +374,7 @@ async function init(glslang) {
 		},
 
 		colorStates: [{
-			format: "rgba8unorm",
+			format: "bgra8unorm",
 			colorBlend: {
 				srcFactor: 'src-alpha',
 				dstFactor: 'one',
@@ -523,7 +523,7 @@ async function createTextureFromImage(device, src, usage) {
 			height: img.height,
 			depth: 1,
 		},
-		format: "rgba8unorm",
+		format: "bgra8unorm",
 		usage: GPUTextureUsage.COPY_DST | usage,
 	});
 

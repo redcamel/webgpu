@@ -36,7 +36,7 @@ async function init(glslang) {
 	const ctx = cvs.getContext('gpupresent');
 	console.log(cvs)
 	console.log('ctx', ctx);
-	const swapChainFormat = "rgba8unorm";
+	const swapChainFormat = "bgra8unorm";
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
 	console.log('ctx', ctx);
 	console.log('swapChain', swapChain);

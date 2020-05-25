@@ -355,7 +355,7 @@ async function createTextureFromImage(device, src, usage) {
 			height: img.height,
 			depth: 1,
 		},
-		format: "rgba8unorm",
+		format: "bgra8unorm",
 		usage: GPUTextureUsage.COPY_DST | usage,
 	});
 

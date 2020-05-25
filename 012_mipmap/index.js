@@ -49,7 +49,7 @@ async function init(glslang) {
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent');
 
-	const swapChainFormat = "rgba8unorm";
+	const swapChainFormat = "bgra8unorm";
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
 	console.log('ctx', ctx);
 	console.log('swapChain', swapChain);
@@ -313,7 +313,7 @@ async function createTextureFromImage(device, src, usage) {
 
 	const textureDescriptor = {
 		dimension: '2d',
-		format: 'rgba8unorm',
+		format: 'bgra8unorm',
 		arrayLayerCount: 1,
 		mipLevelCount: mipMaps + 1,
 		sampleCount: 1,
