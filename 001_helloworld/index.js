@@ -18,7 +18,6 @@ const fragmentShaderGLSL = `
 async function init(glslang) {
 	// glslang을 이용하여 GLSL소스를 Uint32Array로 변환합니다.
 	console.log('glslang', glslang);
-
 	// 초기 GPU 권한을 얻어온다.
 	const gpu = navigator['gpu']; //
 	const adapter = await gpu.requestAdapter();
@@ -26,7 +25,6 @@ async function init(glslang) {
 	console.log('gpu', gpu);
 	console.log('adapter', adapter);
 	console.log('device', device);
-
 	// 화면에 표시하기 위해서 캔버스 컨텍스트를 가져오고
 	// 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
 	const cvs = document.createElement('canvas');
@@ -40,11 +38,9 @@ async function init(glslang) {
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
 	console.log('ctx', ctx);
 	console.log('swapChain', swapChain);
-
 	// 쉐이더를 이제 만들어야함.
 	let vShaderModule = makeShaderModule_GLSL(glslang, device, 'vertex', vertexShaderGLSL);
 	let fShaderModule = makeShaderModule_GLSL(glslang, device, 'fragment', fragmentShaderGLSL);
-
 	// 쉐이더 모듈을 만들었으니 버텍스 버퍼를 만들어볼꺼임
 	let vertexBuffer = makeVertexBuffer(
 		device,
@@ -56,7 +52,6 @@ async function init(glslang) {
 			]
 		)
 	);
-
 	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
 	const pipeline = device.createRenderPipeline({
 		// 레이아웃은 아직 뭔지 모르곘고
@@ -104,7 +99,6 @@ async function init(glslang) {
 		};
 		 */
 	});
-
 	let render = function () {
 		const commandEncoder = device.createCommandEncoder();
 		const textureView = swapChain.getCurrentTexture().createView();
@@ -125,7 +119,6 @@ async function init(glslang) {
 		device.defaultQueue.submit([test]);
 	};
 	requestAnimationFrame(render)
-
 }
 
 function configureSwapChain(device, swapChainFormat, context) {
@@ -159,7 +152,7 @@ function makeVertexBuffer(device, data) {
 	};
 	let verticesBuffer = device.createBuffer(bufferDescriptor);
 	console.log('bufferDescriptor', bufferDescriptor);
-	verticesBuffer.setSubData(0, data);
+	device.defaultQueue.writeBuffer(verticesBuffer, 0, data)
 	console.log('verticesBuffer', verticesBuffer);
 	console.log(`// makeVertexBuffer end /////////////////////////////////////////////////////////////`);
 	return verticesBuffer

@@ -53,8 +53,6 @@ async function init(glslang) {
 	console.log('gpu', gpu);
 	console.log('adapter', adapter);
 	console.log('device', device);
-
-
 	// 화면에 표시하기 위해서 캔버스 컨텍스트를 가져오고
 	// 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
 	const cvs = document.createElement('canvas');
@@ -62,16 +60,13 @@ async function init(glslang) {
 	cvs.height = 768;
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent');
-
 	const swapChainFormat = "bgra8unorm";
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
 	console.log('ctx', ctx);
 	console.log('swapChain', swapChain);
-
 	// 쉐이더를 이제 만들어야함.
 	let vShaderModule = makeShaderModule_GLSL(glslang, device, 'vertex', vertexShaderGLSL);
 	let fShaderModule = makeShaderModule_GLSL(glslang, device, 'fragment', fragmentShaderGLSL);
-
 	// 쉐이더 모듈을 만들었으니 버텍스 버퍼를 만들어볼꺼임
 	let vertexBuffer = makeVertexBuffer(
 		device,
@@ -88,13 +83,11 @@ async function init(glslang) {
 			]
 		)
 	);
-
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 프로젝션을 하기위한 유니폼 매트릭스를 넘겨보자
 	// 파이프 라인의 바운딩 레이아웃 리스트에 들어갈 녀석이닷!
 	const uniformsBindGroupLayout = device.createBindGroupLayout({
-		bindings: [
+		entries: [
 			{
 				binding: 0,
 				visibility: GPUShaderStage.VERTEX,
@@ -115,8 +108,8 @@ async function init(glslang) {
 	console.log('uniformsBindGroupLayout', uniformsBindGroupLayout);
 	const MAX = 100;
 	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
-	const offset = 256; // uniformBindGroup offset must be 256-byte aligned
-	const uniformBufferSize = offset * MAX + matrixSize * 2;
+	const offset = Math.max(matrixSize, 256)
+	const uniformBufferSize = offset * MAX;
 	// 유니폼 버퍼를 생성하고
 	const uniformBuffer = await device.createBuffer({
 		size: uniformBufferSize,
@@ -141,10 +134,7 @@ async function init(glslang) {
 		//  };
 	});
 	console.log('cubeTexture', testTexture);
-
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
 	const pipeline = device.createRenderPipeline({
 		// 레이아웃은 아직 뭔지 모르곘고
@@ -218,7 +208,6 @@ async function init(glslang) {
 	let modelMatrix = mat4.create();
 	let aspect = Math.abs(cvs.width / cvs.height);
 	mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
-
 	let childList = [];
 	let i = MAX;
 	while (i--) {
@@ -228,13 +217,13 @@ async function init(glslang) {
 			uniformBuffer: uniformBuffer,
 			uniformBindGroup: device.createBindGroup({
 				layout: uniformsBindGroupLayout,
-				bindings: [
+				entries: [
 					{
 						binding: 0,
 						resource: {
 							buffer: uniformBuffer,
 							offset: i * offset,
-							size: matrixSize
+							size: offset
 						}
 					},
 					{
@@ -258,7 +247,6 @@ async function init(glslang) {
 		format: "depth24plus-stencil8",
 		usage: GPUTextureUsage.OUTPUT_ATTACHMENT
 	});
-
 	let render = async function (time) {
 		const swapChainTexture = swapChain.getCurrentTexture();
 		const commandEncoder = device.createCommandEncoder();
@@ -282,7 +270,6 @@ async function init(glslang) {
 		passEncoder.setIndexBuffer(indexBuffer);
 		passEncoder.setPipeline(pipeline);
 		passEncoder.setScissorRect(0, 0, cvs.width, cvs.height);
-
 		let i = childList.length;
 		let tData;
 		while (i--) {
@@ -298,29 +285,23 @@ async function init(glslang) {
 			///////////////////////////////////////////////////////////////////////////
 			if (i < 2048) {
 				passEncoder.setBindGroup(0, tData['uniformBindGroup']);
-				tData['uniformBuffer'].setSubData(tData['offset'], projectionMatrix);
-				tData['uniformBuffer'].setSubData(tData['offset'] + 4 * 16, modelMatrix);
+				device.defaultQueue.writeBuffer(tData['uniformBuffer'], tData['offset'], projectionMatrix)
+				device.defaultQueue.writeBuffer(tData['uniformBuffer'], tData['offset']+ 4 * 16, modelMatrix)
 				passEncoder.drawIndexed(indexBuffer.pointNum, 1, 0, 0, 0);
 			}
 		}
-
-
 		passEncoder.endPass();
-
-
 		const test = commandEncoder.finish();
 		device.defaultQueue.submit([test]);
 		requestAnimationFrame(render)
 	};
 	requestAnimationFrame(render)
-
 }
 
 function configureSwapChain(device, swapChainFormat, context) {
 	const swapChainDescriptor = {
 		device: device,
 		format: swapChainFormat,
-
 	};
 	console.log('swapChainDescriptor', swapChainDescriptor);
 	return context.configureSwapChain(swapChainDescriptor);
@@ -347,7 +328,7 @@ function makeVertexBuffer(device, data) {
 	};
 	let verticesBuffer = device.createBuffer(bufferDescriptor);
 	console.log('bufferDescriptor', bufferDescriptor);
-	verticesBuffer.setSubData(0, data);
+	device.defaultQueue.writeBuffer(verticesBuffer, 0, data)
 	console.log('verticesBuffer', verticesBuffer);
 	console.log(`// makeVertexBuffer end /////////////////////////////////////////////////////////////`);
 	return verticesBuffer
@@ -360,7 +341,7 @@ function makeIndexBuffer(device, data) {
 	};
 	let indexBuffer = device.createBuffer(indexBufferDescriptor);
 	console.log('bufferDescriptor', indexBufferDescriptor);
-	indexBuffer.setSubData(0, data);
+	device.defaultQueue.writeBuffer(indexBuffer, 0, data)
 	indexBuffer.pointNum = data.length;
 	console.log('indexBuffer', indexBuffer);
 	return indexBuffer
@@ -372,27 +353,23 @@ async function createTextureFromImage(device, src, usage) {
 	console.log('여긴오곘고');
 	img.src = src;
 	await img.decode();
-
 	const imageCanvas = document.createElement('canvas');
 	imageCanvas.width = img.width;
 	imageCanvas.height = img.height;
-
 	const imageCanvasContext = imageCanvas.getContext('2d');
 	imageCanvasContext.translate(0, img.height);
 	imageCanvasContext.scale(1, -1);
 	imageCanvasContext.drawImage(img, 0, 0, img.width, img.height);
 	const imageData = imageCanvasContext.getImageData(0, 0, img.width, img.height);
-
 	let data = null;
-
-	const rowPitch = Math.ceil(img.width * 4 / 256) * 256;
-	if (rowPitch == img.width * 4) {
+	const bytesPerRow = Math.ceil(img.width * 4 / 256) * 256;
+	if (bytesPerRow == img.width * 4) {
 		data = imageData.data;
 	} else {
-		data = new Uint8Array(rowPitch * img.height);
+		data = new Uint8Array(bytesPerRow * img.height);
 		for (let y = 0; y < img.height; ++y) {
 			for (let x = 0; x < img.width; ++x) {
-				let i = x * 4 + y * rowPitch;
+				let i = x * 4 + y * bytesPerRow;
 				data[i] = imageData.data[i];
 				data[i + 1] = imageData.data[i + 1];
 				data[i + 2] = imageData.data[i + 2];
@@ -400,7 +377,6 @@ async function createTextureFromImage(device, src, usage) {
 			}
 		}
 	}
-
 	const texture = device.createTexture({
 		size: {
 			width: img.width,
@@ -410,18 +386,15 @@ async function createTextureFromImage(device, src, usage) {
 		format: "bgra8unorm",
 		usage: GPUTextureUsage.COPY_DST | usage,
 	});
-
 	const textureDataBuffer = device.createBuffer({
 		size: data.byteLength,
 		usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
 	});
-
-	textureDataBuffer.setSubData(0, data);
-
+	device.defaultQueue.writeBuffer(textureDataBuffer, 0, data);
 	const commandEncoder = device.createCommandEncoder({});
 	commandEncoder.copyBufferToTexture({
 		buffer: textureDataBuffer,
-		rowPitch: rowPitch,
+		bytesPerRow: bytesPerRow,
 		imageHeight: 0,
 	}, {
 		texture: texture,
@@ -430,8 +403,6 @@ async function createTextureFromImage(device, src, usage) {
 		height: img.height,
 		depth: 1,
 	});
-
 	device.defaultQueue.submit([commandEncoder.finish()]);
-
 	return texture;
 }

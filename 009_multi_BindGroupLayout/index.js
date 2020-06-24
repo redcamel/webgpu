@@ -24,7 +24,6 @@ const fragmentShaderGLSL = `
 async function init(glslang) {
 	// glslang을 이용하여 GLSL소스를 Uint32Array로 변환합니다.
 	console.log('glslang', glslang);
-
 	// 초기 GPU 권한을 얻어온다.
 	const gpu = navigator['gpu']; //
 	const adapter = await gpu.requestAdapter();
@@ -32,7 +31,6 @@ async function init(glslang) {
 	console.log('gpu', gpu);
 	console.log('adapter', adapter);
 	console.log('device', device);
-
 	// 화면에 표시하기 위해서 캔버스 컨텍스트를 가져오고
 	// 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
 	const cvs = document.createElement('canvas');
@@ -40,16 +38,13 @@ async function init(glslang) {
 	cvs.height = 768;
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent');
-
 	const swapChainFormat = "bgra8unorm";
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
 	console.log('ctx', ctx);
 	console.log('swapChain', swapChain);
-
 	// 쉐이더를 이제 만들어야함.
 	let vShaderModule = makeShaderModule_GLSL(glslang, device, 'vertex', vertexShaderGLSL);
 	let fShaderModule = makeShaderModule_GLSL(glslang, device, 'fragment', fragmentShaderGLSL);
-
 	// 쉐이더 모듈을 만들었으니 버텍스 버퍼를 만들어볼꺼임
 	let vertexBuffer = makeVertexBuffer(
 		device,
@@ -61,12 +56,11 @@ async function init(glslang) {
 			]
 		)
 	);
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 프로젝션을 하기위한 유니폼 매트릭스를 넘겨보자
 	// 파이프 라인의 바운딩 레이아웃 리스트에 들어갈 녀석이닷!
 	const uniformsBindGroupLayout = device.createBindGroupLayout({
-		bindings: [
+		entries: [
 			{
 				binding: 0,
 				visibility: GPUShaderStage.VERTEX,
@@ -81,11 +75,10 @@ async function init(glslang) {
 		size: uniformBufferSize,
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 	});
-
 	console.log('uniformBuffer', uniformBuffer);
 	const uniformBindGroupDescriptor = {
 		layout: uniformsBindGroupLayout,
-		bindings: [
+		entries: [
 			{
 				binding: 0,
 				resource: {
@@ -101,7 +94,7 @@ async function init(glslang) {
 	console.log('uniformBindGroup', uniformBindGroup);
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	const systemUniformsBindGroupLayout = device.createBindGroupLayout({
-		bindings: [
+		entries: [
 			{
 				binding: 0,
 				visibility: GPUShaderStage.VERTEX,
@@ -116,7 +109,7 @@ async function init(glslang) {
 	console.log('systemUniformBuffer', systemUniformBuffer);
 	const systemUniformBindGroupDescriptor = {
 		layout: uniformsBindGroupLayout,
-		bindings: [
+		entries: [
 			{
 				binding: 0,
 				resource: {
@@ -131,7 +124,6 @@ async function init(glslang) {
 	const systemUniformBindGroup = device.createBindGroup(systemUniformBindGroupDescriptor);
 	console.log('systemUniformBindGroup', systemUniformBindGroup);
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
 	const pipeline = device.createRenderPipeline({
 		// 레이아웃은 아직 뭔지 모르곘고
@@ -188,10 +180,7 @@ async function init(glslang) {
 	let modelMatrix = mat4.create();
 	let aspect = Math.abs(cvs.width / cvs.height);
 	mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
-
 	// mat4.multiply(projectionMatrix, projectionMatrix, modelMatrix);
-
-
 	let render = async function (time) {
 		const renderData = {
 			pipeline: pipeline,
@@ -199,7 +188,6 @@ async function init(glslang) {
 			uniformBindGroup: uniformBindGroup,
 			uniformBuffer: uniformBuffer
 		};
-
 		const commandEncoder = device.createCommandEncoder();
 		const textureView = swapChain.getCurrentTexture().createView();
 		// console.log(swapChain.getCurrentTexture())
@@ -211,12 +199,9 @@ async function init(glslang) {
 		};
 		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 		passEncoder.setBindGroup(1, systemUniformBindGroup);
-		systemUniformBuffer.setSubData(0, projectionMatrix);
-
-		
+		device.defaultQueue.writeBuffer(systemUniformBuffer, 0, projectionMatrix);
 		passEncoder.setVertexBuffer(0, renderData['vertexBuffer']);
 		passEncoder.setPipeline(renderData['pipeline']);
-
 		mat4.identity(modelMatrix);
 		mat4.translate(modelMatrix, modelMatrix, [Math.sin(time / 1000), Math.cos(time / 1000), -5]);
 		mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
@@ -224,9 +209,7 @@ async function init(glslang) {
 		mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
 		mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
 		passEncoder.setBindGroup(0, renderData['uniformBindGroup']);
-		renderData['uniformBuffer'].setSubData(0, modelMatrix);
-
-
+		device.defaultQueue.writeBuffer(renderData['uniformBuffer'], 0, modelMatrix);
 		passEncoder.draw(3, 1, 0, 0);
 		passEncoder.endPass();
 		const test = commandEncoder.finish();
@@ -234,7 +217,6 @@ async function init(glslang) {
 		requestAnimationFrame(render)
 	};
 	requestAnimationFrame(render)
-
 }
 
 function configureSwapChain(device, swapChainFormat, context) {
@@ -267,7 +249,7 @@ function makeVertexBuffer(device, data) {
 	};
 	let verticesBuffer = device.createBuffer(bufferDescriptor);
 	console.log('bufferDescriptor', bufferDescriptor);
-	verticesBuffer.setSubData(0, data);
+	device.defaultQueue.writeBuffer(verticesBuffer, 0, data)
 	console.log('verticesBuffer', verticesBuffer);
 	console.log(`// makeVertexBuffer end /////////////////////////////////////////////////////////////`);
 	return verticesBuffer

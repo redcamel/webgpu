@@ -40,8 +40,6 @@ async function init(glslang) {
 	console.log('gpu', gpu);
 	console.log('adapter', adapter);
 	console.log('device', device);
-
-
 	// 화면에 표시하기 위해서 캔버스 컨텍스트를 가져오고
 	// 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
 	const cvs = document.createElement('canvas');
@@ -49,16 +47,13 @@ async function init(glslang) {
 	cvs.height = 768;
 	document.body.appendChild(cvs);
 	const ctx = cvs.getContext('gpupresent');
-
 	const swapChainFormat = "bgra8unorm";
 	const swapChain = configureSwapChain(device, swapChainFormat, ctx);
 	console.log('ctx', ctx);
 	console.log('swapChain', swapChain);
-
 	// 쉐이더를 이제 만들어야함.
 	let vShaderModule = makeShaderModule_GLSL(glslang, device, 'vertex', vertexShaderGLSL);
 	let fShaderModule = makeShaderModule_GLSL(glslang, device, 'fragment', fragmentShaderGLSL);
-
 	// 쉐이더 모듈을 만들었으니 버텍스 버퍼를 만들어볼꺼임
 	let vertexBuffer = makeVertexBuffer(
 		device,
@@ -74,7 +69,6 @@ async function init(glslang) {
 			0, 17, 18, 1, 18, 19, 2, 19, 20, 3, 20, 21, 4, 21, 22, 5, 22, 23, 6, 23, 24, 7, 24, 25, 8, 25, 26, 9, 26, 27, 10, 27, 28, 11, 28, 29, 12, 29, 30, 13, 30, 31, 14, 31, 32, 15, 32, 33, 18, 17, 35, 17, 34, 35, 19, 18, 36, 18, 35, 36, 20, 19, 37, 19, 36, 37, 21, 20, 38, 20, 37, 38, 22, 21, 39, 21, 38, 39, 23, 22, 40, 22, 39, 40, 24, 23, 41, 23, 40, 41, 25, 24, 42, 24, 41, 42, 26, 25, 43, 25, 42, 43, 27, 26, 44, 26, 43, 44, 28, 27, 45, 27, 44, 45, 29, 28, 46, 28, 45, 46, 30, 29, 47, 29, 46, 47, 31, 30, 48, 30, 47, 48, 32, 31, 49, 31, 48, 49, 33, 32, 50, 32, 49, 50, 35, 34, 52, 34, 51, 52, 36, 35, 53, 35, 52, 53, 37, 36, 54, 36, 53, 54, 38, 37, 55, 37, 54, 55, 39, 38, 56, 38, 55, 56, 40, 39, 57, 39, 56, 57, 41, 40, 58, 40, 57, 58, 42, 41, 59, 41, 58, 59, 43, 42, 60, 42, 59, 60, 44, 43, 61, 43, 60, 61, 45, 44, 62, 44, 61, 62, 46, 45, 63, 45, 62, 63, 47, 46, 64, 46, 63, 64, 48, 47, 65, 47, 64, 65, 49, 48, 66, 48, 65, 66, 50, 49, 67, 49, 66, 67, 52, 51, 69, 51, 68, 69, 53, 52, 70, 52, 69, 70, 54, 53, 71, 53, 70, 71, 55, 54, 72, 54, 71, 72, 56, 55, 73, 55, 72, 73, 57, 56, 74, 56, 73, 74, 58, 57, 75, 57, 74, 75, 59, 58, 76, 58, 75, 76, 60, 59, 77, 59, 76, 77, 61, 60, 78, 60, 77, 78, 62, 61, 79, 61, 78, 79, 63, 62, 80, 62, 79, 80, 64, 63, 81, 63, 80, 81, 65, 64, 82, 64, 81, 82, 66, 65, 83, 65, 82, 83, 67, 66, 84, 66, 83, 84, 69, 68, 86, 68, 85, 86, 70, 69, 87, 69, 86, 87, 71, 70, 88, 70, 87, 88, 72, 71, 89, 71, 88, 89, 73, 72, 90, 72, 89, 90, 74, 73, 91, 73, 90, 91, 75, 74, 92, 74, 91, 92, 76, 75, 93, 75, 92, 93, 77, 76, 94, 76, 93, 94, 78, 77, 95, 77, 94, 95, 79, 78, 96, 78, 95, 96, 80, 79, 97, 79, 96, 97, 81, 80, 98, 80, 97, 98, 82, 81, 99, 81, 98, 99, 83, 82, 100, 82, 99, 100, 84, 83, 101, 83, 100, 101, 86, 85, 103, 85, 102, 103, 87, 86, 104, 86, 103, 104, 88, 87, 105, 87, 104, 105, 89, 88, 106, 88, 105, 106, 90, 89, 107, 89, 106, 107, 91, 90, 108, 90, 107, 108, 92, 91, 109, 91, 108, 109, 93, 92, 110, 92, 109, 110, 94, 93, 111, 93, 110, 111, 95, 94, 112, 94, 111, 112, 96, 95, 113, 95, 112, 113, 97, 96, 114, 96, 113, 114, 98, 97, 115, 97, 114, 115, 99, 98, 116, 98, 115, 116, 100, 99, 117, 99, 116, 117, 101, 100, 118, 100, 117, 118, 103, 102, 120, 102, 119, 120, 104, 103, 121, 103, 120, 121, 105, 104, 122, 104, 121, 122, 106, 105, 123, 105, 122, 123, 107, 106, 124, 106, 123, 124, 108, 107, 125, 107, 124, 125, 109, 108, 126, 108, 125, 126, 110, 109, 127, 109, 126, 127, 111, 110, 128, 110, 127, 128, 112, 111, 129, 111, 128, 129, 113, 112, 130, 112, 129, 130, 114, 113, 131, 113, 130, 131, 115, 114, 132, 114, 131, 132, 116, 115, 133, 115, 132, 133, 117, 116, 134, 116, 133, 134, 118, 117, 135, 117, 134, 135, 120, 119, 137, 119, 136, 137, 121, 120, 138, 120, 137, 138, 122, 121, 139, 121, 138, 139, 123, 122, 140, 122, 139, 140, 124, 123, 141, 123, 140, 141, 125, 124, 142, 124, 141, 142, 126, 125, 143, 125, 142, 143, 127, 126, 144, 126, 143, 144, 128, 127, 145, 127, 144, 145, 129, 128, 146, 128, 145, 146, 130, 129, 147, 129, 146, 147, 131, 130, 148, 130, 147, 148, 132, 131, 149, 131, 148, 149, 133, 132, 150, 132, 149, 150, 134, 133, 151, 133, 150, 151, 135, 134, 152, 134, 151, 152, 137, 136, 154, 136, 153, 154, 138, 137, 155, 137, 154, 155, 139, 138, 156, 138, 155, 156, 140, 139, 157, 139, 156, 157, 141, 140, 158, 140, 157, 158, 142, 141, 159, 141, 158, 159, 143, 142, 160, 142, 159, 160, 144, 143, 161, 143, 160, 161, 145, 144, 162, 144, 161, 162, 146, 145, 163, 145, 162, 163, 147, 146, 164, 146, 163, 164, 148, 147, 165, 147, 164, 165, 149, 148, 166, 148, 165, 166, 150, 149, 167, 149, 166, 167, 151, 150, 168, 150, 167, 168, 152, 151, 169, 151, 168, 169, 154, 153, 171, 153, 170, 171, 155, 154, 172, 154, 171, 172, 156, 155, 173, 155, 172, 173, 157, 156, 174, 156, 173, 174, 158, 157, 175, 157, 174, 175, 159, 158, 176, 158, 175, 176, 160, 159, 177, 159, 176, 177, 161, 160, 178, 160, 177, 178, 162, 161, 179, 161, 178, 179, 163, 162, 180, 162, 179, 180, 164, 163, 181, 163, 180, 181, 165, 164, 182, 164, 181, 182, 166, 165, 183, 165, 182, 183, 167, 166, 184, 166, 183, 184, 168, 167, 185, 167, 184, 185, 169, 168, 186, 168, 185, 186, 171, 170, 188, 170, 187, 188, 172, 171, 189, 171, 188, 189, 173, 172, 190, 172, 189, 190, 174, 173, 191, 173, 190, 191, 175, 174, 192, 174, 191, 192, 176, 175, 193, 175, 192, 193, 177, 176, 194, 176, 193, 194, 178, 177, 195, 177, 194, 195, 179, 178, 196, 178, 195, 196, 180, 179, 197, 179, 196, 197, 181, 180, 198, 180, 197, 198, 182, 181, 199, 181, 198, 199, 183, 182, 200, 182, 199, 200, 184, 183, 201, 183, 200, 201, 185, 184, 202, 184, 201, 202, 186, 185, 203, 185, 202, 203, 188, 187, 205, 187, 204, 205, 189, 188, 206, 188, 205, 206, 190, 189, 207, 189, 206, 207, 191, 190, 208, 190, 207, 208, 192, 191, 209, 191, 208, 209, 193, 192, 210, 192, 209, 210, 194, 193, 211, 193, 210, 211, 195, 194, 212, 194, 211, 212, 196, 195, 213, 195, 212, 213, 197, 196, 214, 196, 213, 214, 198, 197, 215, 197, 214, 215, 199, 198, 216, 198, 215, 216, 200, 199, 217, 199, 216, 217, 201, 200, 218, 200, 217, 218, 202, 201, 219, 201, 218, 219, 203, 202, 220, 202, 219, 220, 205, 204, 222, 204, 221, 222, 206, 205, 223, 205, 222, 223, 207, 206, 224, 206, 223, 224, 208, 207, 225, 207, 224, 225, 209, 208, 226, 208, 225, 226, 210, 209, 227, 209, 226, 227, 211, 210, 228, 210, 227, 228, 212, 211, 229, 211, 228, 229, 213, 212, 230, 212, 229, 230, 214, 213, 231, 213, 230, 231, 215, 214, 232, 214, 231, 232, 216, 215, 233, 215, 232, 233, 217, 216, 234, 216, 233, 234, 218, 217, 235, 217, 234, 235, 219, 218, 236, 218, 235, 236, 220, 219, 237, 219, 236, 237, 222, 221, 239, 221, 238, 239, 223, 222, 240, 222, 239, 240, 224, 223, 241, 223, 240, 241, 225, 224, 242, 224, 241, 242, 226, 225, 243, 225, 242, 243, 227, 226, 244, 226, 243, 244, 228, 227, 245, 227, 244, 245, 229, 228, 246, 228, 245, 246, 230, 229, 247, 229, 246, 247, 231, 230, 248, 230, 247, 248, 232, 231, 249, 231, 248, 249, 233, 232, 250, 232, 249, 250, 234, 233, 251, 233, 250, 251, 235, 234, 252, 234, 251, 252, 236, 235, 253, 235, 252, 253, 237, 236, 254, 236, 253, 254, 239, 238, 256, 238, 255, 256, 240, 239, 257, 239, 256, 257, 241, 240, 258, 240, 257, 258, 242, 241, 259, 241, 258, 259, 243, 242, 260, 242, 259, 260, 244, 243, 261, 243, 260, 261, 245, 244, 262, 244, 261, 262, 246, 245, 263, 245, 262, 263, 247, 246, 264, 246, 263, 264, 248, 247, 265, 247, 264, 265, 249, 248, 266, 248, 265, 266, 250, 249, 267, 249, 266, 267, 251, 250, 268, 250, 267, 268, 252, 251, 269, 251, 268, 269, 253, 252, 270, 252, 269, 270, 254, 253, 271, 253, 270, 271, 256, 255, 273, 257, 256, 274, 258, 257, 275, 259, 258, 276, 260, 259, 277, 261, 260, 278, 262, 261, 279, 263, 262, 280, 264, 263, 281, 265, 264, 282, 266, 265, 283, 267, 266, 284, 268, 267, 285, 269, 268, 286, 270, 269, 287, 271, 270, 28
 		])
 	);
-
 	/**
 	 * 텍스쳐를 만들어보자
 	 */
@@ -97,7 +91,7 @@ async function init(glslang) {
 	// 프로젝션을 하기위한 유니폼 매트릭스를 넘겨보자
 	// 파이프 라인의 바운딩 레이아웃 리스트에 들어갈 녀석이닷!
 	const uniformsBindGroupLayout = device.createBindGroupLayout({
-		bindings: [
+		entries: [
 			{
 				binding: 0,
 				visibility: GPUShaderStage.VERTEX,
@@ -116,9 +110,8 @@ async function init(glslang) {
 		]
 	});
 	console.log('uniformsBindGroupLayout', uniformsBindGroupLayout);
-
 	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
-	const uniformBufferSize =  MAX * matrixSize ;
+	const uniformBufferSize = MAX * matrixSize;
 	// 유니폼 버퍼를 생성하고
 	const uniformBuffer = await device.createBuffer({
 		size: uniformBufferSize,
@@ -127,7 +120,7 @@ async function init(glslang) {
 	console.log('uniformBuffer', uniformBuffer);
 	const uniformBindGroup = device.createBindGroup({
 		layout: uniformsBindGroupLayout,
-		bindings: [
+		entries: [
 			{
 				binding: 0,
 				resource: {
@@ -144,10 +137,7 @@ async function init(glslang) {
 			}
 		]
 	});
-
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	// 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
 	const pipeline = device.createRenderPipeline({
 		// 레이아웃은 아직 뭔지 모르곘고
@@ -220,9 +210,8 @@ async function init(glslang) {
 	let projectionMatrix = mat4.create();
 	let aspect = Math.abs(cvs.width / cvs.height);
 	mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 0.1, 100.0);
-
 	let childList = [];
-	let mvpMatricesData = new Float32Array(16*MAX);
+	let mvpMatricesData = new Float32Array(16 * MAX);
 	let i = MAX;
 	while (i--) {
 		childList.push({
@@ -239,7 +228,6 @@ async function init(glslang) {
 		format: "depth24plus-stencil8",
 		usage: GPUTextureUsage.OUTPUT_ATTACHMENT
 	});
-
 	let render = async function (time) {
 		const swapChainTexture = swapChain.getCurrentTexture();
 		const commandEncoder = device.createCommandEncoder();
@@ -258,10 +246,9 @@ async function init(glslang) {
 				stencilStoreOp: "store",
 			}
 		};
-
 		let i = childList.length;
 		let tData;
-		let count =0;
+		let count = 0;
 		while (i--) {
 			tData = childList[i];
 			mat4.identity(tData['modelMatrix']);
@@ -274,35 +261,26 @@ async function init(glslang) {
 			mvpMatricesData.set(tData['modelMatrix'], count);
 			count += 16
 		}
-
-		uniformBuffer.setSubData(0, mvpMatricesData);
-
+		device.defaultQueue.writeBuffer(uniformBuffer, 0, mvpMatricesData);
 		const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 		passEncoder.setVertexBuffer(0, vertexBuffer);
 		passEncoder.setIndexBuffer(indexBuffer);
 		passEncoder.setPipeline(pipeline);
 		passEncoder.setScissorRect(0, 0, cvs.width, cvs.height);
-
 		passEncoder.setBindGroup(0, uniformBindGroup);
 		passEncoder.drawIndexed(indexBuffer.pointNum, MAX, 0, 0, 0);
-
-
 		passEncoder.endPass();
-
-
 		const test = commandEncoder.finish();
 		device.defaultQueue.submit([test]);
 		requestAnimationFrame(render)
 	};
 	requestAnimationFrame(render)
-
 }
 
 function configureSwapChain(device, swapChainFormat, context) {
 	const swapChainDescriptor = {
 		device: device,
 		format: swapChainFormat,
-
 	};
 	console.log('swapChainDescriptor', swapChainDescriptor);
 	return context.configureSwapChain(swapChainDescriptor);
@@ -329,7 +307,7 @@ function makeVertexBuffer(device, data) {
 	};
 	let verticesBuffer = device.createBuffer(bufferDescriptor);
 	console.log('bufferDescriptor', bufferDescriptor);
-	verticesBuffer.setSubData(0, data);
+	device.defaultQueue.writeBuffer(verticesBuffer, 0, data)
 	console.log('verticesBuffer', verticesBuffer);
 	console.log(`// makeVertexBuffer end /////////////////////////////////////////////////////////////`);
 	return verticesBuffer
@@ -342,7 +320,7 @@ function makeIndexBuffer(device, data) {
 	};
 	let indexBuffer = device.createBuffer(indexBufferDescriptor);
 	console.log('bufferDescriptor', indexBufferDescriptor);
-	indexBuffer.setSubData(0, data);
+	device.defaultQueue.writeBuffer(indexBuffer, 0, data)
 	indexBuffer.pointNum = data.length;
 	console.log('indexBuffer', indexBuffer);
 	return indexBuffer
@@ -354,27 +332,23 @@ async function createTextureFromImage(device, src, usage) {
 	console.log('여긴오곘고');
 	img.src = src;
 	await img.decode();
-
 	const imageCanvas = document.createElement('canvas');
 	imageCanvas.width = img.width;
 	imageCanvas.height = img.height;
-
 	const imageCanvasContext = imageCanvas.getContext('2d');
 	imageCanvasContext.translate(0, img.height);
 	imageCanvasContext.scale(1, -1);
 	imageCanvasContext.drawImage(img, 0, 0, img.width, img.height);
 	const imageData = imageCanvasContext.getImageData(0, 0, img.width, img.height);
-
 	let data = null;
-
-	const rowPitch = Math.ceil(img.width * 4 / 256) * 256;
-	if (rowPitch == img.width * 4) {
+	const bytesPerRow = Math.ceil(img.width * 4 / 256) * 256;
+	if (bytesPerRow == img.width * 4) {
 		data = imageData.data;
 	} else {
-		data = new Uint8Array(rowPitch * img.height);
+		data = new Uint8Array(bytesPerRow * img.height);
 		for (let y = 0; y < img.height; ++y) {
 			for (let x = 0; x < img.width; ++x) {
-				let i = x * 4 + y * rowPitch;
+				let i = x * 4 + y * bytesPerRow;
 				data[i] = imageData.data[i];
 				data[i + 1] = imageData.data[i + 1];
 				data[i + 2] = imageData.data[i + 2];
@@ -382,7 +356,6 @@ async function createTextureFromImage(device, src, usage) {
 			}
 		}
 	}
-
 	const texture = device.createTexture({
 		size: {
 			width: img.width,
@@ -392,18 +365,15 @@ async function createTextureFromImage(device, src, usage) {
 		format: "bgra8unorm",
 		usage: GPUTextureUsage.COPY_DST | usage,
 	});
-
 	const textureDataBuffer = device.createBuffer({
 		size: data.byteLength,
 		usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
 	});
-
-	textureDataBuffer.setSubData(0, data);
-
+	device.defaultQueue.writeBuffer(textureDataBuffer, 0, data);
 	const commandEncoder = device.createCommandEncoder({});
 	commandEncoder.copyBufferToTexture({
 		buffer: textureDataBuffer,
-		rowPitch: rowPitch,
+		bytesPerRow: bytesPerRow,
 		imageHeight: 0,
 	}, {
 		texture: texture,
@@ -412,8 +382,6 @@ async function createTextureFromImage(device, src, usage) {
 		height: img.height,
 		depth: 1,
 	});
-
 	device.defaultQueue.submit([commandEncoder.finish()]);
-
 	return texture;
 }

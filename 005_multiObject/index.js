@@ -78,7 +78,7 @@ async function init(glslang) {
 	// 프로젝션을 하기위한 유니폼 매트릭스를 넘겨보자
 	// 파이프 라인의 바운딩 레이아웃 리스트에 들어갈 녀석이닷!
 	const uniformsBindGroupLayout = device.createBindGroupLayout({
-		bindings: [
+		entries : [
 			{
 				binding: 0,
 				visibility: GPUShaderStage.VERTEX,
@@ -99,8 +99,8 @@ async function init(glslang) {
 	console.log('uniformsBindGroupLayout', uniformsBindGroupLayout);
 	const MAX = 2000;
 	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
-	const offset = 256; // uniformBindGroup offset must be 256-byte aligned
-	const uniformBufferSize = offset * MAX + matrixSize * 2;
+	const offset = Math.max(matrixSize,256)
+	const uniformBufferSize = offset * MAX;
 	// 유니폼 버퍼를 생성하고
 	const uniformBuffer = await device.createBuffer({
 		size: uniformBufferSize,
@@ -207,13 +207,13 @@ async function init(glslang) {
 			uniformBuffer: uniformBuffer,
 			uniformBindGroup: device.createBindGroup({
 				layout: uniformsBindGroupLayout,
-				bindings: [
+				entries : [
 					{
 						binding: 0,
 						resource: {
 							buffer: uniformBuffer,
 							offset: i * offset,
-							size: matrixSize
+							size: offset
 						}
 					},
 					{
@@ -259,8 +259,8 @@ async function init(glslang) {
 			///////////////////////////////////////////////////////////////////////////
 			if (i < 2048) {
 				passEncoder.setBindGroup(0, tData['uniformBindGroup']);
-				tData['uniformBuffer'].setSubData(tData['offset'], projectionMatrix);
-				tData['uniformBuffer'].setSubData(tData['offset'] + 4 * 16, modelMatrix);
+				device.defaultQueue.writeBuffer(tData['uniformBuffer'], tData['offset'], projectionMatrix)
+				device.defaultQueue.writeBuffer(tData['uniformBuffer'], tData['offset'] + 4 * 16, modelMatrix)
 				passEncoder.draw(6, 1, 0, 0);
 			}
 		}
@@ -308,7 +308,7 @@ function makeVertexBuffer(device, data) {
 	};
 	let verticesBuffer = device.createBuffer(bufferDescriptor);
 	console.log('bufferDescriptor', bufferDescriptor);
-	verticesBuffer.setSubData(0, data);
+	device.defaultQueue.writeBuffer(verticesBuffer,0, data);
 	console.log('verticesBuffer', verticesBuffer);
 	console.log(`// makeVertexBuffer end /////////////////////////////////////////////////////////////`);
 	return verticesBuffer
@@ -364,12 +364,11 @@ async function createTextureFromImage(device, src, usage) {
 		usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
 	});
 
-	textureDataBuffer.setSubData(0, data);
-
+	device.defaultQueue.writeBuffer(textureDataBuffer, 0, data)
 	const commandEncoder = device.createCommandEncoder({});
 	commandEncoder.copyBufferToTexture({
 		buffer: textureDataBuffer,
-		rowPitch: rowPitch,
+		bytesPerRow: rowPitch,
 		imageHeight: 0,
 	}, {
 		texture: texture,
