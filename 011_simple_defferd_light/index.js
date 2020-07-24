@@ -249,7 +249,7 @@ async function init(glslang) {
 		]
 	});
 	console.log('uniformsBindGroupLayout', uniformsBindGroupLayout);
-	const MAX = 1000;
+	const MAX = 100;
 	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
 	const offset = Math.max(matrixSize, 256)
 	const uniformBufferSize = offset * MAX;

@@ -117,7 +117,7 @@ async function init(glslang) {
 				binding: 2,
 				visibility: GPUShaderStage.FRAGMENT,
 				type: "sampled-texture",
-				textureDimension: 'cube',
+				viewDimension: 'cube',
 			}
 		]
 	});
@@ -159,7 +159,7 @@ async function init(glslang) {
 				resource: {
 					buffer: uniformBuffer,
 					offset: 0,
-					size: matrixSize
+					size: uniformBufferSize
 				}
 			},
 			{
@@ -355,12 +355,12 @@ async function createTextureFromImage(device, srcList, usage) {
 	const textureExtent = {
 		width: 256,
 		height: 256,
-		depth: 1
+		depth: 6
 	};
 	const textureDescriptor = {
 		dimension: '2d',
 		format: 'bgra8unorm',
-		arrayLayerCount: 6,
+		// arrayLayerCount: 6,
 		mipLevelCount: mipMaps + 1,
 		sampleCount: 1,
 		size: textureExtent,
@@ -432,12 +432,14 @@ async function createTextureFromImage(device, srcList, usage) {
 		const bufferView = {
 			buffer: textureDataBuffer,
 			bytesPerRow: bytesPerRow,
-			imageHeight: height,
+			rowsPerImage: height,
 		};
 		const textureView = {
 			texture: cubeTexture,
 			mipLevel: mip,
-			arrayLayer: Math.max(face, 0),
+			origin: {
+				z : Math.max(face, 0)
+			},
 		};
 		const textureExtent = {
 			width: width,

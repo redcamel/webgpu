@@ -1,6 +1,6 @@
 const ready = glslang();
 ready.then(init);
-const MAX = 1000;
+const MAX = 250;
 const vertexShaderGLSL = `
 	#version 450
 	#define MAX_NUM_INSTANCES ${MAX}
@@ -111,7 +111,8 @@ async function init(glslang) {
 	});
 	console.log('uniformsBindGroupLayout', uniformsBindGroupLayout);
 	const matrixSize = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
-	const uniformBufferSize = MAX * matrixSize;
+
+	const uniformBufferSize = matrixSize * MAX;
 	// 유니폼 버퍼를 생성하고
 	const uniformBuffer = await device.createBuffer({
 		size: uniformBufferSize,
@@ -124,7 +125,8 @@ async function init(glslang) {
 			{
 				binding: 0,
 				resource: {
-					buffer: uniformBuffer
+					buffer: uniformBuffer,
+					size: uniformBufferSize
 				}
 			},
 			{
