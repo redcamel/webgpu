@@ -191,9 +191,11 @@ async function init(glslang) {
   }
   const computeBindGroupLayout = device.createBindGroupLayout({
     entries: [
-      {binding: 0, visibility: GPUShaderStage.COMPUTE,  buffer: {
+      {
+        binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: {
           type: 'uniform',
-        },},
+        },
+      },
       {binding: 1, visibility: GPUShaderStage.COMPUTE, type: "storage-buffer"},
       {binding: 2, visibility: GPUShaderStage.COMPUTE, type: "storage-buffer"},
     ],
@@ -234,13 +236,13 @@ async function init(glslang) {
   // 그리기위해서 파이프 라인이란걸 또만들어야함 -_-;;
   const computePipeline = device.createComputePipeline({
     layout: computePipelineLayout,
-    compute : {
+    compute: {
       module: computeModule,
       entryPoint: "main"
     },
   });
   const depthTexture = device.createTexture({
-    size: {width: cvs.width, height: cvs.height, depth: 1},
+    size: {width: cvs.width, height: cvs.height, depthOrArrayLayers: 1},
     format: "depth24plus-stencil8",
     usage: GPUTextureUsage.RENDER_ATTACHMENT
   });
@@ -256,7 +258,7 @@ async function init(glslang) {
       {
         binding: 1,
         visibility: GPUShaderStage.FRAGMENT,
-        texture : {
+        texture: {
           type: "float"
         }
       }
@@ -265,7 +267,7 @@ async function init(glslang) {
   /**
    * 텍스쳐를 만들어보자
    */
-  const testTexture = await createTextureFromImage(device, '../assets/particle.png', GPUTextureUsage.TEXTURE_BINDING );
+  const testTexture = await createTextureFromImage(device, '../assets/particle.png', GPUTextureUsage.TEXTURE_BINDING);
   const testSampler = device.createSampler({
     magFilter: "linear",
     minFilter: "linear",
@@ -301,6 +303,18 @@ async function init(glslang) {
       targets: [
         {
           format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
         },
       ],
     },
@@ -503,7 +517,7 @@ async function createTextureFromImage(device, src, usage) {
     size: {
       width: img.width,
       height: img.height,
-      depth: 1,
+      depthOrArrayLayers: 1,
     },
     format: "bgra8unorm",
     usage: GPUTextureUsage.COPY_DST | usage,
@@ -523,7 +537,7 @@ async function createTextureFromImage(device, src, usage) {
   }, {
     width: img.width,
     height: img.height,
-    depth: 1,
+    depthOrArrayLayers: 1,
   });
   device.queue.submit([commandEncoder.finish()]);
   return texture;

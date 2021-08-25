@@ -76,7 +76,7 @@ async function init(glslang) {
       {
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-         buffer: {
+        buffer: {
           type: 'uniform',
         },
       },
@@ -90,7 +90,7 @@ async function init(glslang) {
       {
         binding: 2,
         visibility: GPUShaderStage.FRAGMENT,
-        texture : {
+        texture: {
           type: "float"
         }
       }
@@ -108,7 +108,7 @@ async function init(glslang) {
   /**
    * 텍스쳐를 만들어보자
    */
-  const testTexture = await createTextureFromImage(device, '../../assets/crate.png', GPUTextureUsage.TEXTURE_BINDING );
+  const testTexture = await createTextureFromImage(device, '../../assets/crate.png', GPUTextureUsage.TEXTURE_BINDING);
   const testSampler = device.createSampler({
     magFilter: "linear",
     minFilter: "linear",
@@ -188,6 +188,18 @@ async function init(glslang) {
       targets: [
         {
           format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
         },
       ],
     },
@@ -328,7 +340,7 @@ async function createTextureFromImage(device, src, usage) {
     size: {
       width: img.width,
       height: img.height,
-      depth: 1,
+      depthOrArrayLayers: 1,
     },
     format: "rgba8unorm",
     usage: GPUTextureUsage.COPY_DST | usage,
@@ -348,7 +360,7 @@ async function createTextureFromImage(device, src, usage) {
   }, {
     width: img.width,
     height: img.height,
-    depth: 1,
+    depthOrArrayLayers: 1,
   });
   device.queue.submit([commandEncoder.finish()]);
   return texture;

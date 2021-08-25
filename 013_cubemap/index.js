@@ -107,7 +107,7 @@ async function init(glslang) {
       {
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-         buffer: {
+        buffer: {
           type: 'uniform',
         },
       },
@@ -121,10 +121,11 @@ async function init(glslang) {
       {
         binding: 2,
         visibility: GPUShaderStage.FRAGMENT,
-        texture : {
-          type: "float"
+        texture: {
+          type: "float",
+          viewDimension: 'cube',
         },
-        viewDimension: 'cube',
+
       }
     ]
   });
@@ -154,9 +155,8 @@ async function init(glslang) {
       '../assets/crate.png',
       '../assets/crate.png',
       '../assets/crate.png'
-    ], GPUTextureUsage.TEXTURE_BINDING );
+    ], GPUTextureUsage.TEXTURE_BINDING);
   console.log('testTexture', testTexture);
-  console.log(testTexture.createView());
   const testSampler = device.createSampler({});
   const uniformBindGroupDescriptor = {
     layout: uniformsBindGroupLayout,
@@ -231,20 +231,23 @@ async function init(glslang) {
       targets: [
         {
           format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
         },
       ],
     },
     // 컬러모드 지정하고
-    colorStates: [
-      {
-        format: swapChainFormat,
-        alphaBlend: {
-          srcFactor: "src-alpha",
-          dstFactor: "one-minus-src-alpha",
-          operation: "add"
-        }
-      },
-    ],
+
     depthStencil: {
       depthWriteEnabled: true,
       depthCompare: "less",
@@ -272,7 +275,7 @@ async function init(glslang) {
     size: {
       width: cvs.width,
       height: cvs.height,
-      depth: 1
+      depthOrArrayLayers: 1
     },
     format: "depth24plus-stencil8",
     usage: GPUTextureUsage.RENDER_ATTACHMENT
@@ -366,7 +369,7 @@ async function createTextureFromImage(device, srcList, usage) {
   const textureExtent = {
     width: 256,
     height: 256,
-    depth: 6
+    depthOrArrayLayers: 6
   };
   const textureDescriptor = {
     dimension: '2d',
@@ -375,9 +378,10 @@ async function createTextureFromImage(device, srcList, usage) {
     mipLevelCount: mipMaps + 1,
     sampleCount: 1,
     size: textureExtent,
-    usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING  | GPUTextureUsage.COPY_SRC
+    usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC
   };
   const cubeTexture = device.createTexture(textureDescriptor);
+  console.log('cubeTexture', cubeTexture);
   const img = new Image();
   img.src = srcList[0];
   await img.decode();
@@ -404,10 +408,10 @@ async function createTextureFromImage(device, srcList, usage) {
     imageCanvasContext.scale(1, -1);
     imageCanvasContext.drawImage(img, 0, 0, width, height);
     const imageData = imageCanvasContext.getImageData(0, 0, width, height);
-    console.log('imageData', imageData);
+    // console.log('imageData', imageData);
     let data = null;
     const bytesPerRow = Math.ceil(width * 4 / 256) * 256;
-    if (bytesPerRow == width * 4) {
+    if (bytesPerRow === width * 4) {
       data = imageData.data;
       console.log('여기냐', width, data);
     } else {
@@ -455,9 +459,10 @@ async function createTextureFromImage(device, srcList, usage) {
     const textureExtent = {
       width: width,
       height: height,
-      depth: 1
+      depthOrArrayLayers: 1
     };
     const commandEncoder = device.createCommandEncoder({});
+    console.log('흠', bufferView, textureView, textureExtent);
     commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
     device.queue.submit([commandEncoder.finish()]);
     // textureDataBuffer.destroy()
@@ -465,5 +470,6 @@ async function createTextureFromImage(device, srcList, usage) {
   }
 
   cubeTexture.mipMaps = mipMaps;
+  console.log('cubeTexture', cubeTexture);
   return cubeTexture;
 }

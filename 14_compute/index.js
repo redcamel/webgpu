@@ -309,9 +309,11 @@ async function init(glslang) {
           type: 'uniform',
         },
       },
-      {binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: {
+      {
+        binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: {
           type: 'storage',
-        }}
+        }
+      }
     ],
   });
   const computePipelineLayout = device.createPipelineLayout({
@@ -348,7 +350,7 @@ async function init(glslang) {
     },
   });
   const depthTexture = device.createTexture({
-    size: {width: cvs.width, height: cvs.height, depth: 1},
+    size: {width: cvs.width, height: cvs.height, depthOrArrayLayers: 1},
     format: "depth24plus-stencil8",
     usage: GPUTextureUsage.RENDER_ATTACHMENT
   });
@@ -450,7 +452,7 @@ async function init(glslang) {
       targets: [
         {
           format: presentationFormat,
-          blend : {
+          blend: {
             color: {
               srcFactor: 'src-alpha',
               dstFactor: 'one',
@@ -601,7 +603,7 @@ async function createTextureFromImage(device, src, usage) {
     size: {
       width: img.width,
       height: img.height,
-      depth: 1,
+      depthOrArrayLayers: 1,
     },
     format: "rgba8unorm",
     usage: GPUTextureUsage.COPY_DST | usage,
@@ -621,7 +623,7 @@ async function createTextureFromImage(device, src, usage) {
   }, {
     width: img.width,
     height: img.height,
-    depth: 1,
+    depthOrArrayLayers: 1,
   });
   device.queue.submit([commandEncoder.finish()]);
   return texture;

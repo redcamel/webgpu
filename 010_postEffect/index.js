@@ -133,7 +133,7 @@ async function init(glslang) {
       {
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-         buffer: {
+        buffer: {
           type: 'uniform',
         },
       },
@@ -147,7 +147,7 @@ async function init(glslang) {
       {
         binding: 2,
         visibility: GPUShaderStage.FRAGMENT,
-        texture : {
+        texture: {
           type: "float"
         }
       }
@@ -158,7 +158,7 @@ async function init(glslang) {
       {
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-         buffer: {
+        buffer: {
           type: 'uniform',
         },
       },
@@ -172,14 +172,14 @@ async function init(glslang) {
       {
         binding: 2,
         visibility: GPUShaderStage.FRAGMENT,
-        texture : {
+        texture: {
           type: "float"
         }
       },
       {
         binding: 3,
         visibility: GPUShaderStage.VERTEX,
-         buffer: {
+        buffer: {
           type: 'uniform',
         },
       },
@@ -203,7 +203,7 @@ async function init(glslang) {
   /**
    * 텍스쳐를 만들어보자
    */
-  const testTexture = await createTextureFromImage(device, '../assets/crate.png', GPUTextureUsage.TEXTURE_BINDING );
+  const testTexture = await createTextureFromImage(device, '../assets/crate.png', GPUTextureUsage.TEXTURE_BINDING);
   const testSampler = device.createSampler({
     magFilter: "linear",
     minFilter: "linear",
@@ -259,6 +259,18 @@ async function init(glslang) {
       targets: [
         {
           format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
         },
       ],
     },
@@ -319,6 +331,18 @@ async function init(glslang) {
       targets: [
         {
           format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
         },
       ],
     },
@@ -381,11 +405,11 @@ async function init(glslang) {
       })
     });
   }
-  console.log({width: cvs.width, height: cvs.height, depth: 1});
+  console.log({width: cvs.width, height: cvs.height, depthOrArrayLayers: 1});
   const baseTexture = device.createTexture({
-    size: {width: cvs.width, height: cvs.height, depth: 1},
+    size: {width: cvs.width, height: cvs.height, depthOrArrayLayers: 1},
     format: "bgra8unorm",
-    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING ,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING,
   });
   const quadBindGroup = device.createBindGroup({
     layout: uniformsBindGroupLayoutQuad,
@@ -420,7 +444,7 @@ async function init(glslang) {
     size: {
       width: cvs.width,
       height: cvs.height,
-      depth: 1
+      depthOrArrayLayers: 1
     },
     format: "depth24plus-stencil8",
     usage: GPUTextureUsage.RENDER_ATTACHMENT
@@ -453,7 +477,7 @@ async function init(glslang) {
     };
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
     passEncoder.setVertexBuffer(0, vertexBuffer);
-    passEncoder.setIndexBuffer(indexBuffer,'uint32');
+    passEncoder.setIndexBuffer(indexBuffer, 'uint32');
     passEncoder.setPipeline(pipeline);
     passEncoder.setScissorRect(0, 0, cvs.width, cvs.height);
     let i = childList.length;
@@ -486,7 +510,7 @@ async function init(glslang) {
       }, {
         width: cvs.width,
         height: cvs.height,
-        depth: 1,
+        depthOrArrayLayers: 1,
       });
       const commandEncoder_quad = device.createCommandEncoder();
       const passEncoder_quad = commandEncoder_quad.beginRenderPass({
@@ -608,7 +632,7 @@ async function createTextureFromImage(device, src, usage) {
     size: {
       width: img.width,
       height: img.height,
-      depth: 1,
+      depthOrArrayLayers: 1,
     },
     format: "rgba8unorm",
     usage: GPUTextureUsage.COPY_DST | usage,
@@ -628,7 +652,7 @@ async function createTextureFromImage(device, src, usage) {
   }, {
     width: img.width,
     height: img.height,
-    depth: 1,
+    depthOrArrayLayers: 1,
   });
   device.queue.submit([commandEncoder.finish()]);
   return texture;

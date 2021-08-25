@@ -292,36 +292,21 @@ async function init(glslang) {
       targets: [
         {
           format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
         },
       ],
     },
-    // 컬러모드 지정하고
-    colorStates: [
-      {
-        format: swapChainFormat,
-        alphaBlend: {
-          srcFactor: "src-alpha",
-          dstFactor: "one-minus-src-alpha",
-          operation: "add"
-        }
-      },
-      {
-        format: 'rgba32float',
-        alphaBlend: {
-          srcFactor: "src-alpha",
-          dstFactor: "one-minus-src-alpha",
-          operation: "add"
-        }
-      },
-      {
-        format: 'rgba32float',
-        alphaBlend: {
-          srcFactor: "src-alpha",
-          dstFactor: "one-minus-src-alpha",
-          operation: "add"
-        }
-      }
-    ],
     // 드로잉 방법을 결정함
     primitive: {
       topology: 'triangle-list',
@@ -368,20 +353,21 @@ async function init(glslang) {
       targets: [
         {
           format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
         },
       ],
     },
-    // 컬러모드 지정하고
-    colorStates: [
-      {
-        format: swapChainFormat,
-        alphaBlend: {
-          srcFactor: "src-alpha",
-          dstFactor: "one-minus-src-alpha",
-          operation: "add"
-        }
-      }
-    ],
     // 드로잉 방법을 결정함
     primitive: {
       topology: 'triangle-list',
@@ -401,7 +387,7 @@ async function init(glslang) {
       size: {
         width: cvs.width,
         height: cvs.height,
-        depth: 1
+        depthOrArrayLayers: 1
       },
       format: "bgra8unorm",
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
@@ -410,7 +396,7 @@ async function init(glslang) {
       size: {
         width: cvs.width,
         height: cvs.height,
-        depth: 1
+        depthOrArrayLayers: 1
       },
       format: "rgba32float",
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
@@ -419,7 +405,7 @@ async function init(glslang) {
       size: {
         width: cvs.width,
         height: cvs.height,
-        depth: 1
+        depthOrArrayLayers: 1
       },
       format: "rgba32float",
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
@@ -496,7 +482,7 @@ async function init(glslang) {
     size: {
       width: cvs.width,
       height: cvs.height,
-      depth: 1
+      depthOrArrayLayers: 1
     },
     format: "depth24plus-stencil8",
     usage: GPUTextureUsage.RENDER_ATTACHMENT
@@ -681,7 +667,7 @@ async function createTextureFromImage(device, src, usage) {
     size: {
       width: img.width,
       height: img.height,
-      depth: 1,
+      depthOrArrayLayers: 1,
     },
     format: "rgba8unorm",
     usage: GPUTextureUsage.COPY_DST | usage,
@@ -701,7 +687,7 @@ async function createTextureFromImage(device, src, usage) {
   }, {
     width: img.width,
     height: img.height,
-    depth: 1,
+    depthOrArrayLayers: 1,
   });
   device.queue.submit([commandEncoder.finish()]);
   return texture;

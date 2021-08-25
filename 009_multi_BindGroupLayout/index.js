@@ -65,7 +65,7 @@ async function init(glslang) {
       {
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-         buffer: {
+        buffer: {
           type: 'uniform',
         },
       }
@@ -101,7 +101,7 @@ async function init(glslang) {
       {
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-         buffer: {
+        buffer: {
           type: 'uniform',
         },
       }
@@ -157,6 +157,18 @@ async function init(glslang) {
       targets: [
         {
           format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
         },
       ],
     },

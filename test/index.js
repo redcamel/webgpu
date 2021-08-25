@@ -193,7 +193,7 @@ async function init(glslang) {
       {
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-         buffer: {
+        buffer: {
           type: 'uniform',
         },
       },
@@ -207,14 +207,14 @@ async function init(glslang) {
       {
         binding: 2,
         visibility: GPUShaderStage.FRAGMENT,
-        texture : {
+        texture: {
           type: "float"
         }
       },
       {
         binding: 3,
         visibility: GPUShaderStage.FRAGMENT,
-        texture : {
+        texture: {
           type: "float"
         }
       }
@@ -225,7 +225,7 @@ async function init(glslang) {
       {
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-         buffer: {
+        buffer: {
           type: 'uniform',
         },
       },
@@ -239,21 +239,21 @@ async function init(glslang) {
       {
         binding: 2,
         visibility: GPUShaderStage.FRAGMENT,
-        texture : {
+        texture: {
           type: "float"
         }
       },
       {
         binding: 3,
         visibility: GPUShaderStage.FRAGMENT,
-        texture : {
+        texture: {
           type: "float"
         }
       },
       {
         binding: 4,
         visibility: GPUShaderStage.FRAGMENT,
-        texture : {
+        texture: {
           type: "float"
         }
       },
@@ -264,7 +264,7 @@ async function init(glslang) {
       {
         binding: 0,
         visibility: GPUShaderStage.FRAGMENT,
-         buffer: {
+        buffer: {
           type: 'uniform',
         },
       },
@@ -292,8 +292,8 @@ async function init(glslang) {
   /**
    * 텍스쳐를 만들어보자
    */
-  const testDiffuseTexture = await createTextureFromImage(device, '../assets/Brick03_col.jpg', GPUTextureUsage.TEXTURE_BINDING );
-  const testNormalTexture = await createTextureFromImage(device, '../assets/Brick03_nrm.jpg', GPUTextureUsage.TEXTURE_BINDING );
+  const testDiffuseTexture = await createTextureFromImage(device, '../assets/Brick03_col.jpg', GPUTextureUsage.TEXTURE_BINDING);
+  const testNormalTexture = await createTextureFromImage(device, '../assets/Brick03_nrm.jpg', GPUTextureUsage.TEXTURE_BINDING);
   const testSampler = device.createSampler({
     magFilter: "linear",
     minFilter: "linear",
@@ -324,6 +324,18 @@ async function init(glslang) {
       targets: [
         {
           format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
         },
       ],
     },
@@ -459,7 +471,7 @@ async function init(glslang) {
       size: {
         width: cvs.width,
         height: cvs.height,
-        depth: 1
+        depthOrArrayLayers: 1
       },
       format: "bgra8unorm",
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
@@ -468,7 +480,7 @@ async function init(glslang) {
       size: {
         width: cvs.width,
         height: cvs.height,
-        depth: 1
+        depthOrArrayLayers: 1
       },
       format: "rgba32float",
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
@@ -477,7 +489,7 @@ async function init(glslang) {
       size: {
         width: cvs.width,
         height: cvs.height,
-        depth: 1
+        depthOrArrayLayers: 1
       },
       format: "rgba32float",
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
@@ -640,7 +652,7 @@ async function init(glslang) {
     size: {
       width: cvs.width,
       height: cvs.height,
-      depth: 1
+      depthOrArrayLayers: 1
     },
     format: "depth24plus-stencil8",
     usage: GPUTextureUsage.RENDER_ATTACHMENT
@@ -702,7 +714,7 @@ async function init(glslang) {
     while (i--) {
       tData = childList[i];
       passEncoder.setVertexBuffer(0, tData['vertexBuffer']);
-      passEncoder.setIndexBuffer(tData['indexBuffer'],'uint32');
+      passEncoder.setIndexBuffer(tData['indexBuffer'], 'uint32');
       mat4.identity(modelMatrix);
       mat4.translate(modelMatrix, modelMatrix, tData['position']);
       // mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
@@ -830,7 +842,7 @@ async function createTextureFromImage(device, src, usage) {
   const textureExtent = {
     width: img.width,
     height: img.height,
-    depth: 1
+    depthOrArrayLayers: 1
   };
   const textureDescriptor = {
     dimension: '2d',
@@ -903,7 +915,7 @@ async function createTextureFromImage(device, src, usage) {
     const textureExtent = {
       width,
       height,
-      depth: 1
+      depthOrArrayLayers: 1
     };
     const commandEncoder = device.createCommandEncoder({});
     commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);

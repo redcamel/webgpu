@@ -76,7 +76,7 @@ async function init(glslang) {
       {
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-         buffer: {
+        buffer: {
           type: 'uniform',
         },
       },
@@ -90,7 +90,7 @@ async function init(glslang) {
       {
         binding: 2,
         visibility: GPUShaderStage.FRAGMENT,
-        texture : {
+        texture: {
           type: "float"
         },
       }
@@ -108,7 +108,7 @@ async function init(glslang) {
   /**
    * 텍스쳐를 만들어보자
    */
-  const testTexture = await createTextureFromImage(device, '../assets/UV_Grid_Sm.jpg', GPUTextureUsage.TEXTURE_BINDING );
+  const testTexture = await createTextureFromImage(device, '../assets/UV_Grid_Sm.jpg', GPUTextureUsage.TEXTURE_BINDING);
   const testSampler = device.createSampler({
     magFilter: "linear",
     minFilter: "linear",
@@ -147,19 +147,7 @@ async function init(glslang) {
     // 버텍스와 프레그먼트는 아래와 같이 붙인다..
     vertex: {
       module: vShaderModule,
-      entryPoint: 'main'
-    },
-    fragment: {
-      module: fShaderModule,
       entryPoint: 'main',
-      targets: [
-        {
-          format: presentationFormat,
-        },
-      ],
-    },
-    vertexState: {
-      indexFormat: 'uint32',
       buffers: [
         {
           arrayStride: 10 * 4,
@@ -186,17 +174,27 @@ async function init(glslang) {
         }
       ]
     },
-    // 컬러모드 지정하고
-    colorStates: [
-      {
-        format: swapChainFormat,
-        alphaBlend: {
-          srcFactor: "src-alpha",
-          dstFactor: "one-minus-src-alpha",
-          operation: "add"
-        }
-      }
-    ],
+    fragment: {
+      module: fShaderModule,
+      entryPoint: 'main',
+      targets: [
+        {
+          format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
+        },
+      ],
+    },
     // 드로잉 방법을 결정함
     primitive: {
       topology: 'triangle-list',
@@ -300,7 +298,7 @@ async function createTextureFromImage(device, src, usage) {
   const textureExtent = {
     width: img.width,
     height: img.height,
-    depth: 1
+    depthOrArrayLayers: 1
   };
   const textureDescriptor = {
     dimension: '2d',
@@ -375,7 +373,7 @@ async function createTextureFromImage(device, src, usage) {
     const textureExtent = {
       width,
       height,
-      depth: 1
+      depthOrArrayLayers: 1
     };
     const commandEncoder = device.createCommandEncoder({});
     commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
