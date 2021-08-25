@@ -16,6 +16,7 @@ const fragmentShaderGLSL = `
 `;
 
 async function init(glslang) {
+
   // glslang을 이용하여 GLSL소스를 Uint32Array로 변환합니다.
   console.log('glslang', glslang);
   // 초기 GPU 권한을 얻어온다.

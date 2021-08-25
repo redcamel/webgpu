@@ -203,16 +203,7 @@ async function init(glslang) {
       ],
     },
     // 컬러모드 지정하고
-    colorStates: [
-      {
-        format: swapChainFormat,
-        alphaBlend: {
-          srcFactor: "src-alpha",
-          dstFactor: "one-minus-src-alpha",
-          operation: "add"
-        }
-      }
-    ],
+
     // 드로잉 방법을 결정함
     primitive: {
       topology: 'triangle-list',

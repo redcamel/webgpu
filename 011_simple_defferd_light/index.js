@@ -316,31 +316,7 @@ async function init(glslang) {
     // 버텍스와 프레그먼트는 아래와 같이 붙인다..
     vertex: {
       module: vShaderModule,
-      entryPoint: 'main'
-    },
-    fragment: {
-      module: fShaderModule,
       entryPoint: 'main',
-      targets: [
-        {
-          format: presentationFormat,
-          blend: {
-            color: {
-              srcFactor: "src-alpha",
-              dstFactor: "one-minus-src-alpha",
-              operation: "add"
-            },
-            alpha: {
-              srcFactor: "src-alpha",
-              dstFactor: "one-minus-src-alpha",
-              operation: "add"
-            }
-          }
-        },
-      ],
-    },
-    vertexState: {
-      indexFormat: 'uint32',
       buffers: [
         {
           arrayStride: 8 * 4,
@@ -367,33 +343,57 @@ async function init(glslang) {
         }
       ]
     },
-    // 컬러모드 지정하고
-    colorStates: [
-      {
-        format: swapChainFormat,
-        alphaBlend: {
-          srcFactor: "src-alpha",
-          dstFactor: "one-minus-src-alpha",
-          operation: "add"
-        }
-      },
-      {
-        format: 'rgba32float',
-        alphaBlend: {
-          srcFactor: "src-alpha",
-          dstFactor: "one-minus-src-alpha",
-          operation: "add"
-        }
-      },
-      {
-        format: 'rgba32float',
-        alphaBlend: {
-          srcFactor: "src-alpha",
-          dstFactor: "one-minus-src-alpha",
-          operation: "add"
-        }
-      }
-    ],
+    fragment: {
+      module: fShaderModule,
+      entryPoint: 'main',
+      targets: [
+        {
+          format: 'bgra8unorm',
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
+        },
+        {
+          format: 'rgba16float',
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
+        },
+        {
+          format: 'rgba16float',
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
+        },
+      ],
+    },
     // 드로잉 방법을 결정함
     primitive: {
       topology: 'triangle-list',
@@ -419,14 +419,7 @@ async function init(glslang) {
     // 버텍스와 프레그먼트는 아래와 같이 붙인다..
     vertex: {
       module: vShaderModule_quad,
-      entryPoint: 'main'
-    },
-    fragmentStage: {
-      module: fShaderModule_quad,
-      entryPoint: 'main'
-    },
-    vertexState: {
-      indexFormat: 'uint32',
+      entryPoint: 'main',
       buffers: [
         {
           arrayStride: 3 * 4,
@@ -441,17 +434,29 @@ async function init(glslang) {
         }
       ]
     },
+    fragment: {
+      module: fShaderModule_quad,
+      entryPoint: 'main',
+      targets: [
+        {
+          format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
+        },
+      ]
+    },
     // 컬러모드 지정하고
-    colorStates: [
-      {
-        format: swapChainFormat,
-        alphaBlend: {
-          srcFactor: "src-alpha",
-          dstFactor: "one-minus-src-alpha",
-          operation: "add"
-        }
-      }
-    ],
+
     // 드로잉 방법을 결정함
     primitive: {
       topology: 'triangle-list',
@@ -482,7 +487,7 @@ async function init(glslang) {
         height: cvs.height,
         depthOrArrayLayers: 1
       },
-      format: "rgba32float",
+      format: "rgba16float",
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
     }),
     device.createTexture({
@@ -491,7 +496,7 @@ async function init(glslang) {
         height: cvs.height,
         depthOrArrayLayers: 1
       },
-      format: "rgba32float",
+      format: "rgba16float",
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
     })
   ];

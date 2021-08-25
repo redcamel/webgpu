@@ -291,7 +291,37 @@ async function init(glslang) {
       entryPoint: 'main',
       targets: [
         {
-          format: presentationFormat,
+          format: 'bgra8unorm',
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
+        },
+        {
+          format: 'rgba16float',
+          blend: {
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          }
+        },
+        {
+          format: 'rgba16float',
           blend: {
             color: {
               srcFactor: "src-alpha",
@@ -398,7 +428,7 @@ async function init(glslang) {
         height: cvs.height,
         depthOrArrayLayers: 1
       },
-      format: "rgba32float",
+      format: "rgba16float",
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
     }),
     device.createTexture({
@@ -407,7 +437,7 @@ async function init(glslang) {
         height: cvs.height,
         depthOrArrayLayers: 1
       },
-      format: "rgba32float",
+      format: "rgba16float",
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
     })
   ];
