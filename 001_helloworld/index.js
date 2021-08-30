@@ -25,7 +25,6 @@ async function init(glslang) {
   const device = await adapter.requestDevice();
   console.log('gpu', gpu);
   console.log('adapter', adapter);
-  console.log('device', device);
   // 화면에 표시하기 위해서 캔버스 컨텍스트를 가져오고
   // 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
   const cvs = document.createElement('canvas');
@@ -135,7 +134,6 @@ async function init(glslang) {
     passEncoder.draw(3, 1, 0, 0);
     passEncoder.endPass();
     const test = commandEncoder.finish();
-    console.log(device);
     device.queue.submit([test]);
   };
   requestAnimationFrame(render);
