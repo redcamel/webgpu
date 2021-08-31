@@ -137,8 +137,8 @@ async function init(glslang) {
   const adapter = await gpu.requestAdapter();
   const device = await adapter.requestDevice();
   console.log('gpu', gpu);
-  console.log('adapter', adapter);
-  
+
+
   // 화면에 표시하기 위해서 캔버스 컨텍스트를 가져오고
   // 얻어온 컨텍스트에 얻어온 GPU 넣어준다.??
   const cvs = document.createElement('canvas');
@@ -364,33 +364,33 @@ async function init(glslang) {
         },
         {
           format: 'rgba16float',
-          blend: {
-            color: {
-              srcFactor: "src-alpha",
-              dstFactor: "one-minus-src-alpha",
-              operation: "add"
-            },
-            alpha: {
-              srcFactor: "src-alpha",
-              dstFactor: "one-minus-src-alpha",
-              operation: "add"
-            }
-          }
+          // blend: {
+          //   color: {
+          //     srcFactor: "src-alpha",
+          //     dstFactor: "one-minus-src-alpha",
+          //     operation: "add"
+          //   },
+          //   alpha: {
+          //     srcFactor: "src-alpha",
+          //     dstFactor: "one-minus-src-alpha",
+          //     operation: "add"
+          //   }
+          // }
         },
         {
           format: 'rgba16float',
-          blend: {
-            color: {
-              srcFactor: "src-alpha",
-              dstFactor: "one-minus-src-alpha",
-              operation: "add"
-            },
-            alpha: {
-              srcFactor: "src-alpha",
-              dstFactor: "one-minus-src-alpha",
-              operation: "add"
-            }
-          }
+          // blend: {
+          //   color: {
+          //     srcFactor: "src-alpha",
+          //     dstFactor: "one-minus-src-alpha",
+          //     operation: "add"
+          //   },
+          //   alpha: {
+          //     srcFactor: "src-alpha",
+          //     dstFactor: "one-minus-src-alpha",
+          //     operation: "add"
+          //   }
+          // }
         },
       ],
     },

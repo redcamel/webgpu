@@ -38,7 +38,7 @@ async function init(glslang) {
   const adapter = await gpu.requestAdapter();
   const device = await adapter.requestDevice();
   console.log('gpu', gpu);
-  console.log('adapter', adapter);
+  
   
 
 
