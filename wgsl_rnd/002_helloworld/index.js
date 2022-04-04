@@ -40,7 +40,6 @@ checkGPU()
 		const render = () => {
 			const commandEncoder = device.createCommandEncoder();
 			const textureView = ctx.getCurrentTexture().createView();
-
 			const renderPassDescriptor = {
 				colorAttachments: [
 					{
