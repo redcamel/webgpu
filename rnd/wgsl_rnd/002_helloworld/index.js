@@ -1,7 +1,6 @@
 import checkGPU from "../helper/checkGPU/checkGPU.js";
 import makeFailMsg from "../helper/checkGPU/makeFailMsg.js";
 import makeLimitDebug from "../helper/checkGPU/makeLimitDebug.js";
-
 checkGPU()
 	.then(async result => {
 		console.log('result', result)
@@ -40,11 +39,15 @@ checkGPU()
 		const render = () => {
 			const commandEncoder = device.createCommandEncoder();
 			const textureView = ctx.getCurrentTexture().createView();
+			/**
+			 *
+			 * @type {{colorAttachments: [GPURenderPassColorAttachment]}}
+			 */
 			const renderPassDescriptor = {
 				colorAttachments: [
 					{
 						view: textureView,
-						clearValue: {r: 0.0, g: 0.0, b: 0.0, a: 1.0},
+						clearValue: {r: 1.0, g: 1.0, b: 1.0, a: 1.0},
 						loadOp: 'clear',
 						storeOp: 'store',
 					},
@@ -83,8 +86,8 @@ function configure(device, swapChainFormat, context) {
 
 const makeCanvas = () => {
 	const cvs = document.createElement('canvas');
-	cvs.width = 256;
-	cvs.height = 256;
+	cvs.width = 128;
+	cvs.height = 128;
 	document.body.appendChild(cvs);
 	return cvs
 }
