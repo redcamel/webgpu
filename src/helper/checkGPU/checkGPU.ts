@@ -1,13 +1,8 @@
-interface IResult{
-    passYn: boolean;
-    gpu:any;
-    adapter:any;
-    device:any;
-}
+import IWebGPUInitInfo from "./IWebGPUInitInfo";
 
 const checkGPU = async () => {
     let gpu:any, adapter, device:any;
-    let result:IResult;
+    let result:IWebGPUInitInfo;
     let newVariable: any;
     newVariable = window.navigator;
     try {
@@ -28,7 +23,7 @@ const checkGPU = async () => {
             device
         }
     }
-    return new Promise<IResult>((resolve, reject) => {
+    return new Promise<IWebGPUInitInfo>((resolve, reject) => {
         if (device) resolve(result)
         else reject(result)
     })

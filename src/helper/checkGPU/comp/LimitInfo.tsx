@@ -1,11 +1,8 @@
-interface IResult{
-    passYn: boolean;
-    gpu:any;
-    adapter:any;
-    device:any;
-}
+import IWebGPUInitInfo from "../IWebGPUInitInfo";
+
+import "./LimitInfo.css"
 interface IProps{
-    initInfo :IResult
+    initInfo :IWebGPUInitInfo
 }
 const LimitInfo = (props:IProps) => {
     const {limits} = props.initInfo.device
@@ -13,14 +10,16 @@ const LimitInfo = (props:IProps) => {
     const list = []
     for (const k in limits) {
         list.push(
-            <div>
+            <div className={'LimitInfoItem'}>
                 {k} : <span>{limits[k].toLocaleString()}</span>
             </div>
         )
     }
-    return <div>
-        <div>LimitInfo</div>
+    return <div className={'LimitInfoContainer'}>
+        <div className={'LimitInfoTitle'}>LimitInfo</div>
         <div>{list}</div>
     </div>
 }
 export default LimitInfo
+
+
