@@ -1,0 +1,45 @@
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    font-size: 11px;
+    overflow: hidden;
+}
+
+.failMsg {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: center;
+    height: 100%;
+    justify-content: center;
+}
+
+.limits {
+    padding: 10px;
+}
+
+.limits .titleBox {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    gap: 5px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.limits .titleBox > button {
+    font-size: 1px;
+    line-height: 1;
+	padding: 3px 6px;
+	cursor: pointer;
+}
+
+.limits .contentContainer {
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.limits .contentContainer > div > span {
+    color: crimson;
+}
