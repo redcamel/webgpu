@@ -54,9 +54,6 @@ const SampleHelloWorld = () => {
                         },
                     ],
                 },
-                primitive: {
-                    topology: 'triangle-list',
-                }
             }
             const pipeline: GPURenderPipeline = device.createRenderPipeline(descriptor);
             ////////////////////////////////////////////////////////////////////////

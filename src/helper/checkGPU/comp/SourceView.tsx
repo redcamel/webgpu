@@ -14,7 +14,7 @@ const SourceView = (props: IProps) => {
     }, [])
     return <div style={styleContainer}>
         {props.dataList.map((v:any, index:number) => {
-            return <div>
+            return <div key={index}>
                 <h2>{v['label']}</h2>
                 {sourceList[index]}
             </div>
