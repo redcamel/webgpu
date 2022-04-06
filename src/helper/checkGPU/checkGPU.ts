@@ -10,14 +10,14 @@ const checkGPU = async () => {
         adapter = await gpu.requestAdapter();
         device = await adapter.requestDevice();
         result = {
-            passYn: true,
+            ableWebGPU: true,
             gpu,
             adapter,
             device
         }
     } catch (e) {
         result = {
-            passYn: false,
+            ableWebGPU: false,
             gpu,
             adapter,
             device

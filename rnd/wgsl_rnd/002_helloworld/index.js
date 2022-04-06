@@ -16,6 +16,7 @@ checkGPU()
 		// shaderModules
 		const vShaderModule = await makeShaderModule(device, "./vertex.wgsl")
 		const fShaderModule = await makeShaderModule(device, "./fragment.wgsl")
+		console.log(vShaderModule,fShaderModule)
 		// pipeline
 		const pipeline = device.createRenderPipeline({
 			vertex: {

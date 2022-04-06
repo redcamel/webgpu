@@ -1,5 +1,5 @@
 interface IWebGPUInitInfo{
-    passYn: boolean;
+    ableWebGPU: boolean;
     gpu:any;
     adapter:any;
     device:any;

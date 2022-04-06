@@ -10,7 +10,7 @@ import FailMsg from "../helper/checkGPU/comp/FailMsg";
 const SampleCheckGPU = () => {
     const cvsRef = useRef<HTMLCanvasElement>(null);
     const [initInfo, setInitInfo] = useState<IWebGPUInitInfo>()
-    const {adapter, device, passYn} = initInfo || {}
+    const {adapter, device, ableWebGPU} = initInfo || {}
 
 
     useEffect(() => {
@@ -36,7 +36,7 @@ const SampleCheckGPU = () => {
                 ctx.configure(configurationDescription);
             }
         }
-        if (passYn) {
+        if (ableWebGPU) {
             if (cvs) {
                 ////////////////////////////////////////////////////////////////////////
                 // configure
@@ -47,7 +47,7 @@ const SampleCheckGPU = () => {
     }, [initInfo])
     return <>
         <canvas ref={cvsRef}/>
-        {initInfo && (passYn ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
+        {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
     </>
 }
 export default SampleCheckGPU

@@ -1,13 +1,18 @@
 import IWebGPUInitInfo from "../IWebGPUInitInfo";
 
 import "./LimitInfo.css"
-interface IProps{
-    initInfo :IWebGPUInitInfo
+import {useState} from "react";
+
+interface IProps {
+    initInfo: IWebGPUInitInfo;
+    openYn?: boolean
 }
-const LimitInfo = (props:IProps) => {
+
+const LimitInfo = (props: IProps) => {
+    const [openYn, setOpenYn] = useState(props.openYn)
     const {limits} = props.initInfo.device
-    console.log(limits)
     const list = []
+    const HD_toggle = () => setOpenYn(!openYn)
     for (const k in limits) {
         list.push(
             <div className={'LimitInfoItem'}>
@@ -16,8 +21,9 @@ const LimitInfo = (props:IProps) => {
         )
     }
     return <div className={'LimitInfoContainer'}>
-        <div className={'LimitInfoTitle'}>LimitInfo</div>
-        <div>{list}</div>
+        <div className={'LimitInfoTitle'}>LimitInfo <button onClick={HD_toggle}>{openYn ? 'open' : 'close'}</button>
+        </div>
+        {openYn && <div>{list}</div>}
     </div>
 }
 export default LimitInfo
