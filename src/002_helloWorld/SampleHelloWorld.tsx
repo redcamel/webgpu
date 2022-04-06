@@ -26,17 +26,12 @@ const SampleHelloWorld = () => {
             const presentationFormat: GPUTextureFormat = ctx.getPreferredFormat(adapter);
             ////////////////////////////////////////////////////////////////////////
             // configure
-            const configure = (ctx: GPUCanvasContext, device: GPUDevice) => {
-                if (ctx) {
-                    const configurationDescription: GPUCanvasConfiguration = {
-                        device: device,
-                        format: presentationFormat,
-                    };
-                    console.log('configurationDescription', configurationDescription);
-                    ctx.configure(configurationDescription);
-                }
-            }
-            configure(ctx, device)
+            const configurationDescription: GPUCanvasConfiguration = {
+                device: device,
+                format: presentationFormat,
+            };
+            console.log('configurationDescription', configurationDescription);
+            ctx.configure(configurationDescription);
             ////////////////////////////////////////////////////////////////////////
             // shaderModules
             const vShaderModule: GPUShaderModule = await makeShaderModule(device, srcSourceVert)
