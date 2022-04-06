@@ -6,6 +6,7 @@ import FailMsg from "../helper/checkGPU/comp/FailMsg";
 //
 import srcSourceVert from "./vertex.wgsl";
 import srcSourceFrag from "./fragment.wgsl";
+import SourceView from "../helper/checkGPU/comp/SourceView";
 
 
 const SampleHelloWorld = () => {
@@ -89,11 +90,21 @@ const SampleHelloWorld = () => {
         checkGPU().then(result => setInitInfo(result)).catch(result => setInitInfo(result))
     }, [])
     useEffect(() => {
-        if(ableWebGPU) setMain()
+        if (ableWebGPU) setMain()
     }, [initInfo])
     return <>
         <canvas ref={cvsRef}/>
         {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
+        <SourceView dataList={[
+            {
+                label: 'SourceVert',
+                url : srcSourceVert
+            },
+            {
+                label: 'SourceFrag',
+                url : srcSourceFrag
+            }
+        ]}/>
     </>
 }
 export default SampleHelloWorld
