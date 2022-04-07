@@ -8,7 +8,6 @@ function App() {
       {/*<SampleCheckGPU/>*/}
       {/*<SampleHelloWorld/>*/}
       <SampleVertexBuffer/>
-
     </>
   );
 }
