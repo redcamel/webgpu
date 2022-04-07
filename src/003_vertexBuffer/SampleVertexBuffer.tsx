@@ -11,6 +11,7 @@ import SourceView from "../helper/checkGPU/comp/SourceView";
 
 
 const SampleVertexBuffer = () => {
+    console.log('SampleVertexBuffer',SampleVertexBuffer)
     const cvsRef = useRef<HTMLCanvasElement>(null);
     const [initInfo, setInitInfo] = useState<IWebGPUInitInfo>()
     const {adapter, device, ableWebGPU} = initInfo || {}

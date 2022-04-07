@@ -6,8 +6,10 @@
       "dom.iterable",
       "esnext"
     ],
-    "typeRoots": [ "./node_modules/@webgpu/types", "./node_modules/@types"],
-    "sourceMap": true,
+    "typeRoots": [
+      "./node_modules/@webgpu/types",
+      "./node_modules/@types"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -21,7 +23,6 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-
   },
   "include": [
     "src",
