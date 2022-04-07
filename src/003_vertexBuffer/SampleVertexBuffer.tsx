@@ -9,6 +9,7 @@ import srcSourceFrag from "./fragment.wgsl";
 import SourceView from "../helper/checkGPU/comp/SourceView";
 
 
+
 const SampleVertexBuffer = () => {
     const cvsRef = useRef<HTMLCanvasElement>(null);
     const [initInfo, setInitInfo] = useState<IWebGPUInitInfo>()
@@ -39,7 +40,7 @@ const SampleVertexBuffer = () => {
             const fShaderModule: GPUShaderModule = await makeShaderModule(device, srcSourceFrag)
             console.log(vShaderModule, fShaderModule)
             ////////////////////////////////////////////////////////////////////////
-            // make vertexBuffer
+            // make vertexBuffer !!!!!!!!!!!!!!!!!!!
             const vertexBuffer = makeVertexBuffer(
                 device,
                 new Float32Array(
@@ -56,6 +57,7 @@ const SampleVertexBuffer = () => {
                 vertex: {
                     module: vShaderModule,
                     entryPoint: 'main',
+                    // set GPUVertexBufferLayout !!!!!!!!!!!!!!!!!!!!
                     buffers: [
                         {
                             arrayStride: 4 * 4,
@@ -99,6 +101,7 @@ const SampleVertexBuffer = () => {
 
                 const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
                 passEncoder.setPipeline(pipeline);
+                // setVertexBuffer !!!!!!!!!!!!!!!!!!!
                 passEncoder.setVertexBuffer(0, vertexBuffer);
                 passEncoder.draw(3, 1, 0, 0);
                 passEncoder.end();
@@ -118,8 +121,9 @@ const SampleVertexBuffer = () => {
     return <div className={'sampleContainer'}>
         <canvas ref={cvsRef}/>
         {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
-        <SourceView dataList={[
-            {
+        <SourceView
+            dataList={[
+                {
                 label: 'SourceVert',
                 url : srcSourceVert
             },
