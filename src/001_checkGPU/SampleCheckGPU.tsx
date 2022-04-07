@@ -45,9 +45,9 @@ const SampleCheckGPU = () => {
             }
         }
     }, [initInfo])
-    return <>
+    return <div className={'sampleContainer'}>
         <canvas ref={cvsRef}/>
         {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
-    </>
+    </div>
 }
 export default SampleCheckGPU

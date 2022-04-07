@@ -9,7 +9,7 @@ import srcSourceFrag from "./fragment.wgsl";
 import SourceView from "../helper/checkGPU/comp/SourceView";
 
 
-const SampleHelloWorld = () => {
+const SampleVertexBuffer = () => {
     const cvsRef = useRef<HTMLCanvasElement>(null);
     const [initInfo, setInitInfo] = useState<IWebGPUInitInfo>()
     const {adapter, device, ableWebGPU} = initInfo || {}
@@ -39,11 +39,36 @@ const SampleHelloWorld = () => {
             const fShaderModule: GPUShaderModule = await makeShaderModule(device, srcSourceFrag)
             console.log(vShaderModule, fShaderModule)
             ////////////////////////////////////////////////////////////////////////
+            // make vertexBuffer
+            const vertexBuffer = makeVertexBuffer(
+                device,
+                new Float32Array(
+                    [
+                        -1.0, -1.0, 0.0, 1.0,
+                        0.0, 1.0, 0.0, 1.0,
+                        1.0, -1.0, 0.0, 1.0
+                    ]
+                )
+            );
+            ////////////////////////////////////////////////////////////////////////
             // pipeline
             const descriptor: GPURenderPipelineDescriptor = {
                 vertex: {
                     module: vShaderModule,
-                    entryPoint: 'main'
+                    entryPoint: 'main',
+                    buffers: [
+                        {
+                            arrayStride: 4 * 4,
+                            attributes: [
+                                {
+                                    // position
+                                    shaderLocation: 0,
+                                    offset: 0,
+                                    format: "float32x4"
+                                }
+                            ]
+                        }
+                    ]
                 },
                 fragment: {
                     module: fShaderModule,
@@ -74,6 +99,7 @@ const SampleHelloWorld = () => {
 
                 const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
                 passEncoder.setPipeline(pipeline);
+                passEncoder.setVertexBuffer(0, vertexBuffer);
                 passEncoder.draw(3, 1, 0, 0);
                 passEncoder.end();
                 device.queue.submit([commandEncoder.finish()]);
@@ -104,7 +130,7 @@ const SampleHelloWorld = () => {
         ]}/>
     </div>
 }
-export default SampleHelloWorld
+export default SampleVertexBuffer
 
 async function makeShaderModule(device: GPUDevice, sourceSrc: string) {
     return await fetch(sourceSrc).then(v => v.text()).then(source => {
@@ -113,4 +139,18 @@ async function makeShaderModule(device: GPUDevice, sourceSrc: string) {
         };
         return device.createShaderModule(shaderModuleDescriptor);
     })
+}
+
+function makeVertexBuffer(device:GPUDevice, data:Float32Array) {
+    console.log(`// makeVertexBuffer start /////////////////////////////////////////////////////////////`);
+    let bufferDescriptor:GPUBufferDescriptor = {
+        size: data.byteLength,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+    };
+    let verticesBuffer:GPUBuffer = device.createBuffer(bufferDescriptor);
+    console.log('bufferDescriptor', bufferDescriptor);
+    device.queue.writeBuffer(verticesBuffer, 0, data);
+    console.log('verticesBuffer', verticesBuffer);
+    console.log(`// makeVertexBuffer end /////////////////////////////////////////////////////////////`);
+    return verticesBuffer;
 }
