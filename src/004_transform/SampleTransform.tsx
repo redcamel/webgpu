@@ -50,7 +50,8 @@ const SampleTransform = () => {
                     ]
                 )
             );
-            // make BindGroup
+            ///////////////////////////////////////////////////////////////////
+            // make BindGroup !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             const uniformsBindGroupLayout = device.createBindGroupLayout({
                 entries: [
                     {
@@ -85,6 +86,7 @@ const SampleTransform = () => {
             ////////////////////////////////////////////////////////////////////////
             // pipeline
             const descriptor: GPURenderPipelineDescriptor = {
+                ///////////////////////////////////////////////////////////////////
                 // set bindGroupLayouts !!!!!!!!!!!!!!!!!!!!
                 layout: device.createPipelineLayout({bindGroupLayouts: [uniformsBindGroupLayout]}),
                 vertex: {
@@ -134,12 +136,15 @@ const SampleTransform = () => {
 
                 const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
                 passEncoder.setPipeline(pipeline);
+                ///////////////////////////////////////////////////////////////////
                 // setBindGroup !!!!!!!!!!!!!!!!!!!
                 passEncoder.setBindGroup(0, uniformBindGroup);
                 mat4.identity(modelMatrix)
                 mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
                 mat4.scale(modelMatrix, modelMatrix, [0.5,0.5,1]);
+                // update Uniform
                 device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
+                ///////////////////////////////////////////////////////////////////
                 // setVertexBuffer
                 passEncoder.setVertexBuffer(0, vertexBuffer);
                 passEncoder.draw(3, 1, 0, 0);
