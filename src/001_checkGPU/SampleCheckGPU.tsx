@@ -12,7 +12,6 @@ const SampleCheckGPU = () => {
     const [initInfo, setInitInfo] = useState<IWebGPUInitInfo>()
     const {adapter, device, ableWebGPU} = initInfo || {}
 
-
     useEffect(() => {
         checkGPU()
             .then(result => setInitInfo(result))
@@ -47,7 +46,7 @@ const SampleCheckGPU = () => {
     }, [initInfo])
     return <div className={'sampleContainer'}>
         <canvas ref={cvsRef}/>
-        {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
+        {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo} openYn={true}/> : <FailMsg/>)}
     </div>
 }
 export default SampleCheckGPU

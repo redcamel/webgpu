@@ -95,7 +95,7 @@ const SampleTransform = () => {
 
                     buffers: [
                         {
-                            arrayStride: 4 * 4,
+                            arrayStride: 4 * Float32Array.BYTES_PER_ELEMENT,
                             attributes: [
                                 {
                                     // position

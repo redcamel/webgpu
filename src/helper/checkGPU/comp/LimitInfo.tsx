@@ -15,7 +15,7 @@ const LimitInfo = (props: IProps) => {
     const HD_toggle = () => setOpenYn(!openYn)
     for (const k in limits) {
         list.push(
-            <div className={'LimitInfoItem'}>
+            <div className={'LimitInfoItem'} key={k}>
                 {k} : <span>{limits[k].toLocaleString()}</span>
             </div>
         )

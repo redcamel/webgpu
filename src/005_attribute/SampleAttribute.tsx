@@ -7,9 +7,8 @@ import FailMsg from "../helper/checkGPU/comp/FailMsg";
 import srcSourceVert from "./vertex.wgsl";
 import srcSourceFrag from "./fragment.wgsl";
 import SourceView from "../helper/checkGPU/comp/SourceView";
-
-const SampleVertexBuffer = () => {
-    console.log(SampleVertexBuffer)
+import {mat4} from "gl-matrix"
+const SampleAttribute = () => {
     const cvsRef = useRef<HTMLCanvasElement>(null);
     const [initInfo, setInitInfo] = useState<IWebGPUInitInfo>()
     const {adapter, device, ableWebGPU} = initInfo || {}
@@ -39,32 +38,76 @@ const SampleVertexBuffer = () => {
             const fShaderModule: GPUShaderModule = await makeShaderModule(device, srcSourceFrag)
             console.log(vShaderModule, fShaderModule)
             ////////////////////////////////////////////////////////////////////////
-            // make vertexBuffer !!!!!!!!!!!!!!!!!!!
+            // make vertexBuffer
             const vertexBuffer = makeVertexBuffer(
                 device,
+                // add rgba data !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 new Float32Array(
                     [
-                        -1.0, -1.0, 0.0, 1.0,
-                        0.0, 1.0, 0.0, 1.0,
-                        1.0, -1.0, 0.0, 1.0
+                        //x,y,z,w, r,g,b,a
+                        -1.0, -1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0,
+                        0.0, 1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0,
+                        1.0, -1.0, 0.0, 1.0, Math.random(), Math.random(), Math.random(), 1.0
                     ]
                 )
             );
+            // make BindGroup
+            const uniformsBindGroupLayout = device.createBindGroupLayout({
+                entries: [
+                    {
+                        binding: 0,
+                        visibility: GPUShaderStage.VERTEX,
+                        buffer: {
+                            type: 'uniform',
+                        },
+                    }
+                ]
+            });
+            const matrix44Size = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
+            const uniformBuffer = device.createBuffer({
+                size: matrix44Size,
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            });
+            const uniformBindGroupDescriptor = {
+                layout: uniformsBindGroupLayout,
+                entries: [
+                    {
+                        binding: 0,
+                        resource: {
+                            buffer: uniformBuffer,
+                            offset: 0,
+                            size: matrix44Size
+                        }
+                    }
+                ]
+            };
+            const uniformBindGroup = device.createBindGroup(uniformBindGroupDescriptor);
+            const modelMatrix = mat4.create();
             ////////////////////////////////////////////////////////////////////////
             // pipeline
             const descriptor: GPURenderPipelineDescriptor = {
+                // set bindGroupLayouts
+                layout: device.createPipelineLayout({bindGroupLayouts: [uniformsBindGroupLayout]}),
                 vertex: {
                     module: vShaderModule,
                     entryPoint: 'main',
-                    // set GPUVertexBufferLayout !!!!!!!!!!!!!!!!!!!!
+
                     buffers: [
                         {
-                            arrayStride: 4 * Float32Array.BYTES_PER_ELEMENT,
+                            // xyzwrgba 8 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            arrayStride: 8 * Float32Array.BYTES_PER_ELEMENT,
                             attributes: [
                                 {
                                     // position
                                     shaderLocation: 0,
                                     offset: 0,
+                                    format: "float32x4"
+                                },
+                                // set color location info !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                {
+                                    // color
+                                    shaderLocation: 1,
+                                    offset: 4 * Float32Array.BYTES_PER_ELEMENT,
                                     format: "float32x4"
                                 }
                             ]
@@ -84,7 +127,7 @@ const SampleVertexBuffer = () => {
             const pipeline: GPURenderPipeline = device.createRenderPipeline(descriptor);
             ////////////////////////////////////////////////////////////////////////
             // render
-            const render = () => {
+            const render = (time:number) => {
                 const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
                 const textureView: GPUTextureView = ctx.getCurrentTexture().createView();
                 const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -100,14 +143,23 @@ const SampleVertexBuffer = () => {
 
                 const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
                 passEncoder.setPipeline(pipeline);
-                // setVertexBuffer !!!!!!!!!!!!!!!!!!!
+                ///////////////////////////////////////////////////////////////////
+                // setBindGroup
+                passEncoder.setBindGroup(0, uniformBindGroup);
+                mat4.identity(modelMatrix)
+                mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
+                mat4.scale(modelMatrix, modelMatrix, [0.5,0.5,1]);
+                // update Uniform
+                device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
+                ///////////////////////////////////////////////////////////////////
+                // setVertexBuffer
                 passEncoder.setVertexBuffer(0, vertexBuffer);
                 passEncoder.draw(3, 1, 0, 0);
                 passEncoder.end();
                 device.queue.submit([commandEncoder.finish()]);
                 requestAnimationFrame(render)
             }
-            render()
+            render(0)
         }
 
     }
@@ -133,7 +185,7 @@ const SampleVertexBuffer = () => {
         ]}/>
     </div>
 }
-export default SampleVertexBuffer
+export default SampleAttribute
 
 async function makeShaderModule(device: GPUDevice, sourceSrc: string) {
     return await fetch(sourceSrc).then(v => v.text()).then(source => {
