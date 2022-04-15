@@ -24,11 +24,11 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "sourceMap": true,
-//    "inlineSourceMap": true,
+    "inlineSourceMap": true,
   },
   "include": [
     "src",
     "src/**/*.tsx",
     "src/**/*.d.ts"
-  ]
+  ],
 }
