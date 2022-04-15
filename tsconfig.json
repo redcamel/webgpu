@@ -8,7 +8,7 @@
     ],
     "typeRoots": [
       "./node_modules/@webgpu/types",
-      "./node_modules/@types"
+      "./node_modules/@types",
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -24,6 +24,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "sourceMap": true,
+//    "inlineSourceMap": true,
   },
   "include": [
     "src",

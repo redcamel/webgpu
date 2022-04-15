@@ -3,8 +3,10 @@ import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
 const SourceView = (props) => {
 	const [sourceList, setSourceList] = useState([])
+	let {dataList} = props
+	dataList = dataList.filter(Boolean)
 	useEffect(() => {
-		Promise.all(props.dataList.map((v) => fetch(v['url']).then(v => v.text()))).then(v => {
+		Promise.all(dataList.map((v) => fetch(v['url']).then(v => v.text()))).then(v => {
 			console.log(v)
 			setSourceList(v)
 		})
@@ -13,7 +15,7 @@ const SourceView = (props) => {
 		if (sourceList.length) Prism.highlightAll()
 	}, [sourceList])
 	return <div style={styleContainer}>
-		{props.dataList.map((v, index) => {
+		{dataList.map((v, index) => {
 			return (
 				<div key={index}>
 					<h2>{v['label']}</h2>

@@ -8,7 +8,9 @@ import srcSourceVert from "./vertex.wgsl";
 import srcSourceFrag from "./fragment.wgsl";
 import SourceView from "../helper/checkGPU/comp/SourceView";
 import {mat4} from "gl-matrix"
-const SampleTexture = () => {
+
+const SampleTexture = (props:any) => {
+    console.log('props.hostInfo',props?.hostInfo)
     const cvsRef = useRef<HTMLCanvasElement>(null);
     const [initInfo, setInitInfo] = useState<IWebGPUInitInfo>()
     const {adapter, device, ableWebGPU} = initInfo || {}
@@ -44,19 +46,19 @@ const SampleTexture = () => {
                 new Float32Array(
                     [
                         //x,y,z,w, u,v
-                        -1.0, -1.0, 0.0, 1.0,  0.0, 0.0,
-                        1.0, -1.0, 0.0, 1.0,  0.0, 1.0,
-                        -1.0, 1.0, 0.0, 1.0,  1.0, 0.0,
-                        -1.0, 1.0, 0.0, 1.0,  1.0, 0.0,
-                        1.0, -1.0, 0.0, 1.0,  0.0, 1.0,
-                        1.0, 1.0, 0.0, 1.0,  1.0, 1.0
+                        -1.0, -1.0, 0.0, 1.0, 0.0, 0.0,
+                        1.0, -1.0, 0.0, 1.0, 0.0, 1.0,
+                        -1.0, 1.0, 0.0, 1.0, 1.0, 0.0,
+                        -1.0, 1.0, 0.0, 1.0, 1.0, 0.0,
+                        1.0, -1.0, 0.0, 1.0, 0.0, 1.0,
+                        1.0, 1.0, 0.0, 1.0, 1.0, 1.0
                     ]
                 )
             );
             ////////////////////////////////////////////////////////////////////////
             // makeTexture !!!!!!!!!!!!!!!
-            const testTexture = await webGPUTextureFromImageUrl(device,'/assets/crate.png')
-            console.log('testTexture',testTexture)
+            const testTexture = await webGPUTextureFromImageUrl(device, '/assets/crate.png')
+            console.log('testTexture', testTexture)
             const testSampler = device.createSampler({
                 magFilter: "linear",
                 minFilter: "linear",
@@ -139,7 +141,7 @@ const SampleTexture = () => {
                                 {
                                     // uv
                                     shaderLocation: 1,
-                                    offset: 4 * Float32Array.BYTES_PER_ELEMENT ,
+                                    offset: 4 * Float32Array.BYTES_PER_ELEMENT,
                                     format: "float32x2"
                                 },
                             ]
@@ -160,7 +162,7 @@ const SampleTexture = () => {
 
             ////////////////////////////////////////////////////////////////////////
             // render
-            const render = (time:number) => {
+            const render = (time: number) => {
                 const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
                 const textureView: GPUTextureView = ctx.getCurrentTexture().createView();
                 const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -181,7 +183,7 @@ const SampleTexture = () => {
                 passEncoder.setBindGroup(0, uniformBindGroup);
                 mat4.identity(modelMatrix)
                 mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
-                mat4.scale(modelMatrix, modelMatrix, [0.5,0.5,1]);
+                mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 1]);
                 // update Uniform
                 device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
                 ///////////////////////////////////////////////////////////////////
@@ -202,20 +204,21 @@ const SampleTexture = () => {
     useEffect(() => {
         if (ableWebGPU) setMain()
     }, [initInfo])
+
     return <div className={'sampleContainer'}>
         <canvas ref={cvsRef}/>
         {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
         <SourceView
             dataList={[
                 {
-                label: 'SourceVert',
-                url : srcSourceVert
-            },
-            {
-                label: 'SourceFrag',
-                url : srcSourceFrag
-            }
-        ]}/>
+                    label: 'SourceVert',
+                    url: srcSourceVert
+                },
+                {
+                    label: 'SourceFrag',
+                    url: srcSourceFrag
+                }
+            ]}/>
     </div>
 }
 export default SampleTexture
@@ -229,13 +232,13 @@ async function makeShaderModule(device: GPUDevice, sourceSrc: string) {
     })
 }
 
-function makeVertexBuffer(device:GPUDevice, data:Float32Array) {
+function makeVertexBuffer(device: GPUDevice, data: Float32Array) {
     console.log(`// makeVertexBuffer start /////////////////////////////////////////////////////////////`);
-    let bufferDescriptor:GPUBufferDescriptor = {
+    let bufferDescriptor: GPUBufferDescriptor = {
         size: data.byteLength,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
     };
-    let verticesBuffer:GPUBuffer = device.createBuffer(bufferDescriptor);
+    let verticesBuffer: GPUBuffer = device.createBuffer(bufferDescriptor);
     console.log('bufferDescriptor', bufferDescriptor);
     device.queue.writeBuffer(verticesBuffer, 0, data);
     console.log('verticesBuffer', verticesBuffer);
@@ -243,23 +246,23 @@ function makeVertexBuffer(device:GPUDevice, data:Float32Array) {
     return verticesBuffer;
 }
 
-function webGPUTextureFromImageBitmapOrCanvas(device : GPUDevice, source:ImageBitmap) {
-    const textureDescriptor:GPUTextureDescriptor = {
-        size: { width: source.width, height: source.height },
+function webGPUTextureFromImageBitmapOrCanvas(device: GPUDevice, source: ImageBitmap) {
+    const textureDescriptor: GPUTextureDescriptor = {
+        size: {width: source.width, height: source.height},
         format: 'rgba8unorm',
-        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST |    GPUTextureUsage.RENDER_ATTACHMENT
+        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
     };
     const texture = device.createTexture(textureDescriptor);
 
-    device.queue.copyExternalImageToTexture({ source }, { texture }, textureDescriptor.size);
+    device.queue.copyExternalImageToTexture({source}, {texture}, textureDescriptor.size);
 
     return texture;
 }
 
-async function webGPUTextureFromImageUrl(device:GPUDevice, url:string) {
+async function webGPUTextureFromImageUrl(device: GPUDevice, url: string) {
     const response = await fetch(url);
     const blob = await response.blob();
     const imgBitmap = await createImageBitmap(blob);
-    console.log('imgBitmap',imgBitmap)
+    console.log('imgBitmap', imgBitmap)
     return webGPUTextureFromImageBitmapOrCanvas(device, imgBitmap);
 }

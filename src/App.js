@@ -6,6 +6,9 @@ import SampleTransform from "./004_transform/SampleTransform";
 import SampleAttribute from "./005_attribute/SampleAttribute";
 import SampleTexture from "./006_texture/SampleTexture";
 function App() {
+	console.log(SampleTexture.toString())
+	console.log(SampleTexture())
+	console.log(SampleTexture()._source)
   return (
     <>
       {/*<SampleCheckGPU/>*/}
