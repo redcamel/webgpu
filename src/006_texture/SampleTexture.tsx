@@ -43,10 +43,13 @@ const SampleTexture = () => {
                 device,
                 new Float32Array(
                     [
-                        //x,y,z,w,
-                        -1.0, -1.0, 0.0, 1.0,
-                        0.0, 1.0, 0.0, 1.0,
-                        1.0, -1.0, 0.0, 1.0
+                        //x,y,z,w, u,v
+                        -1.0, -1.0, 0.0, 1.0,  0.0, 0.0,
+                        1.0, -1.0, 0.0, 1.0,  0.0, 1.0,
+                        -1.0, 1.0, 0.0, 1.0,  1.0, 0.0,
+                        -1.0, 1.0, 0.0, 1.0,  1.0, 0.0,
+                        1.0, -1.0, 0.0, 1.0,  0.0, 1.0,
+                        1.0, 1.0, 0.0, 1.0,  1.0, 1.0
                     ]
                 )
             );
@@ -57,7 +60,7 @@ const SampleTexture = () => {
             const testSampler = device.createSampler({
                 magFilter: "linear",
                 minFilter: "linear",
-                mipmapFilter: "linear"
+                mipmapFilter: "nearest"
             });
             // make BindGroup
             const uniformsBindGroupLayout = device.createBindGroupLayout({
@@ -125,13 +128,19 @@ const SampleTexture = () => {
 
                     buffers: [
                         {
-                            arrayStride: 4 * Float32Array.BYTES_PER_ELEMENT,
+                            arrayStride: 6 * Float32Array.BYTES_PER_ELEMENT,
                             attributes: [
                                 {
                                     // position
                                     shaderLocation: 0,
                                     offset: 0,
                                     format: "float32x4"
+                                },
+                                {
+                                    // uv
+                                    shaderLocation: 1,
+                                    offset: 4 * Float32Array.BYTES_PER_ELEMENT ,
+                                    format: "float32x2"
                                 },
                             ]
                         }
@@ -178,7 +187,7 @@ const SampleTexture = () => {
                 ///////////////////////////////////////////////////////////////////
                 // setVertexBuffer
                 passEncoder.setVertexBuffer(0, vertexBuffer);
-                passEncoder.draw(3, 1, 0, 0);
+                passEncoder.draw(6, 1, 0, 0);
                 passEncoder.end();
                 device.queue.submit([commandEncoder.finish()]);
                 requestAnimationFrame(render)
@@ -238,7 +247,7 @@ function webGPUTextureFromImageBitmapOrCanvas(device : GPUDevice, source:ImageBi
     const textureDescriptor:GPUTextureDescriptor = {
         size: { width: source.width, height: source.height },
         format: 'rgba8unorm',
-        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST
+        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST |    GPUTextureUsage.RENDER_ATTACHMENT
     };
     const texture = device.createTexture(textureDescriptor);
 
