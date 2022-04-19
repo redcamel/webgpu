@@ -5,12 +5,12 @@ import SampleVertexBuffer from "./003_vertexBuffer/SampleVertexBuffer";
 import SampleTransform from "./004_transform/SampleTransform";
 import SampleAttribute from "./005_attribute/SampleAttribute";
 import SampleTexture from "./006_texture/SampleTexture";
-import test from "./006_texture/SampleTexture.tsx"
+import SampleMultiObjectRender from "./007_multiObjectRender/SampleMultiObjectRender";
 function App() {
-	// console.log(SampleTexture.toString())
-	// console.log(SampleTexture())
-	// console.log(SampleTexture()._source)
-	console.log('SampleTexture',test.toString())
+	// console.log(SampleMultiObjectRender.toString())
+	// console.log(SampleMultiObjectRender())
+	// console.log(SampleMultiObjectRender()._source)
+	// console.log('SampleTexture',test.toString())
   return (
     <>
       {/*<SampleCheckGPU/>*/}
@@ -18,7 +18,8 @@ function App() {
       {/*<SampleVertexBuffer/>*/}
       {/*<SampleTransform/>*/}
       {/*<SampleAttribute/>*/}
-      <SampleTexture/>
+      {/*<SampleTexture/>*/}
+      <SampleMultiObjectRender/>
     </>
   );
 }
