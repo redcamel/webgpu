@@ -185,10 +185,11 @@ const SampleMultiObjectRender = (props: any) => {
                 };
 
                 const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-                passEncoder.setPipeline(pipeline);
+
                 ///////////////////////////////////////////////////////////////////
                 let i = objectNum
                 while (i--) {
+                    passEncoder.setPipeline(pipeline);
                     let modelMatrix = modelMatrixs[i]
                     const uniformBuffer = uniformBuffers[i]
                     const uniformBindGroup = uniformBindGroups[i]

@@ -3,7 +3,7 @@ html, body {
   margin: 0;
   height: 100%;
   font-size: 11px;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 #root{
   height: 100%;
