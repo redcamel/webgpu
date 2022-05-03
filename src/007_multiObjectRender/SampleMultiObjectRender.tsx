@@ -129,7 +129,7 @@ const SampleMultiObjectRender = (props: any) => {
             const modelMatrixs = uniformBuffers.map(v => mat4.create());
             ////////////////////////////////////////////////////////////////////////
             // pipeline
-            const descriptor: GPURenderPipelineDescriptor = {
+            const pipelineDescriptor: GPURenderPipelineDescriptor = {
                 // set bindGroupLayouts
                 layout: device.createPipelineLayout({bindGroupLayouts: [uniformsBindGroupLayout]}),
                 vertex: {
@@ -166,7 +166,7 @@ const SampleMultiObjectRender = (props: any) => {
                     ],
                 },
             }
-            const pipeline: GPURenderPipeline = device.createRenderPipeline(descriptor);
+            const pipeline: GPURenderPipeline = device.createRenderPipeline(pipelineDescriptor);
 
             ////////////////////////////////////////////////////////////////////////
             // render

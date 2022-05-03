@@ -25,6 +25,7 @@
     "jsx": "react-jsx",
     "sourceMap": true,
     "inlineSourceMap": true,
+    "strictPropertyInitialization" : false
   },
   "include": [
     "src",

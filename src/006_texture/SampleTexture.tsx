@@ -121,7 +121,7 @@ const SampleTexture = (props:any) => {
             const modelMatrix = mat4.create();
             ////////////////////////////////////////////////////////////////////////
             // pipeline
-            const descriptor: GPURenderPipelineDescriptor = {
+            const pipeLineDescriptor: GPURenderPipelineDescriptor = {
                 // set bindGroupLayouts
                 layout: device.createPipelineLayout({bindGroupLayouts: [uniformsBindGroupLayout]}),
                 vertex: {
@@ -158,7 +158,7 @@ const SampleTexture = (props:any) => {
                     ],
                 },
             }
-            const pipeline: GPURenderPipeline = device.createRenderPipeline(descriptor);
+            const pipeline: GPURenderPipeline = device.createRenderPipeline(pipeLineDescriptor);
 
             ////////////////////////////////////////////////////////////////////////
             // render

@@ -85,7 +85,7 @@ const SampleTransform = () => {
             const modelMatrix = mat4.create();
             ////////////////////////////////////////////////////////////////////////
             // pipeline
-            const descriptor: GPURenderPipelineDescriptor = {
+            const pipeLineDescriptor: GPURenderPipelineDescriptor = {
                 ///////////////////////////////////////////////////////////////////
                 // set bindGroupLayouts !!!!!!!!!!!!!!!!!!!!
                 layout: device.createPipelineLayout({bindGroupLayouts: [uniformsBindGroupLayout]}),
@@ -117,7 +117,7 @@ const SampleTransform = () => {
                     ],
                 },
             }
-            const pipeline: GPURenderPipeline = device.createRenderPipeline(descriptor);
+            const pipeline: GPURenderPipeline = device.createRenderPipeline(pipeLineDescriptor);
             ////////////////////////////////////////////////////////////////////////
             // render
             const render = (time:number) => {

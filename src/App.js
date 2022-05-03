@@ -1,16 +1,13 @@
 import './App.css';
-import SampleCheckGPU from "./001_checkGPU/SampleCheckGPU.tsx";
-import SampleHelloWorld from "./002_helloWorld/SampleHelloWorld";
-import SampleVertexBuffer from "./003_vertexBuffer/SampleVertexBuffer";
-import SampleTransform from "./004_transform/SampleTransform";
-import SampleAttribute from "./005_attribute/SampleAttribute";
 import SampleTexture from "./006_texture/SampleTexture";
-import SampleMultiObjectRender from "./007_multiObjectRender/SampleMultiObjectRender";
+import test from "./006_texture/SampleTexture";
+import SampleSimpleOOP from "./008_simpleOOP/SampleSimpleOOP";
+
 function App() {
-	// console.log(SampleMultiObjectRender.toString())
-	// console.log(SampleMultiObjectRender())
-	// console.log(SampleMultiObjectRender()._source)
-	// console.log('SampleTexture',test.toString())
+	// console.log(SampleSimpleOop.toString())
+	// console.log(SampleSimpleOop())
+	// console.log(SampleSimpleOop()._source)
+	console.log('SampleTexture',test)
   return (
     <>
       {/*<SampleCheckGPU/>*/}
@@ -19,7 +16,8 @@ function App() {
       {/*<SampleTransform/>*/}
       {/*<SampleAttribute/>*/}
       {/*<SampleTexture/>*/}
-      <SampleMultiObjectRender/>
+      {/*<SampleMultiObjectRender/>*/}
+			<SampleSimpleOOP/>
     </>
   );
 }

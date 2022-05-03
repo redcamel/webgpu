@@ -40,7 +40,7 @@ const SampleHelloWorld = () => {
             console.log(vShaderModule, fShaderModule)
             ////////////////////////////////////////////////////////////////////////
             // pipeline
-            const descriptor: GPURenderPipelineDescriptor = {
+            const pipeLineDescriptor: GPURenderPipelineDescriptor = {
                 vertex: {
                     module: vShaderModule,
                     entryPoint: 'main'
@@ -55,7 +55,7 @@ const SampleHelloWorld = () => {
                     ],
                 },
             }
-            const pipeline: GPURenderPipeline = device.createRenderPipeline(descriptor);
+            const pipeline: GPURenderPipeline = device.createRenderPipeline(pipeLineDescriptor);
             ////////////////////////////////////////////////////////////////////////
             // render
             const render = () => {

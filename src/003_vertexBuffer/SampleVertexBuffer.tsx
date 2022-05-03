@@ -52,7 +52,7 @@ const SampleVertexBuffer = () => {
             );
             ////////////////////////////////////////////////////////////////////////
             // pipeline
-            const descriptor: GPURenderPipelineDescriptor = {
+            const pipeLineDescriptor: GPURenderPipelineDescriptor = {
                 vertex: {
                     module: vShaderModule,
                     entryPoint: 'main',
@@ -81,7 +81,7 @@ const SampleVertexBuffer = () => {
                     ],
                 },
             }
-            const pipeline: GPURenderPipeline = device.createRenderPipeline(descriptor);
+            const pipeline: GPURenderPipeline = device.createRenderPipeline(pipeLineDescriptor);
             ////////////////////////////////////////////////////////////////////////
             // render
             const render = () => {
