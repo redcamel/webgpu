@@ -10,7 +10,7 @@ import SourceView from "../helper/checkGPU/comp/SourceView";
 import {mat4} from "gl-matrix"
 
 async function makeShaderModule(device: GPUDevice, sourceSrc: string) {
-    console.log(device,sourceSrc)
+    console.log(device, sourceSrc)
     return await fetch(sourceSrc).then(v => v.text()).then(source => {
         const shaderModuleDescriptor: GPUShaderModuleDescriptor = {
             code: source
@@ -95,7 +95,7 @@ class RedTexture extends RedGPUObject {
         return this._src;
     }
 
-     set src(value: string) {
+    set src(value: string) {
         this._src = value;
         this.load()
     }
@@ -116,6 +116,7 @@ class RedBitmapMaterial extends RedGPUObject {
     get fShaderModule(): GPUShaderModule {
         return this._fShaderModule;
     }
+
     get vShaderModule(): GPUShaderModule {
         return this._vShaderModule;
     }
@@ -153,9 +154,6 @@ class RedBitmapMaterial extends RedGPUObject {
                 }
             ]
         });
-
-
-
     }
 
     private _texture: RedTexture
@@ -172,10 +170,10 @@ class RedBitmapMaterial extends RedGPUObject {
         return this._sampler;
     }
 
-    constructor(device: GPUDevice, texture: RedTexture,vShaderModule:GPUShaderModule,fShaderModule:GPUShaderModule) {
+    constructor(device: GPUDevice, texture: RedTexture, vShaderModule: GPUShaderModule, fShaderModule: GPUShaderModule) {
         super(device)
-        this._vShaderModule=vShaderModule
-        this._fShaderModule=fShaderModule
+        this._vShaderModule = vShaderModule
+        this._fShaderModule = fShaderModule
         this._initShaderModule()
         this._sampler = device.createSampler({
             magFilter: "linear",
@@ -191,9 +189,11 @@ class RedMesh extends RedGPUObject {
     get uniformBindGroup(): GPUBindGroup {
         return this._uniformBindGroup;
     }
+
     get pipeline(): GPURenderPipeline {
         return this._pipeline;
     }
+
     get geometry(): RedGeometry {
         return this._geometry;
     }
@@ -211,6 +211,7 @@ class RedMesh extends RedGPUObject {
     private _presentationFormat: GPUTextureFormat
     private _pipeline: GPURenderPipeline
     private _uniformBindGroup: GPUBindGroup
+
     get uniformBuffer(): GPUBuffer {
         return this._uniformBuffer;
     }
@@ -262,14 +263,14 @@ class RedMesh extends RedGPUObject {
                 ],
             },
         }
-        console.log('this._device',this._device)
-        console.log('this._device',pipelineDescriptor)
+        // console.log('this._device', this._device)
+        // console.log('this._device', pipelineDescriptor)
         this._pipeline = this._device.createRenderPipeline(pipelineDescriptor);
     }
 
     private static matrix44Size = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
 
-    constructor(device: GPUDevice, geometry: RedGeometry, material: RedBitmapMaterial,presentationFormat:GPUTextureFormat) {
+    constructor(device: GPUDevice, geometry: RedGeometry, material: RedBitmapMaterial, presentationFormat: GPUTextureFormat) {
         super(device)
         this._presentationFormat = presentationFormat
         this.geometry = geometry
@@ -278,33 +279,40 @@ class RedMesh extends RedGPUObject {
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         })
         this.material = material
-        this._uniformBindGroupDescriptor = {
-            layout: this.material.uniformsBindGroupLayout,
-            entries: [
-                {
-                    binding: 0,
-                    resource: {
-                        buffer: this.uniformBuffer,
-                        offset: 0,
-                        size: RedMesh.matrix44Size
-                    }
-                },
-                {
-                    binding: 1,
-                    resource: this.material.sampler,
-                },
-                {
-                    binding: 2,
-                    resource: this.material.texture.texture.createView(),
-                }
-            ]
-        };
-        this._uniformBindGroup  = device.createBindGroup(this._uniformBindGroupDescriptor )
         this.matrix = mat4.create()
         mat4.identity(this.matrix)
         mat4.translate(this.matrix, this.matrix, [Math.sin(Math.random() * Math.PI), Math.cos(Math.random() * Math.PI), 1]);
         mat4.rotateZ(this.matrix, this.matrix, Math.random() * Math.PI);
         mat4.scale(this.matrix, this.matrix, [0.25, 0.25, 1]);
+        this.update()
+    }
+
+    update() {
+        if (this.material.texture.texture) {
+            this._uniformBindGroupDescriptor = {
+                layout: this.material.uniformsBindGroupLayout,
+                entries: [
+                    {
+                        binding: 0,
+                        resource: {
+                            buffer: this.uniformBuffer,
+                            offset: 0,
+                            size: RedMesh.matrix44Size
+                        }
+                    },
+                    {
+                        binding: 1,
+                        resource: this.material.sampler,
+                    },
+                    {
+                        binding: 2,
+                        resource: this.material.texture.texture.createView(),
+                    }
+                ]
+            };
+            this._uniformBindGroup = this._device.createBindGroup(this._uniformBindGroupDescriptor)
+        }
+
     }
 }
 
@@ -346,27 +354,19 @@ const SampleSimpleOOP = (props: any) => {
                     1.0, 1.0, 0.0, 1.0, 1.0, 1.0
                 ]
             ));
-            const testTexture2: RedTexture =  new RedTexture(device, '/assets/crate.png')
+            const testTexture2: RedTexture = new RedTexture(device, '/assets/crate.png')
 
             const vShaderModule = await makeShaderModule(device, srcSourceVert)
             const fShaderModule = await makeShaderModule(device, srcSourceFrag)
-            const testMaterial: RedBitmapMaterial = new RedBitmapMaterial(device, testTexture2,vShaderModule,fShaderModule)
+            const testMaterial: RedBitmapMaterial = new RedBitmapMaterial(device, testTexture2, vShaderModule, fShaderModule)
             console.log(testTexture2)
             console.log(testMaterial)
 
-            const testList = [
-                new RedMesh(device,testGometry,testMaterial,presentationFormat),
-                new RedMesh(device,testGometry,testMaterial,presentationFormat),
-                new RedMesh(device,testGometry,testMaterial,presentationFormat),
-                new RedMesh(device,testGometry,testMaterial,presentationFormat),
-                new RedMesh(device,testGometry,testMaterial,presentationFormat),
-                new RedMesh(device,testGometry,testMaterial,presentationFormat),
-                new RedMesh(device,testGometry,testMaterial,presentationFormat),
-                new RedMesh(device,testGometry,testMaterial,presentationFormat),
-                new RedMesh(device,testGometry,testMaterial,presentationFormat),
-                new RedMesh(device,testGometry,testMaterial,presentationFormat),
-                new RedMesh(device,testGometry,testMaterial,presentationFormat),
-            ]
+            let i = 500
+            const testList: RedMesh[] = []
+            while (i--) {
+                testList.push(new RedMesh(device, testGometry, testMaterial, presentationFormat))
+            }
 
             ////////////////////////////////////////////////////////////////////////
             // pipeline
@@ -394,20 +394,25 @@ const SampleSimpleOOP = (props: any) => {
                 let i = testList.length
                 while (i--) {
                     const tMesh = testList[i]
-                    passEncoder.setPipeline(tMesh.pipeline);
                     let modelMatrix = tMesh.matrix
                     const uniformBuffer = tMesh.uniformBuffer
                     const uniformBindGroup = tMesh.uniformBindGroup
-                    // console.log(tMesh)
-                    mat4.identity(modelMatrix)
-                    mat4.translate(modelMatrix, modelMatrix, [Math.sin(i * Math.PI * 2 / testList.length), Math.cos(i * Math.PI * 2 / testList.length), 1]);
-                    mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
-                    mat4.scale(modelMatrix, modelMatrix, [0.25, 0.25, 1]);
+                    if (!tMesh.uniformBindGroup) {
+                        tMesh.update()
 
-                    device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
-                    passEncoder.setBindGroup(0, uniformBindGroup);
-                    passEncoder.setVertexBuffer(0, tMesh.geometry.buffer);
-                    passEncoder.draw(6, 1, 0, 0);
+                    }
+                    if (uniformBindGroup) {
+                        mat4.identity(modelMatrix)
+                        mat4.translate(modelMatrix, modelMatrix, [Math.sin(i * Math.PI * 2 / testList.length), Math.cos(i * Math.PI * 2 / testList.length), 1]);
+                        mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
+                        mat4.scale(modelMatrix, modelMatrix, [0.25, 0.25, 1]);
+                        device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
+                        passEncoder.setPipeline(tMesh.pipeline);
+                        passEncoder.setBindGroup(0, uniformBindGroup);
+                        passEncoder.setVertexBuffer(0, tMesh.geometry.buffer);
+                        passEncoder.draw(6, 1, 0, 0);
+                    }
+
                 }
 
                 passEncoder.end();
