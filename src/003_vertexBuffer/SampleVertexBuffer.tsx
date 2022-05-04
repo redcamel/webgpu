@@ -16,13 +16,7 @@ const SampleVertexBuffer = () => {
     const setMain = async () => {
         const cvs = cvsRef.current
         const ctx = cvs?.getContext('webgpu');
-        if (cvs) {
-            const setCvsSize = (cvs: HTMLCanvasElement) => {
-                cvs.style.width = '256px'
-                cvs.style.height = '256px'
-            }
-            setCvsSize(cvs)
-        }
+
         if (ctx) {
             const presentationFormat: GPUTextureFormat = ctx.getPreferredFormat(adapter);
             ////////////////////////////////////////////////////////////////////////
@@ -118,19 +112,19 @@ const SampleVertexBuffer = () => {
         if (ableWebGPU) setMain()
     }, [initInfo])
     return <div className={'sampleContainer'}>
-        <canvas ref={cvsRef}/>
+        <canvas ref={cvsRef} width={'512px'} height={'512px'}/>
         {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
         <SourceView
             dataList={[
                 {
-                label: 'SourceVert',
-                url : srcSourceVert
-            },
-            {
-                label: 'SourceFrag',
-                url : srcSourceFrag
-            }
-        ]}/>
+                    label: 'SourceVert',
+                    url: srcSourceVert
+                },
+                {
+                    label: 'SourceFrag',
+                    url: srcSourceFrag
+                }
+            ]}/>
     </div>
 }
 export default SampleVertexBuffer
@@ -144,13 +138,13 @@ async function makeShaderModule(device: GPUDevice, sourceSrc: string) {
     })
 }
 
-function makeVertexBuffer(device:GPUDevice, data:Float32Array) {
+function makeVertexBuffer(device: GPUDevice, data: Float32Array) {
     console.log(`// makeVertexBuffer start /////////////////////////////////////////////////////////////`);
-    let bufferDescriptor:GPUBufferDescriptor = {
+    let bufferDescriptor: GPUBufferDescriptor = {
         size: data.byteLength,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
     };
-    let verticesBuffer:GPUBuffer = device.createBuffer(bufferDescriptor);
+    let verticesBuffer: GPUBuffer = device.createBuffer(bufferDescriptor);
     console.log('bufferDescriptor', bufferDescriptor);
     device.queue.writeBuffer(verticesBuffer, 0, data);
     console.log('verticesBuffer', verticesBuffer);

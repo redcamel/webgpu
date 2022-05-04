@@ -232,7 +232,6 @@ class RedMesh extends RedGPUObject {
             vertex: {
                 module: this._material.vShaderModule,
                 entryPoint: 'main',
-
                 buffers: [
                     {
                         arrayStride: 6 * Float32Array.BYTES_PER_ELEMENT,
@@ -297,6 +296,7 @@ class RedMesh extends RedGPUObject {
         }
 
     }
+
     constructor(device: GPUDevice, geometry: RedGeometry, material: RedBitmapMaterial, presentationFormat: GPUTextureFormat) {
         super(device)
         this._presentationFormat = presentationFormat
@@ -315,7 +315,8 @@ class RedMesh extends RedGPUObject {
     }
 
 }
-let passEncoder: GPURenderPassEncoder
+
+let raf: any
 const SampleSimpleOOP = (props: any) => {
     console.log('props.hostInfo', props?.hostInfo)
     const cvsRef = useRef<HTMLCanvasElement>(null);
@@ -324,13 +325,7 @@ const SampleSimpleOOP = (props: any) => {
     const setMain = async () => {
         const cvs = cvsRef.current
         const ctx = cvs?.getContext('webgpu');
-        if (cvs) {
-            const setCvsSize = (cvs: HTMLCanvasElement) => {
-                cvs.style.width = '256px'
-                cvs.style.height = '256px'
-            }
-            setCvsSize(cvs)
-        }
+
         if (ctx) {
             const presentationFormat: GPUTextureFormat = ctx.getPreferredFormat(adapter);
             ////////////////////////////////////////////////////////////////////////
@@ -358,7 +353,11 @@ const SampleSimpleOOP = (props: any) => {
 
             const vShaderModule = await makeShaderModule(device, srcSourceVert)
             const fShaderModule = await makeShaderModule(device, srcSourceFrag)
+
             const testMaterial: RedBitmapMaterial = new RedBitmapMaterial(device, testTexture2, vShaderModule, fShaderModule)
+            vShaderModule.compilationInfo().then(v => {
+                console.log(v)
+            })
             console.log(testTexture2)
             console.log(testMaterial)
 
@@ -375,6 +374,7 @@ const SampleSimpleOOP = (props: any) => {
             ////////////////////////////////////////////////////////////////////////
             // render
             const render = (time: number) => {
+                cancelAnimationFrame(raf)
                 const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
                 const textureView: GPUTextureView = ctx.getCurrentTexture().createView();
                 const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -420,7 +420,7 @@ const SampleSimpleOOP = (props: any) => {
 
                 passEncoder.end();
                 device.queue.submit([commandEncoder.finish()]);
-                requestAnimationFrame(render)
+                raf = requestAnimationFrame(render)
             }
             render(0)
         }
@@ -428,13 +428,16 @@ const SampleSimpleOOP = (props: any) => {
     }
     useEffect(() => {
         checkGPU().then(result => setInitInfo(result)).catch(result => setInitInfo(result))
+        return () => {
+            cancelAnimationFrame(raf)
+        }
     }, [])
     useEffect(() => {
         if (ableWebGPU) setMain()
     }, [initInfo])
 
     return <div className={'sampleContainer'}>
-        <canvas ref={cvsRef}/>
+        <canvas ref={cvsRef} width={'512px'} height={'512px'}/>
         {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
         <SourceView
             dataList={[

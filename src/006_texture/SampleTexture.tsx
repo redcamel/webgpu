@@ -9,21 +9,15 @@ import srcSourceFrag from "./fragment.wgsl";
 import SourceView from "../helper/checkGPU/comp/SourceView";
 import {mat4} from "gl-matrix"
 
-const SampleTexture = (props:any) => {
-    console.log('props.hostInfo',props?.hostInfo)
+const SampleTexture = (props: any) => {
+    console.log('props.hostInfo', props?.hostInfo)
     const cvsRef = useRef<HTMLCanvasElement>(null);
     const [initInfo, setInitInfo] = useState<IWebGPUInitInfo>()
     const {adapter, device, ableWebGPU} = initInfo || {}
     const setMain = async () => {
         const cvs = cvsRef.current
         const ctx = cvs?.getContext('webgpu');
-        if (cvs) {
-            const setCvsSize = (cvs: HTMLCanvasElement) => {
-                cvs.style.width = '256px'
-                cvs.style.height = '256px'
-            }
-            setCvsSize(cvs)
-        }
+
         if (ctx) {
             const presentationFormat: GPUTextureFormat = ctx.getPreferredFormat(adapter);
             ////////////////////////////////////////////////////////////////////////
@@ -206,7 +200,7 @@ const SampleTexture = (props:any) => {
     }, [initInfo])
 
     return <div className={'sampleContainer'}>
-        <canvas ref={cvsRef}/>
+        <canvas ref={cvsRef} width={'512px'} height={'512px'}/>
         {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
         <SourceView
             dataList={[

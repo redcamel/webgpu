@@ -16,13 +16,7 @@ const SampleHelloWorld = () => {
     const setMain = async () => {
         const cvs = cvsRef.current
         const ctx = cvs?.getContext('webgpu');
-        if (cvs) {
-            const setCvsSize = (cvs: HTMLCanvasElement) => {
-                cvs.style.width = '256px'
-                cvs.style.height = '256px'
-            }
-            setCvsSize(cvs)
-        }
+
         if (ctx) {
             const presentationFormat: GPUTextureFormat = ctx.getPreferredFormat(adapter);
             ////////////////////////////////////////////////////////////////////////
@@ -90,16 +84,16 @@ const SampleHelloWorld = () => {
         if (ableWebGPU) setMain()
     }, [initInfo])
     return <div className={'sampleContainer'}>
-        <canvas ref={cvsRef}/>
+        <canvas ref={cvsRef} width={'512px'} height={'512px'}/>
         {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
         <SourceView dataList={[
             {
                 label: 'SourceVert',
-                url : srcSourceVert
+                url: srcSourceVert
             },
             {
                 label: 'SourceFrag',
-                url : srcSourceFrag
+                url: srcSourceFrag
             }
         ]}/>
     </div>

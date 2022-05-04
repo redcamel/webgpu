@@ -19,14 +19,10 @@ const SampleCheckGPU = () => {
     }, [])
     useEffect(() => {
         const cvs = cvsRef.current
-        const setCvsSize = (cvs: HTMLCanvasElement) => {
-            cvs.style.width = '256px'
-            cvs.style.height = '256px'
-        }
         const configure = (cvs: HTMLCanvasElement, device: GPUDevice) => {
             const ctx = cvs.getContext('webgpu');
             if (ctx) {
-                const presentationFormat:GPUTextureFormat = ctx.getPreferredFormat(adapter);
+                const presentationFormat: GPUTextureFormat = ctx.getPreferredFormat(adapter);
                 const configurationDescription: GPUCanvasConfiguration = {
                     device: device,
                     format: presentationFormat,
@@ -40,12 +36,11 @@ const SampleCheckGPU = () => {
                 ////////////////////////////////////////////////////////////////////////
                 // configure
                 configure(cvs, device)
-                setCvsSize(cvs)
             }
         }
     }, [initInfo])
     return <div className={'sampleContainer'}>
-        <canvas ref={cvsRef}/>
+        <canvas ref={cvsRef} width={'512px'} height={'512px'}/>
         {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo} openYn={true}/> : <FailMsg/>)}
     </div>
 }

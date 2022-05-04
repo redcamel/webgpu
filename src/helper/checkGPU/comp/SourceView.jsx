@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
+
 const SourceView = (props) => {
 	const [sourceList, setSourceList] = useState([])
 	let {dataList} = props
@@ -19,8 +20,8 @@ const SourceView = (props) => {
 			return (
 				<div key={index}>
 					<h2>{v['label']}</h2>
-					<pre style={{borderRadius:'6px'}}>
-                <code className="language-js" >
+					<pre style={{borderRadius: '6px'}}>
+                <code className="language-js">
                 {sourceList[index]}
                 </code>
             </pre>

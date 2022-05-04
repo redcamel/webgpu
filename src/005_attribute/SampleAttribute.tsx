@@ -8,6 +8,7 @@ import srcSourceVert from "./vertex.wgsl";
 import srcSourceFrag from "./fragment.wgsl";
 import SourceView from "../helper/checkGPU/comp/SourceView";
 import {mat4} from "gl-matrix"
+
 const SampleAttribute = () => {
     const cvsRef = useRef<HTMLCanvasElement>(null);
     const [initInfo, setInitInfo] = useState<IWebGPUInitInfo>()
@@ -15,13 +16,7 @@ const SampleAttribute = () => {
     const setMain = async () => {
         const cvs = cvsRef.current
         const ctx = cvs?.getContext('webgpu');
-        if (cvs) {
-            const setCvsSize = (cvs: HTMLCanvasElement) => {
-                cvs.style.width = '256px'
-                cvs.style.height = '256px'
-            }
-            setCvsSize(cvs)
-        }
+
         if (ctx) {
             const presentationFormat: GPUTextureFormat = ctx.getPreferredFormat(adapter);
             ////////////////////////////////////////////////////////////////////////
@@ -127,7 +122,7 @@ const SampleAttribute = () => {
             const pipeline: GPURenderPipeline = device.createRenderPipeline(pipeLineDescriptor);
             ////////////////////////////////////////////////////////////////////////
             // render
-            const render = (time:number) => {
+            const render = (time: number) => {
                 const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
                 const textureView: GPUTextureView = ctx.getCurrentTexture().createView();
                 const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -148,7 +143,7 @@ const SampleAttribute = () => {
                 passEncoder.setBindGroup(0, uniformBindGroup);
                 mat4.identity(modelMatrix)
                 mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
-                mat4.scale(modelMatrix, modelMatrix, [0.5,0.5,1]);
+                mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 1]);
                 // update Uniform
                 device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
                 ///////////////////////////////////////////////////////////////////
@@ -170,19 +165,19 @@ const SampleAttribute = () => {
         if (ableWebGPU) setMain()
     }, [initInfo])
     return <div className={'sampleContainer'}>
-        <canvas ref={cvsRef}/>
+        <canvas ref={cvsRef} width={'512px'} height={'512px'}/>
         {initInfo && (ableWebGPU ? <LimitInfo initInfo={initInfo}/> : <FailMsg/>)}
         <SourceView
             dataList={[
                 {
-                label: 'SourceVert',
-                url : srcSourceVert
-            },
-            {
-                label: 'SourceFrag',
-                url : srcSourceFrag
-            }
-        ]}/>
+                    label: 'SourceVert',
+                    url: srcSourceVert
+                },
+                {
+                    label: 'SourceFrag',
+                    url: srcSourceFrag
+                }
+            ]}/>
     </div>
 }
 export default SampleAttribute
@@ -196,13 +191,13 @@ async function makeShaderModule(device: GPUDevice, sourceSrc: string) {
     })
 }
 
-function makeVertexBuffer(device:GPUDevice, data:Float32Array) {
+function makeVertexBuffer(device: GPUDevice, data: Float32Array) {
     console.log(`// makeVertexBuffer start /////////////////////////////////////////////////////////////`);
-    let bufferDescriptor:GPUBufferDescriptor = {
+    let bufferDescriptor: GPUBufferDescriptor = {
         size: data.byteLength,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
     };
-    let verticesBuffer:GPUBuffer = device.createBuffer(bufferDescriptor);
+    let verticesBuffer: GPUBuffer = device.createBuffer(bufferDescriptor);
     console.log('bufferDescriptor', bufferDescriptor);
     device.queue.writeBuffer(verticesBuffer, 0, data);
     console.log('verticesBuffer', verticesBuffer);

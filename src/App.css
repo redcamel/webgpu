@@ -1,28 +1,36 @@
 html, body {
-  padding: 0;
-  margin: 0;
-  height: 100%;
-  font-size: 11px;
-  overflow-x: hidden;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    font-size: 11px;
+    overflow-x: hidden;
 }
-#root{
-  height: 100%;
+canvas {
+    border: 1px solid #eee;
+    border-radius: 8px;
 }
+#root {
+    height: 100%;
+}
+
 .failMsg {
-  position: absolute;
-  top:0;
-  left:0;
-  right : 0;
-  bottom : 0;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  align-items: center;
-  justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
 }
-.sampleContainer{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+
+.sampleContainer {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    /*flex-direction: column;*/
+    align-items: center;
+    justify-content: center;
 }
