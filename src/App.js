@@ -23,8 +23,8 @@ function App() {
 			{/*<SampleAttribute/>*/}
 			{/*<SampleTexture/>*/}
 			{/*<SampleDepthStencilAttachment/>*/}
-			<SampleMultiObjectRender/>
-			{/*<SampleSimpleOOP/>*/}
+			{/*<SampleMultiObjectRender/>*/}
+			<SampleSimpleOOP/>
 		</>
 	);
 }

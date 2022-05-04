@@ -261,6 +261,11 @@ class RedMesh extends RedGPUObject {
                     },
                 ],
             },
+            depthStencil: {
+                depthWriteEnabled: true,
+                depthCompare: 'less',
+                format: 'depth24plus',
+            },
         }
         // console.log('this._device', this._device)
         // console.log('this._device', pipelineDescriptor)
@@ -361,19 +366,25 @@ const SampleSimpleOOP = (props: any) => {
             console.log(testTexture2)
             console.log(testMaterial)
 
-            let i = 5000
+            let i = 200
             const testList: RedMesh[] = []
             while (i--) {
                 testList.push(new RedMesh(device, testGometry, testMaterial, presentationFormat))
             }
 
-            ////////////////////////////////////////////////////////////////////////
-            // pipeline
+            const depthTexture = device.createTexture({
+                size: [cvs?.clientWidth, cvs?.clientHeight],
+                format: 'depth24plus',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT,
+            });
 
 
+            const projectionMatrix = mat4.create();
             ////////////////////////////////////////////////////////////////////////
             // render
             const render = (time: number) => {
+                const aspect = cvs ? cvs?.clientWidth / cvs?.clientHeight : 1;
+                mat4.perspective(projectionMatrix, Math.PI * 2 / 360 * 60, aspect, 1, 1000.0);
                 cancelAnimationFrame(raf)
                 const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
                 const textureView: GPUTextureView = ctx.getCurrentTexture().createView();
@@ -386,6 +397,12 @@ const SampleSimpleOOP = (props: any) => {
                             storeOp: 'store',
                         },
                     ],
+                    depthStencilAttachment: {
+                        view: depthTexture.createView(),
+                        depthClearValue: 1.0,
+                        depthLoadOp: 'clear',
+                        depthStoreOp: 'store',
+                    },
                 };
 
                 const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -407,9 +424,16 @@ const SampleSimpleOOP = (props: any) => {
                     }
                     if (uniformBindGroup) {
                         mat4.identity(modelMatrix)
-                        mat4.translate(modelMatrix, modelMatrix, [Math.sin(i * Math.PI * 2 / testList.length), Math.cos(i * Math.PI * 2 / testList.length), 1]);
-                        mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
+                        mat4.translate(modelMatrix, modelMatrix, [
+                            Math.sin(i * Math.PI * 2 / testList.length + (time / 100 + i) * Math.PI / 180) + Math.sin((time / 50 + i * 10) * Math.PI / 180) * 2,
+                            Math.cos(i * Math.PI * 2 / testList.length + (time / 200 + i) * Math.PI / 180) + Math.cos((time / 50 + i * 10) * Math.PI / 180) * 2,
+                            -Math.PI * 2 + Math.cos(time / 1000) + Math.cos((time / 50 + i * 10) * Math.PI / 180),
+                        ]);
+                        mat4.rotateX(modelMatrix, modelMatrix, i);
+                        mat4.rotateY(modelMatrix, modelMatrix, i);
+                        mat4.rotateZ(modelMatrix, modelMatrix, time / 300);
                         mat4.scale(modelMatrix, modelMatrix, [0.25, 0.25, 1]);
+                        mat4.multiply(modelMatrix, projectionMatrix, modelMatrix);
                         device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
                         passEncoder.setPipeline(tMesh.pipeline);
                         passEncoder.setBindGroup(0, uniformBindGroup);
