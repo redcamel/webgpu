@@ -159,12 +159,28 @@ const SampleMultiObjectRender = (props: any) => {
                         },
                     ],
                 },
+                depthStencil: {
+                    depthWriteEnabled: true,
+                    depthCompare: 'less',
+                    format: 'depth24plus',
+                },
             }
             const pipeline: GPURenderPipeline = device.createRenderPipeline(pipelineDescriptor);
 
             ////////////////////////////////////////////////////////////////////////
+            // depthTexture
+            const depthTexture = device.createTexture({
+                size: [cvs?.clientWidth, cvs?.clientHeight],
+                format: 'depth24plus',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT,
+            });
+            const projectionMatrix = mat4.create();
+            ////////////////////////////////////////////////////////////////////////
             // render
             const render = (time: number) => {
+                const aspect = cvs ? cvs?.clientWidth / cvs?.clientHeight : 1;
+                mat4.perspective(projectionMatrix, Math.PI * 2 / 360 * 60, aspect, 1, 1000.0);
+                console.log('aspect', aspect, [cvs?.clientWidth, cvs?.clientHeight])
                 const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
                 const textureView: GPUTextureView = ctx.getCurrentTexture().createView();
                 const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -176,6 +192,12 @@ const SampleMultiObjectRender = (props: any) => {
                             storeOp: 'store',
                         },
                     ],
+                    depthStencilAttachment: {
+                        view: depthTexture.createView(),
+                        depthClearValue: 1.0,
+                        depthLoadOp: 'clear',
+                        depthStoreOp: 'store',
+                    },
                 };
 
                 const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -188,10 +210,17 @@ const SampleMultiObjectRender = (props: any) => {
                     const uniformBuffer = uniformBuffers[i]
                     const uniformBindGroup = uniformBindGroups[i]
                     mat4.identity(modelMatrix)
-                    mat4.translate(modelMatrix, modelMatrix, [Math.sin(i * Math.PI * 2 / objectNum), Math.cos(i * Math.PI * 2 / objectNum), 1]);
+                    mat4.translate(modelMatrix, modelMatrix, [
+                            Math.sin(i * Math.PI * 2 / (objectNum)) * 5,
+                            Math.cos(i * Math.PI * 2 / (objectNum)) * 5,
+                            -20
+                        ]
+                    );
+                    mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
+                    mat4.rotateY(modelMatrix, modelMatrix, time / 1000);
                     mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
-                    mat4.scale(modelMatrix, modelMatrix, [0.25, 0.25, 1]);
-
+                    mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
+                    mat4.multiply(modelMatrix, projectionMatrix, modelMatrix);
                     device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
                     passEncoder.setBindGroup(0, uniformBindGroup);
                     passEncoder.setVertexBuffer(0, vertexBuffer);
