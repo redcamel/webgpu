@@ -270,24 +270,7 @@ class RedMesh extends RedGPUObject {
 
     private static matrix44Size = 4 * 4 * Float32Array.BYTES_PER_ELEMENT; // 4x4 matrix
 
-    constructor(device: GPUDevice, geometry: RedGeometry, material: RedBitmapMaterial, presentationFormat: GPUTextureFormat) {
-        super(device)
-        this._presentationFormat = presentationFormat
-        this.geometry = geometry
-        this.uniformBuffer = device.createBuffer({
-            size: RedMesh.matrix44Size,
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        })
-        this.material = material
-        this.matrix = mat4.create()
-        mat4.identity(this.matrix)
-        mat4.translate(this.matrix, this.matrix, [Math.sin(Math.random() * Math.PI), Math.cos(Math.random() * Math.PI), 1]);
-        mat4.rotateZ(this.matrix, this.matrix, Math.random() * Math.PI);
-        mat4.scale(this.matrix, this.matrix, [0.25, 0.25, 1]);
-        this.update()
-    }
-
-    update() {
+    updateUniformBindGroup() {
         if (this.material.texture.texture) {
             this._uniformBindGroupDescriptor = {
                 layout: this.material.uniformsBindGroupLayout,
@@ -314,8 +297,25 @@ class RedMesh extends RedGPUObject {
         }
 
     }
-}
+    constructor(device: GPUDevice, geometry: RedGeometry, material: RedBitmapMaterial, presentationFormat: GPUTextureFormat) {
+        super(device)
+        this._presentationFormat = presentationFormat
+        this.geometry = geometry
+        this.uniformBuffer = device.createBuffer({
+            size: RedMesh.matrix44Size,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        })
+        this.material = material
+        this.matrix = mat4.create()
+        mat4.identity(this.matrix)
+        mat4.translate(this.matrix, this.matrix, [Math.sin(Math.random() * Math.PI), Math.cos(Math.random() * Math.PI), 1]);
+        mat4.rotateZ(this.matrix, this.matrix, Math.random() * Math.PI);
+        mat4.scale(this.matrix, this.matrix, [0.25, 0.25, 1]);
+        this.updateUniformBindGroup()
+    }
 
+}
+let passEncoder: GPURenderPassEncoder
 const SampleSimpleOOP = (props: any) => {
     console.log('props.hostInfo', props?.hostInfo)
     const cvsRef = useRef<HTMLCanvasElement>(null);
@@ -362,7 +362,7 @@ const SampleSimpleOOP = (props: any) => {
             console.log(testTexture2)
             console.log(testMaterial)
 
-            let i = 500
+            let i = 5000
             const testList: RedMesh[] = []
             while (i--) {
                 testList.push(new RedMesh(device, testGometry, testMaterial, presentationFormat))
@@ -398,8 +398,12 @@ const SampleSimpleOOP = (props: any) => {
                     const uniformBuffer = tMesh.uniformBuffer
                     const uniformBindGroup = tMesh.uniformBindGroup
                     if (!tMesh.uniformBindGroup) {
-                        tMesh.update()
-
+                        tMesh.updateUniformBindGroup()
+                        mat4.identity(modelMatrix)
+                        mat4.translate(modelMatrix, modelMatrix, [Math.sin(i * Math.PI * 2 / testList.length), Math.cos(i * Math.PI * 2 / testList.length), 1]);
+                        mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
+                        mat4.scale(modelMatrix, modelMatrix, [0.25, 0.25, 1]);
+                        device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
                     }
                     if (uniformBindGroup) {
                         mat4.identity(modelMatrix)
@@ -412,7 +416,6 @@ const SampleSimpleOOP = (props: any) => {
                         passEncoder.setVertexBuffer(0, tMesh.geometry.buffer);
                         passEncoder.draw(6, 1, 0, 0);
                     }
-
                 }
 
                 passEncoder.end();
