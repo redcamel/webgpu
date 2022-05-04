@@ -4,9 +4,10 @@ import test from "./006_texture/SampleTexture";
 import SampleVertexBuffer from "./003_vertexBuffer/SampleVertexBuffer";
 import SampleTransform from "./004_transform/SampleTransform";
 import SampleAttribute from "./005_attribute/SampleAttribute";
-import SampleMultiObjectRender from "./007_multiObjectRender/SampleMultiObjectRender";
-import SampleSimpleOOP from "./008_simpleOOP/SampleSimpleOOP";
+import SampleMultiObjectRender from "./008_multiObjectRender/SampleMultiObjectRender";
+import SampleSimpleOOP from "./015_simpleOOP/SampleSimpleOOP";
 import SampleHelloWorld from "./002_helloWorld/SampleHelloWorld";
+import SampleDepthStencilAttachment from "./007_depthStancil/SampleDepthStencilAttachment";
 
 function App() {
 	// console.log(SampleSimpleOop.toString())
@@ -21,6 +22,7 @@ function App() {
 			{/*<SampleTransform/>*/}
 			{/*<SampleAttribute/>*/}
 			{/*<SampleTexture/>*/}
+			{/*<SampleDepthStencilAttachment/>*/}
 			<SampleMultiObjectRender/>
 			{/*<SampleSimpleOOP/>*/}
 		</>

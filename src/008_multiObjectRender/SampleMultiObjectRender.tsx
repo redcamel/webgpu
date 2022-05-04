@@ -56,7 +56,7 @@ const SampleMultiObjectRender = (props: any) => {
             const testSampler = device.createSampler({
                 magFilter: "linear",
                 minFilter: "linear",
-                mipmapFilter: "nearest"
+                mipmapFilter: "linear"
             });
             // make BindGroup
             const uniformsBindGroupLayout = device.createBindGroupLayout({
