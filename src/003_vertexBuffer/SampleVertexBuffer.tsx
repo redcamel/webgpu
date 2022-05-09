@@ -8,6 +8,7 @@ import srcSourceVert from "./vertex.wgsl";
 import srcSourceFrag from "./fragment.wgsl";
 import SourceView from "../helper/checkGPU/comp/SourceView";
 
+let raf: any
 const SampleVertexBuffer = () => {
     console.log(SampleVertexBuffer)
     const cvsRef = useRef<HTMLCanvasElement>(null);
@@ -79,6 +80,7 @@ const SampleVertexBuffer = () => {
             ////////////////////////////////////////////////////////////////////////
             // render
             const render = () => {
+                cancelAnimationFrame(raf)
                 const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
                 const textureView: GPUTextureView = ctx.getCurrentTexture().createView();
                 const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -99,7 +101,7 @@ const SampleVertexBuffer = () => {
                 passEncoder.draw(3, 1, 0, 0);
                 passEncoder.end();
                 device.queue.submit([commandEncoder.finish()]);
-                requestAnimationFrame(render)
+                raf = requestAnimationFrame(render)
             }
             render()
         }

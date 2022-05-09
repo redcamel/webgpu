@@ -9,6 +9,7 @@ import srcSourceFrag from "./fragment.wgsl";
 import SourceView from "../helper/checkGPU/comp/SourceView";
 import {mat4} from "gl-matrix"
 
+let raf: any
 const SampleMultiObjectRender = (props: any) => {
     console.log('props.hostInfo', props?.hostInfo)
     const cvsRef = useRef<HTMLCanvasElement>(null);
@@ -178,9 +179,10 @@ const SampleMultiObjectRender = (props: any) => {
             ////////////////////////////////////////////////////////////////////////
             // render
             const render = (time: number) => {
+                cancelAnimationFrame(raf)
                 const aspect = cvs ? cvs?.clientWidth / cvs?.clientHeight : 1;
                 mat4.perspective(projectionMatrix, Math.PI * 2 / 360 * 60, aspect, 1, 1000.0);
-                console.log('aspect', aspect, [cvs?.clientWidth, cvs?.clientHeight])
+                // console.log('aspect', aspect, [cvs?.clientWidth, cvs?.clientHeight])
                 const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
                 const textureView: GPUTextureView = ctx.getCurrentTexture().createView();
                 const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -213,7 +215,7 @@ const SampleMultiObjectRender = (props: any) => {
                     mat4.translate(modelMatrix, modelMatrix, [
                             Math.sin(i * Math.PI * 2 / (objectNum)) * 5,
                             Math.cos(i * Math.PI * 2 / (objectNum)) * 5,
-                            -20
+                            -10
                         ]
                     );
                     mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
@@ -229,7 +231,7 @@ const SampleMultiObjectRender = (props: any) => {
 
                 passEncoder.end();
                 device.queue.submit([commandEncoder.finish()]);
-                requestAnimationFrame(render)
+                raf = requestAnimationFrame(render)
             }
             render(0)
         }

@@ -20,11 +20,11 @@ function App() {
 			{/*<SampleHelloWorld/>*/}
 			{/*<SampleVertexBuffer/>*/}
 			{/*<SampleTransform/>*/}
-			{/*<SampleAttribute/>*/}
+			<SampleAttribute/>
 			{/*<SampleTexture/>*/}
 			{/*<SampleDepthStencilAttachment/>*/}
 			{/*<SampleMultiObjectRender/>*/}
-			<SampleSimpleOOP/>
+			{/*<SampleSimpleOOP/>*/}
 		</>
 	);
 }

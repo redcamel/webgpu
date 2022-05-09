@@ -5,10 +5,12 @@ html, body {
     font-size: 11px;
     overflow-x: hidden;
 }
+
 canvas {
     border: 1px solid #eee;
     border-radius: 8px;
 }
+
 #root {
     height: 100%;
 }

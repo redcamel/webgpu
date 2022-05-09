@@ -9,6 +9,7 @@ import srcSourceFrag from "./fragment.wgsl";
 import SourceView from "../helper/checkGPU/comp/SourceView";
 import {mat4} from "gl-matrix"
 
+let raf: any
 const SampleTransform = () => {
     console.log(SampleTransform)
     const cvsRef = useRef<HTMLCanvasElement>(null);
@@ -116,6 +117,7 @@ const SampleTransform = () => {
             ////////////////////////////////////////////////////////////////////////
             // render
             const render = (time: number) => {
+                cancelAnimationFrame(raf)
                 const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
                 const textureView: GPUTextureView = ctx.getCurrentTexture().createView();
                 const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -145,7 +147,7 @@ const SampleTransform = () => {
                 passEncoder.draw(3, 1, 0, 0);
                 passEncoder.end();
                 device.queue.submit([commandEncoder.finish()]);
-                requestAnimationFrame(render)
+                raf = requestAnimationFrame(render)
             }
             render(0)
         }

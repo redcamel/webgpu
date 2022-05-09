@@ -9,6 +9,7 @@ import srcSourceFrag from "./fragment.wgsl";
 import SourceView from "../helper/checkGPU/comp/SourceView";
 import {mat4} from "gl-matrix"
 
+let raf: any
 const SampleDepthStencilAttachment = (props: any) => {
     console.log('props.hostInfo', props?.hostInfo)
     const cvsRef = useRef<HTMLCanvasElement>(null);
@@ -162,7 +163,6 @@ const SampleDepthStencilAttachment = (props: any) => {
             const pipeline: GPURenderPipeline = device.createRenderPipeline(pipeLineDescriptor);
 
 
-
             ////////////////////////////////////////////////////////////////////////
             // depthTexture
             const depthTexture = device.createTexture({
@@ -174,6 +174,7 @@ const SampleDepthStencilAttachment = (props: any) => {
             ////////////////////////////////////////////////////////////////////////
             // render
             const render = (time: number) => {
+                cancelAnimationFrame(raf)
                 const aspect = cvs ? cvs?.clientWidth / cvs?.clientHeight : 1;
                 mat4.perspective(projectionMatrix, Math.PI * 2 / 360 * 60, aspect, 1, 1000.0);
                 console.log('aspect', aspect, [cvs?.clientWidth, cvs?.clientHeight])
@@ -216,7 +217,7 @@ const SampleDepthStencilAttachment = (props: any) => {
                 passEncoder.draw(6, 1, 0, 0);
                 passEncoder.end();
                 device.queue.submit([commandEncoder.finish()]);
-                requestAnimationFrame(render)
+                raf = requestAnimationFrame(render)
             }
             render(0)
         }
