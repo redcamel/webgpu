@@ -10,7 +10,7 @@
     "@types/node": "^16.11.26",
     "@types/react": "^17.0.43",
     "@types/react-dom": "^17.0.14",
-    "@webgpu/types": "^0.1.13",
+    "@webgpu/types": "^0.1.18",
     "gl-matrix": "^3.4.3",
     "prismjs": "^1.26.0",
     "react": "^18.0.0",
@@ -19,8 +19,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "set PORT=3003 && react-scripts start",
-    "build": "react-scripts build",
+    "start": "set PORT=3003 && react-scripts start ",
+    "build": "react-scripts build && copy",
+    "copy": "copyfiles src/**/*.tsx public/",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -41,5 +42,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "copyfiles": "^2.4.1"
   }
 }

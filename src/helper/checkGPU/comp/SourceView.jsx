@@ -15,7 +15,7 @@ const SourceView = (props) => {
 	useEffect(() => {
 		if (sourceList.length) Prism.highlightAll()
 	}, [sourceList])
-	return <div style={styleContainer}>
+	return <div style={styleContainer} className={'sourceBox'}>
 		{dataList.map((v, index) => {
 			return (
 				<div key={index}>
@@ -35,10 +35,15 @@ export default SourceView
 const styleContainer = {
 	display: 'flex',
 	flexDirection: 'column',
+	flexGrow: 1,
 	margin: '10px',
 	padding: '10px',
 	borderRadius: '8px',
-	border: '1px  solid #eee'
+	border: '1px  solid #444',
+	maxHeight: '90%',
+	overflowX: 'hidden',
+	overflowY: 'auto',
+	color : '#fff'
 }
 
 

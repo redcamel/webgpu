@@ -10,7 +10,7 @@ import SourceView from "../helper/checkGPU/comp/SourceView";
 import {mat4} from "gl-matrix"
 
 let raf: any
-const SampleTexture = (props: any) => {
+const SampleIndexBuffer = (props: any) => {
     console.log('props.hostInfo', props?.hostInfo)
     const cvsRef = useRef<HTMLCanvasElement>(null);
     const [initInfo, setInitInfo] = useState<IWebGPUInitInfo>()
@@ -26,6 +26,7 @@ const SampleTexture = (props: any) => {
             const configurationDescription: GPUCanvasConfiguration = {
                 device: device,
                 format: presentationFormat,
+                alphaMode: 'premultiplied'
             };
             console.log('configurationDescription', configurationDescription);
             ctx.configure(configurationDescription);
@@ -43,12 +44,16 @@ const SampleTexture = (props: any) => {
                         //x,y,z,w, u,v
                         -1.0, -1.0, 0.0, 1.0, 0.0, 0.0,
                         1.0, -1.0, 0.0, 1.0, 0.0, 1.0,
+                        1.0, 1.0, 0.0, 1.0, 1.0, 1.0,
                         -1.0, 1.0, 0.0, 1.0, 1.0, 0.0,
-                        -1.0, 1.0, 0.0, 1.0, 1.0, 0.0,
-                        1.0, -1.0, 0.0, 1.0, 0.0, 1.0,
-                        1.0, 1.0, 0.0, 1.0, 1.0, 1.0
                     ]
                 )
+            );
+            const indexBufferInfo = makeIndexBufferInfo(
+                device,
+                new Uint32Array([
+                    0, 1, 2, 0, 2, 3
+                ])
             );
             ////////////////////////////////////////////////////////////////////////
             // makeTexture !!!!!!!!!!!!!!!
@@ -122,7 +127,6 @@ const SampleTexture = (props: any) => {
                 vertex: {
                     module: vShaderModule,
                     entryPoint: 'main',
-
                     buffers: [
                         {
                             arrayStride: 6 * Float32Array.BYTES_PER_ELEMENT,
@@ -152,16 +156,31 @@ const SampleTexture = (props: any) => {
                         },
                     ],
                 },
-
+                depthStencil: {
+                    depthWriteEnabled: true,
+                    depthCompare: 'less',
+                    format: 'depth24plus',
+                },
 
             }
             const pipeline: GPURenderPipeline = device.createRenderPipeline(pipeLineDescriptor);
 
 
             ////////////////////////////////////////////////////////////////////////
+            // depthTexture
+            const depthTexture = device.createTexture({
+                size: [cvs?.clientWidth, cvs?.clientHeight],
+                format: 'depth24plus',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT,
+            });
+            const projectionMatrix = mat4.create();
+            ////////////////////////////////////////////////////////////////////////
             // render
             const render = (time: number) => {
                 cancelAnimationFrame(raf)
+                const aspect = cvs ? cvs?.clientWidth / cvs?.clientHeight : 1;
+                mat4.perspective(projectionMatrix, Math.PI * 2 / 360 * 60, aspect, 1, 1000.0);
+                // console.log('aspect', aspect, [cvs?.clientWidth, cvs?.clientHeight])
                 const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
                 const textureView: GPUTextureView = ctx.getCurrentTexture().createView();
                 const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -173,6 +192,12 @@ const SampleTexture = (props: any) => {
                             storeOp: 'store',
                         },
                     ],
+                    depthStencilAttachment: {
+                        view: depthTexture.createView(),
+                        depthClearValue: 1.0,
+                        depthLoadOp: 'clear',
+                        depthStoreOp: 'store',
+                    },
                 };
 
                 const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -181,14 +206,19 @@ const SampleTexture = (props: any) => {
                 // setBindGroup
                 passEncoder.setBindGroup(0, uniformBindGroup);
                 mat4.identity(modelMatrix)
+                mat4.translate(modelMatrix, modelMatrix, [0, 0, -5]);
+                mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
+                mat4.rotateY(modelMatrix, modelMatrix, time / 1000);
                 mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
-                mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 1]);
+                mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
+                mat4.multiply(modelMatrix, projectionMatrix, modelMatrix);
                 // update Uniform
                 device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
                 ///////////////////////////////////////////////////////////////////
                 // setVertexBuffer
                 passEncoder.setVertexBuffer(0, vertexBuffer);
-                passEncoder.draw(6, 1, 0, 0);
+                passEncoder.setIndexBuffer(indexBufferInfo.buffer, 'uint32');
+                passEncoder.drawIndexed(indexBufferInfo.size, 1, 0, 0, 0);
                 passEncoder.end();
                 device.queue.submit([commandEncoder.finish()]);
                 raf = requestAnimationFrame(render)
@@ -199,7 +229,7 @@ const SampleTexture = (props: any) => {
     }
     useEffect(() => {
         checkGPU().then(result => setInitInfo(result)).catch(result => setInitInfo(result))
-        return ()=>   cancelAnimationFrame(raf)
+        return () => cancelAnimationFrame(raf)
     }, [])
     useEffect(() => {
         if (ableWebGPU) setMain()
@@ -220,12 +250,12 @@ const SampleTexture = (props: any) => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/006_texture/SampleTexture.tsx'
+                    url: '/src/007_depthStencil/SampleDepthStencilAttachment.tsx'
                 }
             ]}/>
     </div>
 }
-export default SampleTexture
+export default SampleIndexBuffer
 
 async function makeShaderModule(device: GPUDevice, sourceSrc: string) {
     return await fetch(sourceSrc).then(v => v.text()).then(source => {
@@ -248,6 +278,22 @@ function makeVertexBuffer(device: GPUDevice, data: Float32Array) {
     console.log('verticesBuffer', verticesBuffer);
     console.log(`// makeVertexBuffer end /////////////////////////////////////////////////////////////`);
     return verticesBuffer;
+}
+
+function makeIndexBufferInfo(device: GPUDevice, data: Uint32Array) {
+    let indexBufferDescriptor = {
+        size: data.byteLength,
+        usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
+    };
+    let indexBuffer: GPUBuffer = device.createBuffer(indexBufferDescriptor);
+    console.log('bufferDescriptor', indexBufferDescriptor);
+    device.queue.writeBuffer(indexBuffer, 0, data);
+    console.log('indexBuffer', indexBuffer);
+    return {
+        buffer: indexBuffer,
+        size: data.length,
+        originData: data
+    };
 }
 
 function webGPUTextureFromImageBitmapOrCanvas(device: GPUDevice, source: ImageBitmap) {

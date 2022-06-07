@@ -10,7 +10,7 @@ import SourceView from "../helper/checkGPU/comp/SourceView";
 import {mat4} from "gl-matrix"
 
 let raf: any
-const SampleTexture = (props: any) => {
+const SampleDepthStencilAttachment = (props: any) => {
     console.log('props.hostInfo', props?.hostInfo)
     const cvsRef = useRef<HTMLCanvasElement>(null);
     const [initInfo, setInitInfo] = useState<IWebGPUInitInfo>()
@@ -153,15 +153,31 @@ const SampleTexture = (props: any) => {
                     ],
                 },
 
+                depthStencil: {
+                    depthWriteEnabled: true,
+                    depthCompare: 'less',
+                    format: 'depth24plus',
+                },
 
             }
             const pipeline: GPURenderPipeline = device.createRenderPipeline(pipeLineDescriptor);
 
 
             ////////////////////////////////////////////////////////////////////////
+            // depthTexture
+            const depthTexture = device.createTexture({
+                size: [cvs?.clientWidth, cvs?.clientHeight],
+                format: 'depth24plus',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT,
+            });
+            const projectionMatrix = mat4.create();
+            ////////////////////////////////////////////////////////////////////////
             // render
             const render = (time: number) => {
                 cancelAnimationFrame(raf)
+                const aspect = cvs ? cvs?.clientWidth / cvs?.clientHeight : 1;
+                mat4.perspective(projectionMatrix, Math.PI * 2 / 360 * 60, aspect, 1, 1000.0);
+                console.log('aspect', aspect, [cvs?.clientWidth, cvs?.clientHeight])
                 const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
                 const textureView: GPUTextureView = ctx.getCurrentTexture().createView();
                 const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -173,6 +189,12 @@ const SampleTexture = (props: any) => {
                             storeOp: 'store',
                         },
                     ],
+                    depthStencilAttachment: {
+                        view: depthTexture.createView(),
+                        depthClearValue: 1.0,
+                        depthLoadOp: 'clear',
+                        depthStoreOp: 'store',
+                    },
                 };
 
                 const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -181,8 +203,12 @@ const SampleTexture = (props: any) => {
                 // setBindGroup
                 passEncoder.setBindGroup(0, uniformBindGroup);
                 mat4.identity(modelMatrix)
+                mat4.translate(modelMatrix, modelMatrix, [0, 0, -5]);
+                mat4.rotateX(modelMatrix, modelMatrix, time / 1000);
+                mat4.rotateY(modelMatrix, modelMatrix, time / 1000);
                 mat4.rotateZ(modelMatrix, modelMatrix, time / 1000);
-                mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 1]);
+                mat4.scale(modelMatrix, modelMatrix, [1, 1, 1]);
+                mat4.multiply(modelMatrix, projectionMatrix, modelMatrix);
                 // update Uniform
                 device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
                 ///////////////////////////////////////////////////////////////////
@@ -220,12 +246,12 @@ const SampleTexture = (props: any) => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/006_texture/SampleTexture.tsx'
+                    url: '/src/007_depthStencil/SampleDepthStencilAttachment.tsx'
                 }
             ]}/>
     </div>
 }
-export default SampleTexture
+export default SampleDepthStencilAttachment
 
 async function makeShaderModule(device: GPUDevice, sourceSrc: string) {
     return await fetch(sourceSrc).then(v => v.text()).then(source => {

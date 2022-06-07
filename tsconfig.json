@@ -8,7 +8,7 @@
     ],
     "typeRoots": [
       "./node_modules/@webgpu/types",
-      "./node_modules/@types",
+      "./node_modules/@types"
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -31,5 +31,5 @@
     "src",
     "src/**/*.tsx",
     "src/**/*.d.ts"
-  ],
+  ]
 }
