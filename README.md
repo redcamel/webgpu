@@ -2,9 +2,6 @@
 
 These study samples run in Chrome Canary() behind the flag --enable-unsafe-webgpu.
 
-# github 
-  - [go github](https://github.com/redcamel/webgpu)
-
 
 # study example
 ## WGSL Version
