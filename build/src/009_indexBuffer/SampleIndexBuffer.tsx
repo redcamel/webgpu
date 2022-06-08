@@ -250,7 +250,7 @@ const SampleIndexBuffer = (props: any) => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/007_depthStencil/SampleDepthStencilAttachment.tsx'
+                    url: '/src/009_indexBuffer/SampleIndexBuffer.tsx'
                 }
             ]}/>
     </div>

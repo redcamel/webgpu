@@ -22,7 +22,7 @@ const SampleCheckGPU = () => {
         const configure = (cvs: HTMLCanvasElement, device: GPUDevice) => {
             const ctx = cvs.getContext('webgpu');
             if (ctx) {
-                const presentationFormat: GPUTextureFormat = ctx.getPreferredFormat(adapter);
+                const presentationFormat: GPUTextureFormat = navigator.gpu.getPreferredCanvasFormat();
                 const configurationDescription: GPUCanvasConfiguration = {
                     device: device,
                     format: presentationFormat,

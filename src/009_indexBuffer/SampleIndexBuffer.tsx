@@ -20,7 +20,7 @@ const SampleIndexBuffer = (props: any) => {
         const ctx = cvs?.getContext('webgpu');
 
         if (ctx) {
-            const presentationFormat: GPUTextureFormat = ctx.getPreferredFormat(adapter);
+            const presentationFormat: GPUTextureFormat = navigator.gpu.getPreferredCanvasFormat();
             ////////////////////////////////////////////////////////////////////////
             // configure
             const configurationDescription: GPUCanvasConfiguration = {
@@ -250,7 +250,7 @@ const SampleIndexBuffer = (props: any) => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/007_depthStencil/SampleDepthStencilAttachment.tsx'
+                    url: '/src/009_indexBuffer/SampleIndexBuffer.tsx'
                 }
             ]}/>
     </div>

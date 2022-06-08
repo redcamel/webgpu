@@ -2,6 +2,7 @@ import './App.css';
 import SampleTexture from "./006_texture/SampleTexture";
 import test from "./006_texture/SampleTexture";
 import SampleIndexBuffer from "./009_indexBuffer/SampleIndexBuffer";
+import SampleSimpleLight from "./010_simpleLight/SampleSimpleLight";
 
 function App() {
 	// console.log(SampleSimpleOop.toString())
@@ -16,9 +17,10 @@ function App() {
 			{/*<SampleTransform/>*/}
 			{/*<SampleAttribute/>*/}
 			{/*<SampleTexture/>*/}
-			{/*<SampleIndexBuffer/>*/}
+			{/*<SampleSimpleLight/>*/}
 			{/*<SampleMultiObjectRender/>*/}
-			<SampleIndexBuffer/>
+			{/*<SampleIndexBuffer/>*/}
+			<SampleSimpleLight/>
 			{/*<SampleSimpleOOP/>*/}
 		</>
 	);

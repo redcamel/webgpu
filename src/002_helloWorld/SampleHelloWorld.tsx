@@ -18,7 +18,7 @@ const SampleHelloWorld = () => {
         const ctx = cvs?.getContext('webgpu');
 
         if (ctx) {
-            const presentationFormat: GPUTextureFormat = ctx.getPreferredFormat(adapter);
+            const presentationFormat: GPUTextureFormat = navigator.gpu.getPreferredCanvasFormat();
             ////////////////////////////////////////////////////////////////////////
             // configure
             const configurationDescription: GPUCanvasConfiguration = {
