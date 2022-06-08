@@ -1,0 +1,50 @@
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* 스크롤바 */
+::-webkit-scrollbar {
+    width: 2px;
+    height: 2px;
+}
+
+/* 스크롤 바 */
+
+::-webkit-scrollbar-track {
+    background-color: #5e7ade22;
+}
+
+/* 스크롤 바 밑의 배경 */
+
+::-webkit-scrollbar-thumb {
+    background: #5e7ade;
+    border-radius: 10px;
+}
+
+/* 실질적 스크롤 바 */
+
+::-webkit-scrollbar-thumb:hover {
+    background: #5e7ade;
+}
+
+/* 실질적 스크롤 바 위에 마우스를 올려다 둘 때 */
+
+::-webkit-scrollbar-thumb:active {
+    background: #5e7ade;
+}
+
+/* 실질적 스크롤 바를 클릭할 때 */
+
+::-webkit-scrollbar-button {
+    display: none;
+}
