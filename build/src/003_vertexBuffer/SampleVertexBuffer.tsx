@@ -131,7 +131,7 @@ const SampleVertexBuffer = () => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/003_vertexBuffer/SampleVertexBuffer.tsx'
+                    url: './src/003_vertexBuffer/SampleVertexBuffer.tsx'
                 }
             ]}/>
     </div>

@@ -252,7 +252,7 @@ const SampleSimpleLight = (props: any) => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/010_simpleLight/SampleSimpleLight.tsx'
+                    url: './src/010_simpleLight/SampleSimpleLight.tsx'
                 }
             ]}/>
     </div>

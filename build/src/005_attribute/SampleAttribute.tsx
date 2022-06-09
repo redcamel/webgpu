@@ -184,7 +184,7 @@ const SampleAttribute = () => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/005_attribute/SampleAttribute.tsx'
+                    url: './src/005_attribute/SampleAttribute.tsx'
                 }
             ]}/>
     </div>

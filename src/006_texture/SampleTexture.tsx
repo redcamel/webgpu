@@ -221,7 +221,7 @@ const SampleTexture = (props: any) => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/006_texture/SampleTexture.tsx'
+                    url: './src/006_texture/SampleTexture.tsx'
                 }
             ]}/>
     </div>

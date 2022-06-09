@@ -261,7 +261,7 @@ const SampleMultiObjectRender = (props: any) => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/008_multiObjectRender/SampleMultiObjectRender.tsx'
+                    url: './src/008_multiObjectRender/SampleMultiObjectRender.tsx'
                 }
             ]}/>
     </div>
