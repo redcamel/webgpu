@@ -250,7 +250,7 @@ const SampleIndexBuffer = (props: any) => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/009_indexBuffer/SampleIndexBuffer.tsx'
+                    url: './src/009_indexBuffer/SampleIndexBuffer.tsx'
                 }
             ]}/>
     </div>

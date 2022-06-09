@@ -176,7 +176,7 @@ const SampleTransform = () => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/004_transform/SampleTransform.tsx'
+                    url: './src/004_transform/SampleTransform.tsx'
                 }
             ]}/>
     </div>

@@ -247,7 +247,7 @@ const SampleDepthStencilAttachment = (props: any) => {
                 },
                 {
                     label: 'Host',
-                    url: '/src/007_depthStencil/SampleDepthStencilAttachment.tsx'
+                    url: './src/007_depthStencil/SampleDepthStencilAttachment.tsx'
                 }
             ]}/>
     </div>

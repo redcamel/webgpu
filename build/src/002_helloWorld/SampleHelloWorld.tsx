@@ -102,7 +102,7 @@ const SampleHelloWorld = () => {
             },
             {
                 label: 'Host',
-                url: '/src/002_helloWorld/SampleHelloWorld.tsx'
+                url: './src/002_helloWorld/SampleHelloWorld.tsx'
             }
         ]}/>
     </div>
