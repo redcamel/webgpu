@@ -29,7 +29,7 @@ function App() {
 	}, []);
 	return (
 		<>
-			<select value={idx} onChange={e => setIdx(+e.target.value)} style={{margin : '10px',fontSize: '11px',padding : '4px'}}>
+			<select value={idx} onChange={e => setIdx(+e.target.value)} style={{position:'absolute',top:'50px',left:'10px',fontSize: '11px',padding : '4px'}}>
 				{
 					sampleList.map((v, index) => <option value={index}>{v[0]}</option>)
 				}
