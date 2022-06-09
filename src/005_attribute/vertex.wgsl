@@ -1,15 +1,15 @@
 // define Struct
 struct Uniforms {
-  modelMatrix : mat4x4<f32>;
+  modelMatrix : mat4x4<f32>,
 };
 // define Struct OutData
 struct OutData {
-  @builtin(position) position : vec4<f32>;
+  @builtin(position) position : vec4<f32>,
   @location(0) color: vec4<f32>;
 };
 // define Struct InputData
 struct InputData {
-    @location(0) position : vec4<f32>;
+    @location(0) position : vec4<f32>,
     @location(1) color : vec4<f32>;
 };
 // define Uniform binding

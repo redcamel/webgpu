@@ -26,6 +26,7 @@ const SampleDepthStencilAttachment = (props: any) => {
             const configurationDescription: GPUCanvasConfiguration = {
                 device: device,
                 format: presentationFormat,
+                alphaMode  : 'premultiplied'
             };
             console.log('configurationDescription', configurationDescription);
             ctx.configure(configurationDescription);
@@ -52,7 +53,7 @@ const SampleDepthStencilAttachment = (props: any) => {
             );
             ////////////////////////////////////////////////////////////////////////
             // makeTexture !!!!!!!!!!!!!!!
-            const testTexture = await webGPUTextureFromImageUrl(device, '/assets/crate.png')
+            const testTexture = await webGPUTextureFromImageUrl(device, './assets/crate.png')
             console.log('testTexture', testTexture)
             const testSampler = device.createSampler({
                 magFilter: "linear",
