@@ -1,6 +1,6 @@
 // define Struct
 struct Uniforms {
-  modelMatrix : mat4x4<f32>;
+  modelMatrix : mat4x4<f32>,
 };
 // define Uniform binding
 @binding(0) @group(0) var<uniform> uniforms : Uniforms;

@@ -84,7 +84,7 @@ class RedGeometry extends RedGPUObject {
     }
 }
 
-// const testTexture = await webGPUTextureFromImageUrl(device, '/assets/crate.png')
+// const testTexture = await webGPUTextureFromImageUrl(device, './assets/crate.png')
 class RedTexture extends RedGPUObject {
     get texture(): GPUTexture {
         return this._texture;
@@ -338,6 +338,7 @@ const SampleSimpleOOP = (props: any) => {
             const configurationDescription: GPUCanvasConfiguration = {
                 device: device,
                 format: presentationFormat,
+                alphaMode  : 'premultiplied'
             };
             console.log('configurationDescription', configurationDescription);
             ctx.configure(configurationDescription);
@@ -354,7 +355,7 @@ const SampleSimpleOOP = (props: any) => {
                     1.0, 1.0, 0.0, 1.0, 1.0, 1.0
                 ]
             ));
-            const testTexture2: RedTexture = new RedTexture(device, '/assets/crate.png')
+            const testTexture2: RedTexture = new RedTexture(device, './assets/crate.png')
 
             const vShaderModule = await makeShaderModule(device, srcSourceVert)
             const fShaderModule = await makeShaderModule(device, srcSourceFrag)

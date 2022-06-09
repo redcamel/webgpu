@@ -24,6 +24,7 @@ const SampleHelloWorld = () => {
             const configurationDescription: GPUCanvasConfiguration = {
                 device: device,
                 format: presentationFormat,
+                alphaMode  : 'premultiplied'
             };
             console.log('configurationDescription', configurationDescription);
             ctx.configure(configurationDescription);
