@@ -1,3 +1,6 @@
+This repository is no longer operational.
+[Use RedGPU](https://github.com/redcamel/RedGPU)
+
 # WebGPU study
 
 These study samples run in Chrome Canary() behind the flag --enable-unsafe-webgpu.
