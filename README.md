@@ -1,5 +1,4 @@
-This repository is no longer operational.
-[Use RedGPU](https://github.com/redcamel/RedGPU)
+It is no longer managed.
 
 # WebGPU study
 
